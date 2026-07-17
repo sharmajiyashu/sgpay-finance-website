@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 
 const GENERAL_FAQS = [
@@ -31,6 +31,12 @@ const GENERAL_FAQS = [
 ];
 
 export default function FAQPage() {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const toggleAccordion = (index: number) => {
+    setActiveIndex(activeIndex === index ? null : index);
+  };
+
   return (
     <>
       {/* Hero Header Start */}
@@ -60,11 +66,10 @@ export default function FAQPage() {
               <div className="accordion-item mb-3 border rounded" key={i}>
                 <h2 className="accordion-header" id={`heading-page-${i}`}>
                   <button
-                    className="accordion-button collapsed fw-medium text-dark py-3"
+                    className={`accordion-button ${activeIndex === i ? "" : "collapsed"} fw-medium text-dark py-3`}
                     type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target={`#collapse-page-${i}`}
-                    aria-expanded="false"
+                    onClick={() => toggleAccordion(i)}
+                    aria-expanded={activeIndex === i ? "true" : "false"}
                     aria-controls={`collapse-page-${i}`}
                   >
                     {faq.q}
@@ -72,9 +77,8 @@ export default function FAQPage() {
                 </h2>
                 <div
                   id={`collapse-page-${i}`}
-                  className="accordion-collapse collapse"
+                  className={`accordion-collapse collapse ${activeIndex === i ? "show" : ""}`}
                   aria-labelledby={`heading-page-${i}`}
-                  data-bs-parent="#faqPageAccordion"
                 >
                   <div className="accordion-body text-muted small bg-light">
                     {faq.a}

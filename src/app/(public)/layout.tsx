@@ -244,11 +244,8 @@ export default function PublicLayout({
       <div className="container-fluid copyright py-4">
         <div className="container">
           <div className="row">
-            <div className="col-md-6 text-center text-md-start mb-3 mb-md-0">
+            <div className="col-12 text-center">
               Copyright &copy; 2026 <span className="fw-semi-bold">GIRSHA PAY PRIVATE LIMITED</span>. All Rights Reserved.
-            </div>
-            <div className="col-md-6 text-center text-md-end">
-              Designed By <a className="border-bottom" href="https://htmlcodex.com">HTML Codex</a>
             </div>
           </div>
         </div>

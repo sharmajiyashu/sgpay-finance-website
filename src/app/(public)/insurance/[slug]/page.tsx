@@ -22,6 +22,7 @@ export default function InsuranceDetailPage({ params }: { params: Promise<{ slug
     nominee: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,11 +134,21 @@ export default function InsuranceDetailPage({ params }: { params: Promise<{ slug
                   {plan.faqs.map((faq, i) => (
                     <div className="accordion-item border rounded mb-2" key={i}>
                       <h2 className="accordion-header" id={`heading${i}`}>
-                        <button className="accordion-button collapsed fw-semi-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${i}`} aria-expanded="false" aria-controls={`collapse${i}`}>
+                        <button
+                          className={`accordion-button ${activeFaqIndex === i ? "" : "collapsed"} fw-semi-bold text-dark`}
+                          type="button"
+                          onClick={() => setActiveFaqIndex(activeFaqIndex === i ? null : i)}
+                          aria-expanded={activeFaqIndex === i ? "true" : "false"}
+                          aria-controls={`collapse${i}`}
+                        >
                           {faq.q}
                         </button>
                       </h2>
-                      <div id={`collapse${i}`} className="accordion-collapse collapse" aria-labelledby={`heading${i}`} data-bs-parent="#faqAccordion">
+                      <div
+                        id={`collapse${i}`}
+                        className={`accordion-collapse collapse ${activeFaqIndex === i ? "show" : ""}`}
+                        aria-labelledby={`heading${i}`}
+                      >
                         <div className="accordion-body text-muted small">
                           {faq.a}
                         </div>

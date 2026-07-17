@@ -22,6 +22,7 @@ export default function AccountDetailPage({ params }: { params: Promise<{ slug: 
     aadhaar: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,11 +136,10 @@ export default function AccountDetailPage({ params }: { params: Promise<{ slug: 
                       <div className="accordion-item mb-2 border rounded" key={i}>
                         <h2 className="accordion-header" id={`heading-${i}`}>
                           <button
-                            className="accordion-button collapsed fw-medium text-dark py-3"
+                            className={`accordion-button ${activeFaqIndex === i ? "" : "collapsed"} fw-medium text-dark py-3`}
                             type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target={`#collapse-${i}`}
-                            aria-expanded="false"
+                            onClick={() => setActiveFaqIndex(activeFaqIndex === i ? null : i)}
+                            aria-expanded={activeFaqIndex === i ? "true" : "false"}
                             aria-controls={`collapse-${i}`}
                           >
                             {faq.q}
@@ -147,9 +147,8 @@ export default function AccountDetailPage({ params }: { params: Promise<{ slug: 
                         </h2>
                         <div
                           id={`collapse-${i}`}
-                          className="accordion-collapse collapse"
+                          className={`accordion-collapse collapse ${activeFaqIndex === i ? "show" : ""}`}
                           aria-labelledby={`heading-${i}`}
-                          data-bs-parent="#faqAccordion"
                         >
                           <div className="accordion-body text-muted small bg-light">
                             {faq.a}
