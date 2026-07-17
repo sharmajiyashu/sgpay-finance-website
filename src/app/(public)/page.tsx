@@ -25,8 +25,9 @@ export default function HomePage() {
       <div className="container-fluid p-0 mb-5 wow fadeIn" data-wow-delay="0.1s">
         <div id="header-carousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
           <div className="carousel-inner">
+            {/* Slide 1: Loans */}
             <div className="carousel-item active">
-              <img className="w-100" src="/img/banner.jpg" alt="Carousel 1" />
+              <img className="w-100" src="/img/Loan.png" alt="Loans Banner" />
               <div className="carousel-caption">
                 <div className="container">
                   <div className="row justify-content-start">
@@ -34,15 +35,17 @@ export default function HomePage() {
                       <p className="d-inline-block border border-white rounded text-primary fw-semi-bold py-1 px-3 animated slideInDown">
                         Welcome to {APP_CONFIG.appName}
                       </p>
-                      <h1 className="display-1 mb-4 animated slideInDown">Empowering Your Financial Growth & Security</h1>
-                      <Link href="/about" className="btn btn-primary py-3 px-5 animated slideInDown">Explore More</Link>
+                      <h1 className="display-1 mb-4 animated slideInDown">Empowering Loans & Flexible Credits</h1>
+                      <p className="fs-5 text-white mb-4 pb-2 animated slideInDown">Apply online for personal, home, or business loans with interest rates starting from 7.99% p.a. and fast digital disbursals.</p>
+                      <Link href="/loans" className="btn btn-primary py-3 px-5 animated slideInDown">Apply For A Loan &rarr;</Link>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+            {/* Slide 2: Finance */}
             <div className="carousel-item">
-              <img className="w-100" src="/img/carousel-2.jpg" alt="Carousel 2" />
+              <img className="w-100" src="/img/finance.png" alt="Finance Banner" />
               <div className="carousel-caption">
                 <div className="container">
                   <div className="row justify-content-start">
@@ -50,8 +53,45 @@ export default function HomePage() {
                       <p className="d-inline-block border border-white rounded text-primary fw-semi-bold py-1 px-3 animated slideInDown">
                         Welcome to {APP_CONFIG.appName}
                       </p>
-                      <h1 className="display-1 mb-4 animated slideInDown">Tailored Credit, Loans & Wealth Solutions</h1>
-                      <Link href="/service" className="btn btn-primary py-3 px-5 animated slideInDown">Explore More</Link>
+                      <h1 className="display-1 mb-4 animated slideInDown">Strategic Wealth & Growth Planning</h1>
+                      <p className="fs-5 text-white mb-4 pb-2 animated slideInDown">Invest in high-yield mutual funds, systematic investment plans (SIP), or fixed deposits guided by certified advisors.</p>
+                      <Link href="/finance" className="btn btn-primary py-3 px-5 animated slideInDown">Invest Smartly &rarr;</Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Slide 3: Insurance */}
+            <div className="carousel-item">
+              <img className="w-100" src="/img/Insurance.png" alt="Insurance Banner" />
+              <div className="carousel-caption">
+                <div className="container">
+                  <div className="row justify-content-start">
+                    <div className="col-lg-7">
+                      <p className="d-inline-block border border-white rounded text-primary fw-semi-bold py-1 px-3 animated slideInDown">
+                        Welcome to {APP_CONFIG.appName}
+                      </p>
+                      <h1 className="display-1 mb-4 animated slideInDown">Complete Health & Family Protection</h1>
+                      <p className="fs-5 text-white mb-4 pb-2 animated slideInDown">Secure cashless hospitalization, term life, vehicle, and home covers to safeguard your family's future.</p>
+                      <Link href="/insurance" className="btn btn-primary py-3 px-5 animated slideInDown">Explore Insurance &rarr;</Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Slide 4: Accounts */}
+            <div className="carousel-item">
+              <img className="w-100" src="/img/opening account.png" alt="Accounts Banner" />
+              <div className="carousel-caption">
+                <div className="container">
+                  <div className="row justify-content-start">
+                    <div className="col-lg-7">
+                      <p className="d-inline-block border border-white rounded text-primary fw-semi-bold py-1 px-3 animated slideInDown">
+                        Welcome to {APP_CONFIG.appName}
+                      </p>
+                      <h1 className="display-1 mb-4 animated slideInDown">Zero Paperwork Digital Bank Accounts</h1>
+                      <p className="fs-5 text-white mb-4 pb-2 animated slideInDown">Open savings, current, demat, or trading accounts in just 5 minutes with zero paperwork and instant activation.</p>
+                      <Link href="/accounts" className="btn btn-primary py-3 px-5 animated slideInDown">Open Account Online &rarr;</Link>
                     </div>
                   </div>
                 </div>
