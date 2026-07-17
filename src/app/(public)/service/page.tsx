@@ -56,7 +56,7 @@ export default function ServicePage() {
                   <div className="row g-4">
                     <div className="col-md-6" style={{ minHeight: "350px" }}>
                       <div className="position-relative h-100">
-                        <img className="position-absolute rounded w-100 h-100" src="/img/service-4.jpg" style={{ objectFit: "cover" }} alt="Loans" />
+                        <img className="position-absolute rounded w-100 h-100" src="/img/loans_service.png" style={{ objectFit: "cover" }} alt="Loans" />
                       </div>
                     </div>
                     <div className="col-md-6">
@@ -73,7 +73,7 @@ export default function ServicePage() {
                   <div className="row g-4">
                     <div className="col-md-6" style={{ minHeight: "350px" }}>
                       <div className="position-relative h-100">
-                        <img className="position-absolute rounded w-100 h-100" src="/img/service-1.jpg" style={{ objectFit: "cover" }} alt="Finance" />
+                        <img className="position-absolute rounded w-100 h-100" src="/img/finance_wealth.png" style={{ objectFit: "cover" }} alt="Finance" />
                       </div>
                     </div>
                     <div className="col-md-6">
@@ -90,7 +90,7 @@ export default function ServicePage() {
                   <div className="row g-4">
                     <div className="col-md-6" style={{ minHeight: "350px" }}>
                       <div className="position-relative h-100">
-                        <img className="position-absolute rounded w-100 h-100" src="/img/service-2.jpg" style={{ objectFit: "cover" }} alt="Bill Payments" />
+                        <img className="position-absolute rounded w-100 h-100" src="/img/utility_bills.png" style={{ objectFit: "cover" }} alt="Bill Payments" />
                       </div>
                     </div>
                     <div className="col-md-6">
@@ -107,7 +107,7 @@ export default function ServicePage() {
                   <div className="row g-4">
                     <div className="col-md-6" style={{ minHeight: "350px" }}>
                       <div className="position-relative h-100">
-                        <img className="position-absolute rounded w-100 h-100" src="/img/carousel-2.jpg" style={{ objectFit: "cover" }} alt="Insurance" />
+                        <img className="position-absolute rounded w-100 h-100" src="/img/insurance_solutions.png" style={{ objectFit: "cover" }} alt="Insurance" />
                       </div>
                     </div>
                     <div className="col-md-6">
@@ -124,7 +124,7 @@ export default function ServicePage() {
                   <div className="row g-4">
                     <div className="col-md-6" style={{ minHeight: "350px" }}>
                       <div className="position-relative h-100">
-                        <img className="position-absolute rounded w-100 h-100" src="/img/service-3.jpg" style={{ objectFit: "cover" }} alt="Credit Cards" />
+                        <img className="position-absolute rounded w-100 h-100" src="/img/credit_cards.png" style={{ objectFit: "cover" }} alt="Credit Cards" />
                       </div>
                     </div>
                     <div className="col-md-6">
@@ -141,7 +141,7 @@ export default function ServicePage() {
                   <div className="row g-4">
                     <div className="col-md-6" style={{ minHeight: "350px" }}>
                       <div className="position-relative h-100">
-                        <img className="position-absolute rounded w-100 h-100" src="/img/carousel-1.jpg" style={{ objectFit: "cover" }} alt="Dealer Website" />
+                        <img className="position-absolute rounded w-100 h-100" src="/img/dealer_website.png" style={{ objectFit: "cover" }} alt="Dealer Website" />
                       </div>
                     </div>
                     <div className="col-md-6">
