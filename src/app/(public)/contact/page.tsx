@@ -62,7 +62,7 @@ export default function ContactPage() {
               <div className="position-relative rounded overflow-hidden h-100">
                 <iframe
                   className="position-relative w-100 h-100"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3001156.4288297426!2d-78.01371936852176!3d42.72876761954724!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4ccc4bf0f123a5a9%3A0xddcfc6c1de189567!2sNew%20York%2C%20USA!5e0!3m2!1sen!2sbd!4v1603794290143!5m2!1sen!2sbd"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14245.241911080966!2d75.82427032936094!3d26.79824096599677!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396dc994025090cd%3A0x32dc61064816df1f!2s112%2F76%2C%20near%20Dispensary%2C%20Kumbha%20Marg%2C%20Sanganer%2C%20Sector%2011%2C%20Pratap%20Nagar%2C%20Jaipur%2C%20Rajasthan%20302033!5e0!3m2!1sen!2sin!4v1784268722674!5m2!1sen!2sin"
                   frameBorder="0"
                   style={{ minHeight: "450px", border: 0 }}
                   allowFullScreen={true}

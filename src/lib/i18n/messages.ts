@@ -6,7 +6,7 @@ export type MessageKey = string;
 /** All static UI messages. Add keys here and use t(key) in components. */
 export const messages: Record<Locale, Record<string, string>> = {
   en: {
-    "app.name": "A-ledD Admin Panel",
+    "app.name": "Sg Pay 4u",
     "app.tagline": "Admin panel",
 
     // Auth
@@ -374,7 +374,7 @@ export const messages: Record<Locale, Record<string, string>> = {
   kh: {
     // Khmer messages are optional in this simplified admin panel.
     // We keep the object so locale switching never breaks, and fallback to EN happens in LanguageContext.
-    "app.name": "A-ledD Admin Panel",
+    "app.name": "Sg Pay 4u",
     "app.tagline": "ផ្ទាំងគ្រប់គ្រង",
     "nav.packages": "កញ្ចប់",
     "packages.title": "កញ្ចប់បុព្វលាភ",

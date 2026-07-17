@@ -16,7 +16,7 @@ export default function PublicLayout({
 
   useEffect(() => {
     // Set document title
-    document.title = `${APP_CONFIG.appName} - Financial Services Website Template`;
+    document.title = `${APP_CONFIG.appName} - Loans, Insurance & Financial Solutions`;
 
     // Hide spinner
     const spinner = document.getElementById("spinner");
@@ -58,7 +58,7 @@ export default function PublicLayout({
       {/* Dynamic Link stylesheets */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet" />  
+      <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet" />
       <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet" />
       <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet" />
       <link href="/lib/animate/animate.min.css" rel="stylesheet" />
@@ -67,10 +67,10 @@ export default function PublicLayout({
       <link href="/css/style.css" rel="stylesheet" />
 
       {/* Navbar Start */}
-      <div 
-        className={`container-fluid fixed-top px-0 wow fadeIn ${scrolled ? "bg-white shadow" : ""}`} 
-        style={{ 
-          transition: "0.5s", 
+      <div
+        className={`container-fluid fixed-top px-0 wow fadeIn ${scrolled ? "bg-white shadow" : ""}`}
+        style={{
+          transition: "0.5s",
           top: scrolled ? "-45px" : "0px"
         }}
         data-wow-delay="0.1s"
@@ -96,12 +96,12 @@ export default function PublicLayout({
           <div className="collapse navbar-collapse" id="navbarCollapse">
             <div className="navbar-nav ms-auto p-4 p-lg-0">
               <Link href="/" className={`nav-item nav-link ${pathname === "/" ? "active" : ""}`}>Home</Link>
-              <Link href="/about" className={`nav-item nav-link ${pathname === "/about" ? "active" : ""}`}>About</Link>
-              
+
               {/* Loans Dropdown */}
               <div className="nav-item dropdown">
-                <a href="#" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Loans</a>
+                <Link href="/loans" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Loans</Link>
                 <div className="dropdown-menu border-0 shadow-sm m-0">
+                  <Link href="/loans" className="dropdown-item fw-bold text-primary border-bottom">View All Loans</Link>
                   <Link href="/loans/personal-loan" className="dropdown-item">Personal Loan</Link>
                   <Link href="/loans/home-loan" className="dropdown-item">Home Loan</Link>
                   <Link href="/loans/business-loan" className="dropdown-item">Business Loan</Link>
@@ -117,10 +117,10 @@ export default function PublicLayout({
 
               {/* Finance Dropdown */}
               <div className="nav-item dropdown">
-                <a href="#" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Finance</a>
+                <Link href="/finance" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Finance</Link>
                 <div className="dropdown-menu border-0 shadow-sm m-0">
+                  <Link href="/finance" className="dropdown-item fw-bold text-primary border-bottom">View All Finance</Link>
                   <Link href="/finance/credit-card" className="dropdown-item">Credit Card</Link>
-                  <Link href="/finance/insurance" className="dropdown-item">Insurance</Link>
                   <Link href="/finance/mutual-funds" className="dropdown-item">Mutual Funds</Link>
                   <Link href="/finance/sip-investment" className="dropdown-item">SIP Investment</Link>
                   <Link href="/finance/fixed-deposit" className="dropdown-item">Fixed Deposit</Link>
@@ -132,10 +132,23 @@ export default function PublicLayout({
                 </div>
               </div>
 
+              {/* Insurance Dropdown */}
+              <div className="nav-item dropdown">
+                <Link href="/insurance" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Insurance</Link>
+                <div className="dropdown-menu border-0 shadow-sm m-0">
+                  <Link href="/insurance" className="dropdown-item fw-bold text-primary border-bottom">View All Insurance</Link>
+                  <Link href="/insurance/health-insurance" className="dropdown-item">Health Insurance</Link>
+                  <Link href="/insurance/life-insurance" className="dropdown-item">Term Life Insurance</Link>
+                  <Link href="/insurance/vehicle-insurance" className="dropdown-item">Vehicle Insurance</Link>
+                  <Link href="/insurance/home-insurance" className="dropdown-item">Home Insurance</Link>
+                </div>
+              </div>
+
               {/* Accounts Dropdown */}
               <div className="nav-item dropdown">
-                <a href="#" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Accounts</a>
+                <Link href="/accounts" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Accounts</Link>
                 <div className="dropdown-menu border-0 shadow-sm m-0">
+                  <Link href="/accounts" className="dropdown-item fw-bold text-primary border-bottom">View All Accounts</Link>
                   <Link href="/accounts/savings-account" className="dropdown-item">Savings Account</Link>
                   <Link href="/accounts/current-account" className="dropdown-item">Current Account</Link>
                   <Link href="/accounts/salary-account" className="dropdown-item">Salary Account</Link>
@@ -186,30 +199,41 @@ export default function PublicLayout({
                 <a className="btn btn-square btn-outline-light rounded-circle me-2" href={APP_CONFIG.socials.linkedin} target="_blank" rel="noopener noreferrer"><i className="fab fa-linkedin-in"></i></a>
               </div>
             </div>
-            <div className="col-lg-3 col-md-6">
-              <h4 className="text-white mb-4">Services</h4>
-              <Link className="btn btn-link" href="/service">Financial Planning</Link>
-              <Link className="btn btn-link" href="/service">Cash Investment</Link>
-              <Link className="btn btn-link" href="/service">Financial Consultancy</Link>
-              <Link className="btn btn-link" href="/service">Business Loans</Link>
-              <Link className="btn btn-link" href="/service">Business Analysis</Link>
-            </div>
-            <div className="col-lg-3 col-md-6">
+            <div className="col-lg-2 col-md-6">
               <h4 className="text-white mb-4">Quick Links</h4>
-              <Link className="btn btn-link" href="/about">About Us</Link>
-              <Link className="btn btn-link" href="/contact">Contact Us</Link>
-              <Link className="btn btn-link" href="/faq">FAQs</Link>
-              <Link className="btn btn-link" href="/privacy">Privacy Policy</Link>
-              <Link className="btn btn-link" href="/terms">Terms & Condition</Link>
-              <Link className="btn btn-link" href="/emi-calculator">EMI Calculator</Link>
+              <Link className="btn btn-link text-decoration-none" href="/about">About Us</Link>
+              <Link className="btn btn-link text-decoration-none" href="/contact">Contact Us</Link>
+              <Link className="btn btn-link text-decoration-none" href="/faq">FAQs</Link>
+              <Link className="btn btn-link text-decoration-none" href="/privacy">Privacy Policy</Link>
+              <Link className="btn btn-link text-decoration-none" href="/terms">Terms & Conditions</Link>
+              <Link className="btn btn-link text-decoration-none" href="/emi-calculator">EMI Calculator</Link>
+            </div>
+            <div className="col-lg-2 col-md-6">
+              <h4 className="text-white mb-4">Our Services</h4>
+              <Link className="btn btn-link text-decoration-none" href="/loans">Loans</Link>
+              <Link className="btn btn-link text-decoration-none" href="/finance">Finance & Wealth</Link>
+              <Link className="btn btn-link text-decoration-none" href="/bill-payment">Bill Payments</Link>
+              <Link className="btn btn-link text-decoration-none" href="/finance/insurance">Insurance Products</Link>
+              <Link className="btn btn-link text-decoration-none" href="/finance/credit-card">Credit Cards</Link>
+              <Link className="btn btn-link text-decoration-none" href="/contact">Dealer Website</Link>
+            </div>
+            <div className="col-lg-2 col-md-6">
+              <h4 className="text-white mb-4">Loans List</h4>
+              <Link className="btn btn-link text-decoration-none" href="/loans/personal-loan">Personal Loan</Link>
+              <Link className="btn btn-link text-decoration-none" href="/loans/home-loan">Home Loan</Link>
+              <Link className="btn btn-link text-decoration-none" href="/loans/business-loan">Business Loan</Link>
+              <Link className="btn btn-link text-decoration-none" href="/loans/education-loan">Education Loan</Link>
+              <Link className="btn btn-link text-decoration-none" href="/loans/gold-loan">Gold Loan</Link>
+              <Link className="btn btn-link text-decoration-none" href="/loans/vehicle-loan">Vehicle Loan</Link>
             </div>
             <div className="col-lg-3 col-md-6">
-              <h4 className="text-white mb-4">Newsletter</h4>
-              <p>Dolor amet sit justo amet elitr clita ipsum elitr est.</p>
-              <div className="position-relative w-100">
-                <input className="form-control bg-white border-0 w-100 py-3 ps-4 pe-5" type="text" placeholder="Your email" />
-                <button type="button" className="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">SignUp</button>
-              </div>
+              <h4 className="text-white mb-4">Finance & Insurance</h4>
+              <Link className="btn btn-link text-decoration-none" href="/finance/insurance">Insurance Products</Link>
+              <Link className="btn btn-link text-decoration-none" href="/finance/credit-card">Credit Cards</Link>
+              <Link className="btn btn-link text-decoration-none" href="/finance/mutual-funds">Mutual Funds</Link>
+              <Link className="btn btn-link text-decoration-none" href="/finance/sip-investment">SIP Investments</Link>
+              <Link className="btn btn-link text-decoration-none" href="/finance/fixed-deposit">Fixed Deposits</Link>
+              <Link className="btn btn-link text-decoration-none" href="/finance/tax-saving">Tax Saving Advice</Link>
             </div>
           </div>
         </div>
@@ -221,7 +245,7 @@ export default function PublicLayout({
         <div className="container">
           <div className="row">
             <div className="col-md-6 text-center text-md-start mb-3 mb-md-0">
-              &copy; <a className="border-bottom" href="#">{APP_CONFIG.appName}</a>, All Right Reserved.
+              Copyright &copy; 2026 <span className="fw-semi-bold">GIRSHA PAY PRIVATE LIMITED</span>. All Rights Reserved.
             </div>
             <div className="col-md-6 text-center text-md-end">
               Designed By <a className="border-bottom" href="https://htmlcodex.com">HTML Codex</a>
@@ -230,6 +254,36 @@ export default function PublicLayout({
         </div>
       </div>
       {/* Copyright End */}
+
+      {/* Floating WhatsApp Button */}
+      <a
+        href={`https://wa.me/${APP_CONFIG.phoneRaw.replace(/\D/g, "")}`}
+        className="whatsapp-btn-float shadow-lg"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: "fixed",
+          bottom: "30px",
+          right: "30px",
+          backgroundColor: "#25d366",
+          color: "#fff",
+          borderRadius: "50px",
+          textAlign: "center",
+          fontSize: "32px",
+          zIndex: 9999,
+          width: "60px",
+          height: "60px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textDecoration: "none",
+          transition: "transform 0.3s ease"
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
+        onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+      >
+        <i className="fab fa-whatsapp"></i>
+      </a>
 
       {/* Script imports using Next.js Script for correct load order */}
       <Script src="https://code.jquery.com/jquery-3.4.1.min.js" strategy="beforeInteractive" />

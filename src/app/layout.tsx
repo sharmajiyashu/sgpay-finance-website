@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "A-ledD Admin Panel",
-  description: "A-ledD Admin Panel",
+  title: "Sg Pay 4u",
+  description: "Sg Pay 4u - Loans, Insurance & Financial Solutions",
 };
 
 export default function RootLayout({

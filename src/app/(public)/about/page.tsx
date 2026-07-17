@@ -28,10 +28,9 @@ export default function AboutPage() {
             </div>
             <div className="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
               <p className="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">About Us</p>
-              <h1 className="display-5 mb-4">We Help Our Clients To Grow Their Business</h1>
+              <h1 className="display-5 mb-4">We Guide You Towards Lasting Financial Success</h1>
               <p className="mb-4">
-                Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit. Aliqu diam amet diam et eos. Clita erat
-                ipsum et lorem et sit, sed stet lorem sit clita duo justo magna dolore erat amet
+                At Finanza, we combine deep financial expertise with personalized credit and investment options. Whether you are expanding a business, purchasing a home, or securing your family's future, our comprehensive financial suites support your journey every step of the way.
               </p>
               <div className="border rounded p-4">
                 <nav>
@@ -43,16 +42,16 @@ export default function AboutPage() {
                 </nav>
                 <div className="tab-content" id="nav-tabContent">
                   <div className="tab-pane fade show active" id="nav-story" role="tabpanel" aria-labelledby="nav-story-tab">
-                    <p>Tempor erat elitr rebum at clita. Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos labore.</p>
-                    <p className="mb-0">Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos labore. Clita erat ipsum et lorem et sit</p>
+                    <p>Established with a vision to democratize financial resources, Finanza has grown into a trusted advisory and lending platform. We have empowered thousands of families and businesses by bridging the gap between their ambitions and the capital needed to realize them.</p>
+                    <p className="mb-0">Our history is defined by customer satisfaction, transparent rates, and tailored planning designed to adapt to an evolving economic landscape.</p>
                   </div>
                   <div className="tab-pane fade" id="nav-mission" role="tabpanel" aria-labelledby="nav-mission-tab">
-                    <p>Tempor erat elitr rebum at clita. Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos labore.</p>
-                    <p className="mb-0">Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos labore. Clita erat ipsum et lorem et sit</p>
+                    <p>Our mission is to provide accessible, transparent, and highly reliable financial solutions. We strive to offer competitive loan products, secure savings instruments, and specialized consulting to foster financial inclusion and robust wealth creation.</p>
+                    <p className="mb-0">We focus on leveraging modern financial technology while preserving dedicated personal care to guide our clients towards sustainable prosperity.</p>
                   </div>
                   <div className="tab-pane fade" id="nav-vision" role="tabpanel" aria-labelledby="nav-vision-tab">
-                    <p>Tempor erat elitr rebum at clita. Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos labore.</p>
-                    <p className="mb-0">Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos labore. Clita erat ipsum et lorem et sit</p>
+                    <p>To be the premier financial partner recognized for integrity, customer-centric services, and innovative credit-investment pathways. We envision a financially secure community where individuals and enterprises have immediate access to customized funding.</p>
+                    <p className="mb-0">Through continuous improvement and data-driven solutions, we aim to redefine retail banking and asset-management standards.</p>
                   </div>
                 </div>
               </div>
@@ -67,8 +66,8 @@ export default function AboutPage() {
                       <i className="fa fa-times text-white"></i>
                     </div>
                     <div className="ps-3">
-                      <h4>No Hidden Cost</h4>
-                      <span>Clita erat ipsum lorem sit sed stet duo justo</span>
+                      <h4>No Hidden Costs</h4>
+                      <span>Complete transparency with clear fee schedules and zero hidden surprises.</span>
                     </div>
                     <div className="border-end d-none d-lg-block"></div>
                   </div>
@@ -82,8 +81,8 @@ export default function AboutPage() {
                       <i className="fa fa-users text-white"></i>
                     </div>
                     <div className="ps-3">
-                      <h4>Dedicated Team</h4>
-                      <span>Clita erat ipsum lorem sit sed stet duo justo</span>
+                      <h4>Dedicated Experts</h4>
+                      <span>Access certified financial advisors and credit specialists for customized guidance.</span>
                     </div>
                     <div className="border-end d-none d-lg-block"></div>
                   </div>
@@ -97,8 +96,8 @@ export default function AboutPage() {
                       <i className="fa fa-phone text-white"></i>
                     </div>
                     <div className="ps-3">
-                      <h4>24/7 Available</h4>
-                      <span>Clita erat ipsum lorem sit sed stet duo justo</span>
+                      <h4>24/7 Support</h4>
+                      <span>Our digital channels and helpdesk are open around the clock to address queries.</span>
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  appName: process.env.NEXT_PUBLIC_APP_NAME || "Sg Pay 4u",
+  appName: "Sg Pay 4u",
   address: process.env.NEXT_PUBLIC_ADDRESS || "123 Street, New York, USA",
   phone: process.env.NEXT_PUBLIC_PHONE || "+012 345 6789",
   phoneRaw: process.env.NEXT_PUBLIC_PHONE_RAW || "+012 345 67890",

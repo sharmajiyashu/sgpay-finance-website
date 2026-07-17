@@ -194,7 +194,7 @@ h6,
         position: relative;
         min-height: 450px;
     }
-    
+
     #header-carousel .carousel-item img {
         position: absolute;
         width: 100%;
@@ -357,4 +357,46 @@ h6,
 
 .copyright a:hover {
     color: var(--primary);
+}
+
+/* Custom Dropdown Styling */
+.navbar .dropdown-menu {
+    border-radius: 12px !important;
+    padding: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid rgba(53, 94, 252, 0.08) !important;
+    min-width: 230px;
+}
+
+.navbar .dropdown-item {
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--tertiary);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.navbar .dropdown-item:hover {
+    background-color: rgba(53, 94, 252, 0.08) !important;
+    color: var(--primary) !important;
+    transform: translateX(5px);
+}
+
+.navbar .dropdown-item.fw-bold {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+/* Listing Card Custom Style */
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(53, 94, 252, 0.12) !important;
+    border-color: var(--primary) !important;
 }

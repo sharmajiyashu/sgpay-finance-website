@@ -934,3 +934,145 @@ export const ACCOUNT_SERVICES: ServiceDetail[] = [
     ]
   }
 ];
+
+export const INSURANCE_SERVICES: ServiceDetail[] = [
+  {
+    slug: "health-insurance",
+    title: "Health Insurance",
+    overview: "Secure cashless hospitalization, critical illness support, and comprehensive health covers for your entire family.",
+    features: [
+      "Cashless treatment at over 10,000+ networked partner hospitals",
+      "Coverage for pre and post-hospitalization expenses",
+      "No-claim bonus rewards up to 100%",
+      "Critical illness and accident riders available"
+    ],
+    benefits: [
+      "Tax deductions under Section 80D",
+      "24/7 dedicated customer service helpdesk",
+      "Annual free health checkup benefits",
+      "Cashless claims settled within 2 hours"
+    ],
+    eligibility: [
+      "Ages: 91 days to 65 years",
+      "Applicable for individuals, spouses, kids, and parents"
+    ],
+    documents: [
+      "Identity verification: Aadhaar, Voter ID, or PAN",
+      "Age proof certificate",
+      "Prior medical history logs (if requested)"
+    ],
+    process: [
+      "Choose health cover plan matching your family size",
+      "Fill online proposal form disclosing medical history",
+      "Complete quick pre-policy medical checkup (if above 45)",
+      "Pay premium digitally to activate cover instantly"
+    ],
+    faqs: [
+      { q: "What is cashless hospitalization?", a: "If you get treated at a network hospital, we settle medical bills directly with the hospital, so you don't pay cash out of pocket." }
+    ]
+  },
+  {
+    slug: "life-insurance",
+    title: "Term Life Insurance",
+    overview: "Ensure absolute financial safety and regular income support for your loved ones in your absence with high cover premiums.",
+    features: [
+      "High sum assured up to ₹2 Crores at low monthly premiums",
+      "Flexible payout options: lump sum, monthly income, or mixed",
+      "Critical illness and accidental disability benefit riders",
+      "Immediate onboarding with instant digital policy copy"
+    ],
+    benefits: [
+      "Tax benefits under Section 80C on premium payments",
+      "Peace of mind knowing your family is secure",
+      "Zero medical test required for applicants under 35",
+      "High claim settlement ratio of 99.1%"
+    ],
+    eligibility: [
+      "Age: 18 to 65 years",
+      "Income proof showing regular salary/business receipts"
+    ],
+    documents: [
+      "PAN Card & Aadhaar card copy",
+      "Income proof: salary slips or latest 2 years ITR returns",
+      "Recent passport size photo"
+    ],
+    process: [
+      "Input birth date, smoking status, and desired cover amount",
+      "Fill detailed nominee and personal background details",
+      "Schedule Video medical checkup or upload reports",
+      "Complete Aadhaar e-sign validation to issue policy"
+    ],
+    faqs: [
+      { q: "What is the premium grace period?", a: "We provide a 30-day grace period from the premium due date to make payments before policy lapses." }
+    ]
+  },
+  {
+    slug: "vehicle-insurance",
+    title: "Vehicle Insurance",
+    overview: "Get cashless garages, zero-depreciation coverage, and instant third-party liability protection for your car or two-wheeler.",
+    features: [
+      "Zero depreciation cover options for new cars",
+      "Cashless claims at 5,000+ networked garages",
+      "Instant online policy copy in just 2 minutes",
+      "Roadside assistance and towing support"
+    ],
+    benefits: [
+      "No claim bonus (NCB) transfer option from previous insurer",
+      "Protection against theft, accidents, fire, and natural disasters",
+      "Easy mobile self-inspection tools for quick claims",
+      "Personal accident cover of ₹15 Lakhs included"
+    ],
+    eligibility: [
+      "Valid registration certificate of the vehicle",
+      "Valid driving license of owner"
+    ],
+    documents: [
+      "Vehicle Registration Certificate (RC)",
+      "Prior policy details (for renewals)",
+      "Owner's KYC documents"
+    ],
+    process: [
+      "Input vehicle make, model, registration year and city",
+      "Select third-party, comprehensive, or zero-dep plan",
+      "Upload video inspection for expired policies",
+      "Initiate secure digital checkout to receive active policy PDF"
+    ],
+    faqs: [
+      { q: "What is Zero Depreciation cover?", a: "It is an add-on cover where the insurer pays the complete cost of replacement parts without deducting any depreciation value." }
+    ]
+  },
+  {
+    slug: "home-insurance",
+    title: "Home Insurance",
+    overview: "Protect your residential structure, furniture, electronics, and valuables against fire, theft, earthquakes, and flood damages.",
+    features: [
+      "Comprehensive protection for home structure and contents",
+      "Coverage against fire, lightning, explosions, and riots",
+      "Alternative accommodation rent expenses cover",
+      "Fast claim settlements with minimal surveys"
+    ],
+    benefits: [
+      "Protection for structural rebuild costs up to 10 years",
+      "Protection for expensive jewelry and electronic devices",
+      "Affordable rates starting at ₹5 per day",
+      "Dedicated surveyor checks for rapid approvals"
+    ],
+    eligibility: [
+      "Homeowners, landlords, or tenants residing in India"
+    ],
+    documents: [
+      "Property purchase deed or lease agreement",
+      "List of valuable items (for high-value content cover)",
+      "Owner's identity proof"
+    ],
+    process: [
+      "Enter carpet area, structure value, and property location",
+      "Declare value of content items (TV, fridge, jewelry)",
+      "Select tenure duration (1 year up to 10 years)",
+      "Pay premium to register active cover certificate"
+    ],
+    faqs: [
+      { q: "Does it cover tenant valuables?", a: "Yes, we offer tenant-specific content insurance to safeguard personal belongings in a rented home." }
+    ]
+  }
+];
