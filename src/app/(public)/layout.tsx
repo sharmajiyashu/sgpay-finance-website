@@ -71,24 +71,13 @@ export default function PublicLayout({
         className={`container-fluid fixed-top px-0 wow fadeIn ${scrolled ? "bg-white shadow" : ""}`}
         style={{
           transition: "0.5s",
-          top: scrolled ? "-45px" : "0px"
+          top: "0px"
         }}
         data-wow-delay="0.1s"
       >
-        <div className="top-bar row gx-0 align-items-center d-none d-lg-flex">
-          <div className="col-lg-6 px-5 text-start">
-            <small><i className="fa fa-map-marker-alt text-primary me-2"></i>{APP_CONFIG.address.split(",").slice(0, 5).join(",")}</small>
-            <small style={{ marginLeft: "1.5rem" }}><i className="fa fa-clock text-primary me-2"></i>{APP_CONFIG.workingHours}</small>
-          </div>
-          <div className="col-lg-6 px-5 text-end">
-            <small><i className="fa fa-envelope text-primary me-2"></i>{APP_CONFIG.email}</small>
-            <small style={{ marginLeft: "1.5rem" }}><i className="fa fa-phone-alt text-primary me-2"></i>{APP_CONFIG.phone}</small>
-          </div>
-        </div>
-
         <nav className="navbar navbar-expand-lg navbar-light py-lg-0 px-lg-5 wow fadeIn" data-wow-delay="0.1s">
           <Link href="/" className="navbar-brand ms-4 ms-lg-0 d-flex align-items-center">
-            <img src="/img/logo.png" alt={APP_CONFIG.appName} style={{ height: "55px", objectFit: "contain" }} />
+            <img src="/img/logo.png" alt={APP_CONFIG.appName} style={{ height: "80px", objectFit: "contain" }} />
           </Link>
           <button type="button" className="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
             <span className="navbar-toggler-icon"></span>
