@@ -1,6 +1,6 @@
 /********** Template CSS **********/
 :root {
-    --primary: #176FB5;
+    --primary: #1272b6;
     --secondary: #8DC031;
     --tertiary: #555555;
     --light: #DFE4FD;
@@ -61,9 +61,46 @@ h6,
     font-weight: 500;
 }
 
-.btn-primary,
-.btn-outline-primary:hover {
-    color: var(--light);
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active {
+    background-color: #0d5c94 !important;
+    border-color: #0d5c94 !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active,
+.btn-outline-primary.active {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
 }
 
 .btn-square {

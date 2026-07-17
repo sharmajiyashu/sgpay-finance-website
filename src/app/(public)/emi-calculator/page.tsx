@@ -96,7 +96,7 @@ export default function EMICalculator() {
             <div className="col-lg-7">
               <div className="card shadow-lg border-0 rounded-4 p-4 p-md-5 bg-white h-100">
                 <div className="d-flex align-items-center mb-4">
-                  <div className="btn-square rounded-circle bg-primary-light text-primary me-3" style={{ width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(23, 111, 181, 0.1)" }}>
+                  <div className="btn-square rounded-circle bg-primary-light text-primary me-3" style={{ width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(22, 107, 178, 0.1)" }}>
                     <i className="fa fa-calculator fa-lg"></i>
                   </div>
                   <div>
@@ -261,7 +261,7 @@ export default function EMICalculator() {
                         cy="80"
                         r={radius}
                         fill="transparent"
-                        stroke="#176FB5"
+                        stroke="#166bb2"
                         strokeWidth="14"
                         strokeDasharray={circumference}
                         strokeDashoffset={(interestPercentage / 100) * circumference}
@@ -291,7 +291,7 @@ export default function EMICalculator() {
                   {/* Chart Legend */}
                   <div className="text-start">
                     <div className="d-flex align-items-center mb-2">
-                      <span className="d-inline-block rounded-circle me-2" style={{ width: "12px", height: "12px", backgroundColor: "#176FB5" }}></span>
+                      <span className="d-inline-block rounded-circle me-2" style={{ width: "12px", height: "12px", backgroundColor: "#166bb2" }}></span>
                       <div>
                         <span className="d-block small text-muted" style={{ fontSize: "11px" }}>Principal ({principalPercentage.toFixed(0)}%)</span>
                         <strong className="text-dark">₹{amount.toLocaleString("en-IN")}</strong>
