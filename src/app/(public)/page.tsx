@@ -110,6 +110,28 @@ export default function HomePage() {
       </div>
       {/* Carousel End */}
 
+      {/* Cibil Score Call to Action Start */}
+      <div className="container-xxl py-5 mt-5">
+        <div className="container">
+          <div className="bg-primary rounded p-5 wow fadeInUp" data-wow-delay="0.1s">
+            <div className="row g-4 align-items-center">
+              <div className="col-lg-8">
+                <h1 className="display-5 text-white mb-3">Check Your CIBIL Score for Free</h1>
+                <p className="text-white mb-0" style={{ fontSize: "1.1rem", opacity: 0.9 }}>
+                  Get your detailed credit report securely in just 2 minutes. No impact on your score. A good CIBIL score helps you get better loan approvals and lower interest rates.
+                </p>
+              </div>
+              <div className="col-lg-4 text-lg-end">
+                <Link href="/check-cibil" className="btn btn-light rounded-pill py-3 px-5 fw-bold text-primary" style={{ fontSize: "1.1rem" }}>
+                  Check Score Now <i className="fa fa-arrow-right ms-2"></i>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Cibil Score Call to Action End */}
+
       {/* Services Section Start (Moved to Top) */}
       <div className="container-xxl service py-5">
         <div className="container">

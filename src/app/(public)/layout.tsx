@@ -164,6 +164,7 @@ export default function PublicLayout({
 
               <Link href="/emi-calculator" className={`nav-item nav-link ${pathname === "/emi-calculator" ? "active" : ""}`}>EMI Calculator</Link>
               <Link href="/bill-payment" className={`nav-item nav-link ${pathname === "/bill-payment" ? "active" : ""}`}>Bill Payments</Link>
+              <Link href="/check-cibil" className={`nav-item nav-link text-primary fw-bold ${pathname === "/check-cibil" ? "active" : ""}`}>Check CIBIL</Link>
             </div>
             <div className="d-none d-lg-flex ms-2">
               <a className="btn btn-light btn-sm-square rounded-circle ms-3" href={APP_CONFIG.socials.facebook} target="_blank" rel="noopener noreferrer">
@@ -209,6 +210,7 @@ export default function PublicLayout({
               <Link className="btn btn-link text-decoration-none" href="/privacy">Privacy Policy</Link>
               <Link className="btn btn-link text-decoration-none" href="/terms">Terms & Conditions</Link>
               <Link className="btn btn-link text-decoration-none" href="/emi-calculator">EMI Calculator</Link>
+              <Link className="btn btn-link text-decoration-none text-primary" href="/check-cibil">Check CIBIL Score</Link>
             </div>
             <div className="col-lg-2 col-md-6">
               <h4 className="text-white mb-4">Real Estate</h4>
