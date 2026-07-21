@@ -166,17 +166,6 @@ export default function PublicLayout({
               <Link href="/bill-payment" className={`nav-item nav-link ${pathname === "/bill-payment" ? "active" : ""}`}>Bill Payments</Link>
               <Link href="/check-cibil" className={`nav-item nav-link text-primary fw-bold ${pathname === "/check-cibil" ? "active" : ""}`}>Check CIBIL</Link>
             </div>
-            <div className="d-none d-lg-flex ms-2">
-              <a className="btn btn-light btn-sm-square rounded-circle ms-3" href={APP_CONFIG.socials.facebook} target="_blank" rel="noopener noreferrer">
-                <small className="fab fa-facebook-f text-primary"></small>
-              </a>
-              <a className="btn btn-light btn-sm-square rounded-circle ms-3" href={APP_CONFIG.socials.twitter} target="_blank" rel="noopener noreferrer">
-                <small className="fab fa-twitter text-primary"></small>
-              </a>
-              <a className="btn btn-light btn-sm-square rounded-circle ms-3" href={APP_CONFIG.socials.linkedin} target="_blank" rel="noopener noreferrer">
-                <small className="fab fa-linkedin-in text-primary"></small>
-              </a>
-            </div>
           </div>
         </nav>
       </div>
