@@ -318,16 +318,118 @@ export default function HomePage() {
       {/* Services Section End */}
 
       {/* Real Estate Featured Section Start */}
-      <div className="container-xxl py-5 bg-white">
+      <div className="container-fluid bg-light py-5">
         <div className="container py-5">
-          <div className="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: "600px" }}>
-            <p className="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Real Estate Projects</p>
-            <h2 className="display-6 mb-4">Discover Your Dream Property</h2>
-            <p className="text-muted">Explore our curated selection of premium residential and commercial properties.</p>
+          <div className="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: "700px" }}>
+            <p className="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Real Estate & Properties</p>
+            <h2 className="display-5 mb-4 fw-bold">Explore Premium Real Estate Types</h2>
+            <p className="text-muted fs-5">Whether you're looking for a dream home, a lucrative commercial space, or a long-term investment, we have curated the best properties for you.</p>
           </div>
+
+          <div className="row g-4 justify-content-center mb-5">
+            {/* Residential */}
+            <div className="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+              <div className="property-type-card bg-white rounded shadow-sm overflow-hidden h-100 position-relative" style={{ transition: "all 0.3s ease" }}>
+                <div className="position-relative overflow-hidden" style={{ height: "200px" }}>
+                  <img src="/img/projects/carousel-1.jpg" alt="Residential" className="w-100 h-100" style={{ objectFit: "cover" }} onError={(e) => (e.currentTarget.src = "/img/loans_service.png")} />
+                  <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark" style={{ opacity: "0.2" }}></div>
+                  <div className="position-absolute bottom-0 start-0 p-3">
+                    <span className="badge bg-primary rounded-pill mb-2 px-3 py-2 shadow-sm">Popular</span>
+                  </div>
+                </div>
+                <div className="p-4 text-center">
+                  <div className="btn-square bg-primary text-white rounded-circle mx-auto mb-3 shadow" style={{ width: "70px", height: "70px", marginTop: "-55px", position: "relative", zIndex: 1, border: "5px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <i className="fa fa-home fa-2x"></i>
+                  </div>
+                  <h4 className="mb-3 fw-bold text-dark">Residential</h4>
+                  <p className="text-muted mb-4" style={{ fontSize: "14px" }}>Luxury villas, modern apartments, and cozy independent houses tailored to fit your family's lifestyle.</p>
+                  <ul className="list-unstyled text-start mb-4 text-muted small px-2">
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> 2/3/4 BHK Apartments</li>
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Independent Villas</li>
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Gated Communities</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Commercial */}
+            <div className="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
+              <div className="property-type-card bg-white rounded shadow-sm overflow-hidden h-100 position-relative" style={{ transition: "all 0.3s ease" }}>
+                <div className="position-relative overflow-hidden" style={{ height: "200px" }}>
+                  <img src="/img/finance.png" alt="Commercial" className="w-100 h-100" style={{ objectFit: "cover" }} onError={(e) => (e.currentTarget.src = "/img/loans_service.png")} />
+                  <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark" style={{ opacity: "0.2" }}></div>
+                  <div className="position-absolute bottom-0 start-0 p-3">
+                    <span className="badge bg-danger rounded-pill mb-2 px-3 py-2 shadow-sm">High ROI</span>
+                  </div>
+                </div>
+                <div className="p-4 text-center">
+                  <div className="btn-square bg-primary text-white rounded-circle mx-auto mb-3 shadow" style={{ width: "70px", height: "70px", marginTop: "-55px", position: "relative", zIndex: 1, border: "5px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <i className="fa fa-building fa-2x"></i>
+                  </div>
+                  <h4 className="mb-3 fw-bold text-dark">Commercial</h4>
+                  <p className="text-muted mb-4" style={{ fontSize: "14px" }}>Premium office spaces, retail shops, and co-working spaces in prime business districts.</p>
+                  <ul className="list-unstyled text-start mb-4 text-muted small px-2">
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> IT Parks & Offices</li>
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Retail Shops & Malls</li>
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Warehouses</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Plots & Land */}
+            <div className="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+              <div className="property-type-card bg-white rounded shadow-sm overflow-hidden h-100 position-relative" style={{ transition: "all 0.3s ease" }}>
+                <div className="position-relative overflow-hidden" style={{ height: "200px" }}>
+                  <img src="/img/projects/carousel-1.jpg" alt="Plots" className="w-100 h-100" style={{ objectFit: "cover" }} onError={(e) => (e.currentTarget.src = "/img/loans_service.png")} />
+                  <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark" style={{ opacity: "0.2" }}></div>
+                </div>
+                <div className="p-4 text-center">
+                  <div className="btn-square bg-primary text-white rounded-circle mx-auto mb-3 shadow" style={{ width: "70px", height: "70px", marginTop: "-55px", position: "relative", zIndex: 1, border: "5px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <i className="fa fa-map-marked-alt fa-2x"></i>
+                  </div>
+                  <h4 className="mb-3 fw-bold text-dark">Plots & Land</h4>
+                  <p className="text-muted mb-4" style={{ fontSize: "14px" }}>Invest in open residential plots, agricultural land, or industrial plots for long-term secure wealth generation.</p>
+                  <ul className="list-unstyled text-start mb-4 text-muted small px-2">
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Residential Plots</li>
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Agricultural Land</li>
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Industrial Land</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Luxury Properties */}
+            <div className="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.4s">
+              <div className="property-type-card bg-white rounded shadow-sm overflow-hidden h-100 position-relative" style={{ transition: "all 0.3s ease" }}>
+                <div className="position-relative overflow-hidden" style={{ height: "200px" }}>
+                  <img src="/img/finance_wealth.png" alt="Luxury" className="w-100 h-100" style={{ objectFit: "cover" }} onError={(e) => (e.currentTarget.src = "/img/loans_service.png")} />
+                  <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark" style={{ opacity: "0.2" }}></div>
+                  <div className="position-absolute bottom-0 start-0 p-3">
+                    <span className="badge bg-warning text-dark rounded-pill mb-2 px-3 py-2 shadow-sm">Premium</span>
+                  </div>
+                </div>
+                <div className="p-4 text-center">
+                  <div className="btn-square bg-primary text-white rounded-circle mx-auto mb-3 shadow" style={{ width: "70px", height: "70px", marginTop: "-55px", position: "relative", zIndex: 1, border: "5px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <i className="fa fa-crown fa-2x"></i>
+                  </div>
+                  <h4 className="mb-3 fw-bold text-dark">Luxury Estates</h4>
+                  <p className="text-muted mb-4" style={{ fontSize: "14px" }}>Exclusive penthouses, farmhouses, and ultra-luxury estates with world-class amenities and breathtaking views.</p>
+                  <ul className="list-unstyled text-start mb-4 text-muted small px-2">
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Sea-facing Penthouses</li>
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Premium Farmhouses</li>
+                    <li className="mb-2"><i className="fa fa-check-circle text-primary me-2"></i> Smart Homes</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="row g-4 text-center">
-            <div className="col-12 wow fadeInUp" data-wow-delay="0.3s">
-               <Link href="/projects" className="btn btn-primary py-3 px-5 rounded-pill shadow-sm">View All Projects <i className="fa fa-arrow-right ms-2"></i></Link>
+            <div className="col-12 wow fadeInUp" data-wow-delay="0.5s">
+              <Link href="/projects" className="btn btn-primary py-3 px-5 rounded-pill shadow-sm fw-bold">
+                View All Property Listings <i className="fa fa-arrow-right ms-2"></i>
+              </Link>
             </div>
           </div>
         </div>
@@ -335,7 +437,7 @@ export default function HomePage() {
       {/* Real Estate Featured Section End */}
 
       {/* Loans Showcase Section Start */}
-      <div className="container-fluid bg-light py-5">
+      <div className="container-fluid bg-white py-5">
         <div className="container py-5">
           <div className="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: "600px" }}>
             <p className="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Loan Products</p>
@@ -344,7 +446,7 @@ export default function HomePage() {
           </div>
           <div className="row g-4">
             <div className="col-md-4 wow fadeInUp" data-wow-delay="0.1s">
-              <div className="p-4 bg-white rounded shadow-sm h-100">
+              <div className="p-4 bg-light rounded shadow-sm h-100 border">
                 <h5>Personal Loans</h5>
                 <p className="text-muted">Unsecured, collateral-free credit for personal emergencies, medical needs, or travel.</p>
                 <div className="d-flex justify-content-between align-items-center mt-4">
@@ -354,7 +456,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="col-md-4 wow fadeInUp" data-wow-delay="0.2s">
-              <div className="p-4 bg-white rounded shadow-sm h-100">
+              <div className="p-4 bg-light rounded shadow-sm h-100 border">
                 <h5>Home Loans</h5>
                 <p className="text-muted">Fulfill your homeownership dreams with long terms up to 30 years and floating interest rates.</p>
                 <div className="d-flex justify-content-between align-items-center mt-4">
@@ -364,7 +466,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="col-md-4 wow fadeInUp" data-wow-delay="0.3s">
-              <div className="p-4 bg-white rounded shadow-sm h-100">
+              <div className="p-4 bg-light rounded shadow-sm h-100 border">
                 <h5>Business Loans</h5>
                 <p className="text-muted">Capitalize your retail outlet, buy inventory, or expand workspace with zero collateral.</p>
                 <div className="d-flex justify-content-between align-items-center mt-4">
