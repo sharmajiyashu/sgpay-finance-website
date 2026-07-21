@@ -86,6 +86,20 @@ export default function PublicLayout({
             <div className="navbar-nav ms-auto p-4 p-lg-0">
               <Link href="/" className={`nav-item nav-link ${pathname === "/" ? "active" : ""}`}>Home</Link>
 
+              {/* Projects Dropdown */}
+              <div className="nav-item dropdown">
+                <Link href="/projects" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Projects</Link>
+                <div className="dropdown-menu border-0 shadow-sm m-0">
+                  <Link href="/projects" className="dropdown-item fw-bold text-primary border-bottom">View All Projects</Link>
+                  <Link href="/projects?filter=Residential" className="dropdown-item">Residential</Link>
+                  <Link href="/projects?filter=Commercial" className="dropdown-item">Commercial</Link>
+                  <Link href="/projects?filter=Villa" className="dropdown-item">Villas</Link>
+                  <Link href="/projects?filter=Plots" className="dropdown-item">Plots</Link>
+                  <Link href="/projects?filter=Luxury Homes" className="dropdown-item">Luxury Homes</Link>
+                  <Link href="/projects?filter=Farm Houses" className="dropdown-item">Farm Houses</Link>
+                </div>
+              </div>
+
               {/* Loans Dropdown */}
               <div className="nav-item dropdown">
                 <Link href="/loans" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Loans</Link>
@@ -150,7 +164,6 @@ export default function PublicLayout({
 
               <Link href="/emi-calculator" className={`nav-item nav-link ${pathname === "/emi-calculator" ? "active" : ""}`}>EMI Calculator</Link>
               <Link href="/bill-payment" className={`nav-item nav-link ${pathname === "/bill-payment" ? "active" : ""}`}>Bill Payments</Link>
-              <Link href="/contact" className={`nav-item nav-link ${pathname === "/contact" ? "active" : ""}`}>Contact</Link>
             </div>
             <div className="d-none d-lg-flex ms-2">
               <a className="btn btn-light btn-sm-square rounded-circle ms-3" href={APP_CONFIG.socials.facebook} target="_blank" rel="noopener noreferrer">
@@ -198,6 +211,13 @@ export default function PublicLayout({
               <Link className="btn btn-link text-decoration-none" href="/emi-calculator">EMI Calculator</Link>
             </div>
             <div className="col-lg-2 col-md-6">
+              <h4 className="text-white mb-4">Real Estate</h4>
+              <Link className="btn btn-link text-decoration-none" href="/projects">Projects</Link>
+              <Link className="btn btn-link text-decoration-none" href="/projects?filter=Residential">Residential</Link>
+              <Link className="btn btn-link text-decoration-none" href="/projects?filter=Commercial">Commercial</Link>
+              <Link className="btn btn-link text-decoration-none" href="/projects?filter=Plots">Plots</Link>
+            </div>
+            <div className="col-lg-2 col-md-6">
               <h4 className="text-white mb-4">Our Services</h4>
               <Link className="btn btn-link text-decoration-none" href="/loans">Loans</Link>
               <Link className="btn btn-link text-decoration-none" href="/finance">Finance & Wealth</Link>
@@ -206,15 +226,7 @@ export default function PublicLayout({
               <Link className="btn btn-link text-decoration-none" href="/finance/credit-card">Credit Cards</Link>
               <Link className="btn btn-link text-decoration-none" href="/contact">Dealer Website</Link>
             </div>
-            <div className="col-lg-2 col-md-6">
-              <h4 className="text-white mb-4">Loans List</h4>
-              <Link className="btn btn-link text-decoration-none" href="/loans/personal-loan">Personal Loan</Link>
-              <Link className="btn btn-link text-decoration-none" href="/loans/home-loan">Home Loan</Link>
-              <Link className="btn btn-link text-decoration-none" href="/loans/business-loan">Business Loan</Link>
-              <Link className="btn btn-link text-decoration-none" href="/loans/education-loan">Education Loan</Link>
-              <Link className="btn btn-link text-decoration-none" href="/loans/gold-loan">Gold Loan</Link>
-              <Link className="btn btn-link text-decoration-none" href="/loans/vehicle-loan">Vehicle Loan</Link>
-            </div>
+
             <div className="col-lg-3 col-md-6">
               <h4 className="text-white mb-4">Finance & Insurance</h4>
               <Link className="btn btn-link text-decoration-none" href="/finance/insurance">Insurance Products</Link>

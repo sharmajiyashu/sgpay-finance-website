@@ -181,8 +181,11 @@ export default function HomePage() {
                 <button className="nav-link w-100 d-flex align-items-center text-start border p-3 mb-3" data-bs-toggle="pill" data-bs-target="#tab-pane-5" type="button">
                   <h5 className="m-0"><i className="fa fa-credit-card text-primary me-3"></i>Credit Cards</h5>
                 </button>
-                <button className="nav-link w-100 d-flex align-items-center text-start border p-3 mb-0" data-bs-toggle="pill" data-bs-target="#tab-pane-6" type="button">
+                <button className="nav-link w-100 d-flex align-items-center text-start border p-3 mb-3" data-bs-toggle="pill" data-bs-target="#tab-pane-6" type="button">
                   <h5 className="m-0"><i className="fa fa-laptop-code text-primary me-3"></i>Dealer Website</h5>
+                </button>
+                <button className="nav-link w-100 d-flex align-items-center text-start border p-3 mb-0" data-bs-toggle="pill" data-bs-target="#tab-pane-7" type="button">
+                  <h5 className="m-0"><i className="fa fa-building text-primary me-3"></i>Real Estate</h5>
                 </button>
               </div>
             </div>
@@ -290,12 +293,46 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
+                <div className="tab-pane fade" id="tab-pane-7">
+                  <div className="row g-4">
+                    <div className="col-md-6" style={{ minHeight: "350px" }}>
+                      <div className="position-relative h-100">
+                        <img className="position-absolute rounded w-100 h-100" src="/img/projects/carousel-1.jpg" style={{ objectFit: "cover" }} alt="Real Estate Projects" onError={(e) => (e.currentTarget.src = "/img/loans_service.png")} />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <h3 className="mb-4">Premium Real Estate Projects</h3>
+                      <p className="mb-4">Explore luxury villas, modern apartments, and commercial spaces tailored to your lifestyle. We connect you with verified builders and exclusive properties.</p>
+                      <p><i className="fa fa-check text-primary me-3"></i>Verified Builders</p>
+                      <p><i className="fa fa-check text-primary me-3"></i>RERA Approved Properties</p>
+                      <p><i className="fa fa-check text-primary me-3"></i>Luxury & Commercial Spaces</p>
+                      <Link href="/projects" className="btn btn-primary py-3 px-5 mt-3">View Projects &rarr;</Link>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
       {/* Services Section End */}
+
+      {/* Real Estate Featured Section Start */}
+      <div className="container-xxl py-5 bg-white">
+        <div className="container py-5">
+          <div className="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: "600px" }}>
+            <p className="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Real Estate Projects</p>
+            <h2 className="display-6 mb-4">Discover Your Dream Property</h2>
+            <p className="text-muted">Explore our curated selection of premium residential and commercial properties.</p>
+          </div>
+          <div className="row g-4 text-center">
+            <div className="col-12 wow fadeInUp" data-wow-delay="0.3s">
+               <Link href="/projects" className="btn btn-primary py-3 px-5 rounded-pill shadow-sm">View All Projects <i className="fa fa-arrow-right ms-2"></i></Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Real Estate Featured Section End */}
 
       {/* Loans Showcase Section Start */}
       <div className="container-fluid bg-light py-5">
