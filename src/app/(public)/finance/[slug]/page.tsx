@@ -4,6 +4,7 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { FINANCE_SERVICES } from "@/data/servicesData";
 import { notFound } from "next/navigation";
+import { ChoiceCreditCardWidget } from "@/components/ChoiceCreditCardWidget";
 
 export default function FinanceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -51,7 +52,7 @@ export default function FinanceDetailPage({ params }: { params: Promise<{ slug: 
         <div className="container">
           <div className="row g-5">
             {/* Left Content Column */}
-            <div className="col-lg-7 wow fadeInUp" data-wow-delay="0.1s">
+            <div className={slug === "credit-card" ? "col-lg-12 wow fadeInUp" : "col-lg-7 wow fadeInUp"} data-wow-delay="0.1s">
               <div className="mb-5">
                 <p className="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Finance Services</p>
                 <h2 className="display-6 mb-4">Secure & Optimize Your Financial Assets</h2>
@@ -140,73 +141,88 @@ export default function FinanceDetailPage({ params }: { params: Promise<{ slug: 
             </div>
 
             {/* Right Application Form Sidebar */}
-            <div className="col-lg-5 wow fadeInUp" data-wow-delay="0.3s">
-              <div className="position-sticky bg-light p-4 rounded border" style={{ top: "100px" }}>
-                <h4 className="mb-3 text-center">Inquire / Consult</h4>
-                <p className="text-muted text-center small mb-4">Request a consultation with our financial advisory team regarding {service.title}.</p>
+            {slug !== "credit-card" && (
+              <div className="col-lg-5 wow fadeInUp" data-wow-delay="0.3s">
+                <div className="position-sticky bg-light p-4 rounded border" style={{ top: "100px" }}>
+                  <h4 className="mb-3 text-center">Inquire / Consult</h4>
+                  <p className="text-muted text-center small mb-4">Request a consultation with our financial advisory team regarding {service.title}.</p>
 
-                {submitted ? (
-                  <div className="alert alert-success text-center py-4" role="alert">
-                    <i className="fa fa-check-circle fa-3x text-success mb-3"></i>
-                    <h5 className="alert-heading">Inquiry Submitted!</h5>
-                    <p className="small mb-0">Thank you. An advisor will review your profile and reach out within 24 hours.</p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                      <label htmlFor="name" className="form-label small fw-medium">Your Name</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="name"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="John Doe"
-                      />
+                  {submitted ? (
+                    <div className="alert alert-success text-center py-4" role="alert">
+                      <i className="fa fa-check-circle fa-3x text-success mb-3"></i>
+                      <h5 className="alert-heading">Inquiry Submitted!</h5>
+                      <p className="small mb-0">Thank you. An advisor will review your profile and reach out within 24 hours.</p>
                     </div>
-                    <div className="mb-3">
-                      <label htmlFor="email" className="form-label small fw-medium">Email Address</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        id="email"
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="john@example.com"
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="phone" className="form-label small fw-medium">Phone Number</label>
-                      <input
-                        type="tel"
-                        className="form-control"
-                        id="phone"
-                        required
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+91 98871 XXXXX"
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label htmlFor="message" className="form-label small fw-medium">Message / Detail Requirement</label>
-                      <textarea
-                        className="form-control"
-                        id="message"
-                        rows={4}
-                        required
-                        value={formData.message}
-                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        placeholder="Please describe your financial goals or questions..."
-                      ></textarea>
-                    </div>
-                    <button type="submit" className="btn btn-primary w-100 py-3">Submit Consultation Request</button>
-                  </form>
-                )}
+                  ) : (
+                    <form onSubmit={handleSubmit}>
+                      <div className="mb-3">
+                        <label htmlFor="name" className="form-label small fw-medium">Your Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="name"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="email" className="form-label small fw-medium">Email Address</label>
+                        <input
+                          type="email"
+                          className="form-control"
+                          id="email"
+                          required
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="john@example.com"
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="phone" className="form-label small fw-medium">Phone Number</label>
+                        <input
+                          type="tel"
+                          className="form-control"
+                          id="phone"
+                          required
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="+91 98871 XXXXX"
+                        />
+                      </div>
+                      <div className="mb-4">
+                        <label htmlFor="message" className="form-label small fw-medium">Message / Detail Requirement</label>
+                        <textarea
+                          className="form-control"
+                          id="message"
+                          rows={4}
+                          required
+                          value={formData.message}
+                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                          placeholder="Please describe your financial goals or questions..."
+                        ></textarea>
+                      </div>
+                      <button type="submit" className="btn btn-primary w-100 py-3">Submit Consultation Request</button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Full Width Widget for Credit Card */}
+          {slug === "credit-card" && (
+            <div className="row mt-5 wow fadeInUp" data-wow-delay="0.5s">
+              <div className="col-12">
+                <div className="bg-light p-4 rounded border">
+                  <h4 className="mb-3 text-center">Apply for Credit Card</h4>
+                  <p className="text-muted text-center small mb-4">Complete your application securely via Choice Connect.</p>
+                  <ChoiceCreditCardWidget />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
       {/* Main Details End */}

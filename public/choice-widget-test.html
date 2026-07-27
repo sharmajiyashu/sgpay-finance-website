@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect Credit Card Widget Test</title>
+</head>
+
+<body>
+  <h2>Choice Connect Widget Test</h2>
+  <p>Testing with UAT Credentials...</p>
+  <!-- Widget Container -->
+  <div id="creditCardWidgetContainer" style="min-height: 400px; border: 1px solid #ccc; padding: 20px;"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      let scriptElement = null;
+
+      // Function to load and initialize the widget 
+      function initializeWidgetScript() {
+        scriptElement = document.createElement("script");
+
+        // UAT Base URL
+        scriptElement.src = "https://embed-uat.choiceconnect.in/widget/widget.js";
+
+        scriptElement.onload = () => {
+          console.log("Widget script loaded successfully!");
+          initializeWidget();
+        };
+
+        // Add error handling to show on screen if it fails
+        scriptElement.onerror = (err) => {
+          console.error("Failed to load widget script. URL returned 404.", err);
+          document.getElementById("creditCardWidgetContainer").innerHTML =
+            "<h3 style='color:red;'>Error 404: Failed to load widget script!</h3>" +
+            "<p>The URL <b>https://apidev.choiceconnect.in/widget/widget.js</b> does not exist on the server.</p>" +
+            "<p>Please ask the Choice Connect team for the correct widget script URL for the UAT environment.</p>";
+        };
+
+        document.body.appendChild(scriptElement);
+      }
+
+      // Function to configure and initialize the widget 
+      function initializeWidget() {
+        const config = {
+          theme: {
+            mode: "light",
+            options: {
+              palette: {
+                primary: { main: "#0F2B40" },
+                secondary: { main: "#265BFF" },
+                background: { default: "#F5F5F5" },
+              }
+            },
+          },
+          partner_config: {
+            CLIENT_CODE: "t girshapay", // Your UAT Partner ID
+            SOURCE: "PARTNER_WEB",
+            UUID: "",
+            AGENT_CODE: "",
+            SUB_AGENT_CODE: "",
+          },
+        };
+
+        // Initialize the widget if available 
+        if (typeof window.CreditCardWidget !== "undefined") {
+          window.CreditCardWidget("creditCardWidgetContainer", config);
+        } else {
+          console.error("CreditCardWidget is not defined on window object.");
+        }
+      }
+
+      // Function to clean up when the page unloads 
+      function cleanUp() {
+        if (scriptElement && document.body.contains(scriptElement)) {
+          document.body.removeChild(scriptElement);
+          scriptElement = null;
+        }
+      }
+
+      // Add event listener for page unload 
+      window.addEventListener("beforeunload", cleanUp);
+
+      // Start widget initialization 
+      initializeWidgetScript();
+    }); 
+  </script>
+</body>
+
+</html>
