@@ -4,7 +4,11 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { FINANCE_SERVICES } from "@/data/servicesData";
 import { notFound } from "next/navigation";
-import { ChoiceCreditCardWidget } from "@/components/ChoiceCreditCardWidget";
+import dynamic from "next/dynamic";
+const ChoiceCreditCardWidget = dynamic(
+  () => import("@/components/ChoiceCreditCardWidget").then((mod) => mod.ChoiceCreditCardWidget),
+  { ssr: false }
+);
 
 export default function FinanceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);

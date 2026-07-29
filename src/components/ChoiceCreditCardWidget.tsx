@@ -19,6 +19,14 @@ export function ChoiceCreditCardWidget({ uuid = "" }: ChoiceCreditCardWidgetProp
     const subAgentCode = process.env.NEXT_PUBLIC_CHOICE_CONNECT_SUB_AGENT_CODE || "";
 
     const initializeWidget = () => {
+      const partner_config: any = {
+        CLIENT_CODE: clientCode,
+        SOURCE: "PARTNER_WEB",
+        AGENT_CODE: agentCode,
+      };
+      if (uuid) partner_config.UUID = uuid;
+      if (subAgentCode) partner_config.SUB_AGENT_CODE = subAgentCode;
+
       const config = {
         theme: {
           mode: "light",
@@ -30,13 +38,7 @@ export function ChoiceCreditCardWidget({ uuid = "" }: ChoiceCreditCardWidgetProp
             }
           },
         },
-        partner_config: {
-          CLIENT_CODE: clientCode,
-          SOURCE: "PARTNER_WEB",
-          UUID: uuid,
-          AGENT_CODE: agentCode,
-          SUB_AGENT_CODE: subAgentCode,
-        },
+        partner_config,
       };
 
       // Ensure widget is loaded
@@ -54,7 +56,7 @@ export function ChoiceCreditCardWidget({ uuid = "" }: ChoiceCreditCardWidgetProp
 
       scriptElement = document.createElement("script");
       scriptElement.id = "choice-credit-card-widget-script";
-      scriptElement.src = `${widgetBaseUrl}/widget/widget.js`;
+      scriptElement.src = "https://embed-uat.choiceconnect.in/widget/widget.js";
       scriptElement.async = true;
       scriptElement.onload = () => {
         initializeWidget();
