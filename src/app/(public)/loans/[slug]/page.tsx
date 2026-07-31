@@ -4,6 +4,12 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { LOAN_PRODUCTS } from "@/data/servicesData";
 import { notFound } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const ChoiceLoanWidget = dynamic(
+  () => import("@/components/ChoiceLoanWidget").then((mod) => mod.ChoiceLoanWidget),
+  { ssr: false }
+);
 
 export default function LoanDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -39,7 +45,7 @@ export default function LoanDetailPage({ params }: { params: Promise<{ slug: str
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb justify-content-center mb-0">
               <li className="breadcrumb-item"><Link className="text-dark" href="/">Home</Link></li>
-              <li className="breadcrumb-item"><Link className="text-dark" href="/service">Services</Link></li>
+              <li className="breadcrumb-item"><Link className="text-dark" href="/loans">Loans</Link></li>
               <li className="breadcrumb-item active text-primary" aria-current="page">{loan.title}</li>
             </ol>
           </nav>
@@ -245,9 +251,21 @@ export default function LoanDetailPage({ params }: { params: Promise<{ slug: str
               </div>
             </div>
           </div>
+
+          {/* Full Width Choice Connect Loan Widget */}
+          <div className="row mt-5 wow fadeInUp" data-wow-delay="0.5s">
+            <div className="col-12">
+              <div className="bg-light p-4 rounded border">
+                <h4 className="mb-3 text-center">Instant Digital Application ({loan.title})</h4>
+                <p className="text-muted text-center small mb-4">Complete your loan application online via Choice Connect digital journey.</p>
+                <ChoiceLoanWidget productType={loan.slug} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       {/* Main Details End */}
     </>
   );
 }
+

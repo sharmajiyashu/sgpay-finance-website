@@ -2,17 +2,17 @@
 
 import React, { useEffect, useRef } from "react";
 
-interface ChoiceCreditCardWidgetProps {
+interface ChoiceLoanWidgetProps {
   uuid?: string; // Lead id, optional for new customer journey
+  productType?: string; // loan product slug/type
 }
 
-export function ChoiceCreditCardWidget({ uuid = "" }: ChoiceCreditCardWidgetProps) {
+export function ChoiceLoanWidget({ uuid = "", productType = "personal-loan" }: ChoiceLoanWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let scriptElement: HTMLScriptElement | null = null;
 
-    // We use the environment variable if present, otherwise fallback to default
     const widgetBaseUrl = process.env.NEXT_PUBLIC_CHOICE_CONNECT_WIDGET_BASE_URL || "https://embed-uat.choiceconnect.in";
     const clientCode = process.env.NEXT_PUBLIC_CHOICE_CONNECT_CLIENT_CODE || "t girshapay";
     const agentCode = process.env.NEXT_PUBLIC_CHOICE_CONNECT_AGENT_CODE || "";
@@ -23,6 +23,7 @@ export function ChoiceCreditCardWidget({ uuid = "" }: ChoiceCreditCardWidgetProp
         CLIENT_CODE: clientCode,
         SOURCE: "PARTNER_WEB",
         AGENT_CODE: agentCode,
+        PRODUCT_TYPE: productType,
       };
       if (uuid) partner_config.UUID = uuid;
       if (subAgentCode) partner_config.SUB_AGENT_CODE = subAgentCode;
@@ -41,22 +42,25 @@ export function ChoiceCreditCardWidget({ uuid = "" }: ChoiceCreditCardWidgetProp
         partner_config,
       };
 
-      // Ensure widget is loaded
-      if (typeof window !== "undefined" && (window as any).CreditCardWidget) {
-        (window as any).CreditCardWidget("creditCardWidgetContainer", config);
+      // Ensure loan widget or general widget is loaded
+      if (typeof window !== "undefined") {
+        if ((window as any).LoanWidget) {
+          (window as any).LoanWidget("loanWidgetContainer", config);
+        } else if ((window as any).CreditCardWidget) {
+          (window as any).CreditCardWidget("loanWidgetContainer", config);
+        }
       }
     };
 
     const loadWidgetScript = () => {
-      // Prevent multiple injections
-      if (document.getElementById("choice-credit-card-widget-script")) {
+      if (document.getElementById("choice-loan-widget-script")) {
         initializeWidget();
         return;
       }
 
       scriptElement = document.createElement("script");
-      scriptElement.id = "choice-credit-card-widget-script";
-      scriptElement.src = "https://embed-uat.choiceconnect.in/widget/widget.js";
+      scriptElement.id = "choice-loan-widget-script";
+      scriptElement.src = `${widgetBaseUrl}/widget/widget.js`;
       scriptElement.async = true;
       scriptElement.onload = () => {
         initializeWidget();
@@ -72,12 +76,12 @@ export function ChoiceCreditCardWidget({ uuid = "" }: ChoiceCreditCardWidgetProp
         containerRef.current.innerHTML = "";
       }
     };
-  }, [uuid]);
+  }, [uuid, productType]);
 
   return (
     <div className="choice-widget-wrapper border rounded shadow-sm bg-white p-2 w-100">
-      <div id="creditCardWidgetContainer" ref={containerRef} style={{ minHeight: "400px" }}>
-        {/* The Choice Connect widget will render here */}
+      <div id="loanWidgetContainer" ref={containerRef} style={{ minHeight: "450px" }}>
+        {/* The Choice Connect Loan widget will render here */}
       </div>
     </div>
   );
