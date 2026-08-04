@@ -1,8 +1,44 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      await submitPublicEnquiry(
+        buildEnquiryPayload("contact", "contact", {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          pageUrl: "/contact",
+          message: formData.message.trim(),
+        })
+      );
+      setSubmitted(true);
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit enquiry");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <>
       {/* Page Header Start */}
@@ -71,26 +107,72 @@ export default function ContactPage() {
             <div className="col-lg-7">
               <div className="card shadow-sm border rounded-4 p-4 p-md-5 bg-white">
                 <h4 className="fw-bold text-dark mb-4">Send Us A Message</h4>
-                <form onSubmit={(e) => { e.preventDefault(); alert("Thank you! Your query has been submitted."); }}>
+                {submitted && (
+                  <div className="alert alert-success mb-4">
+                    Thank you! Your enquiry has been submitted successfully.
+                  </div>
+                )}
+                {error && (
+                  <div className="alert alert-danger mb-4">{error}</div>
+                )}
+                <form onSubmit={handleSubmit}>
                   <div className="row g-3">
                     <div className="col-md-6">
                       <label htmlFor="name" className="form-label small fw-bold text-secondary">Your Name</label>
-                      <input type="text" className="form-control border py-3" id="name" placeholder="Enter your name" required />
+                      <input
+                        type="text"
+                        className="form-control border py-3"
+                        id="name"
+                        placeholder="Enter your name"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                      />
                     </div>
                     <div className="col-md-6">
                       <label htmlFor="email" className="form-label small fw-bold text-secondary">Your Email</label>
-                      <input type="email" className="form-control border py-3" id="email" placeholder="name@example.com" required />
+                      <input
+                        type="email"
+                        className="form-control border py-3"
+                        id="email"
+                        placeholder="name@example.com"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+                      />
                     </div>
                     <div className="col-12">
                       <label htmlFor="subject" className="form-label small fw-bold text-secondary">Subject</label>
-                      <input type="text" className="form-control border py-3" id="subject" placeholder="What is this about?" required />
+                      <input
+                        type="text"
+                        className="form-control border py-3"
+                        id="subject"
+                        placeholder="What is this about?"
+                        required
+                        value={formData.subject}
+                        onChange={(e) => setFormData((p) => ({ ...p, subject: e.target.value }))}
+                      />
                     </div>
                     <div className="col-12">
                       <label htmlFor="message" className="form-label small fw-bold text-secondary">Message</label>
-                      <textarea className="form-control border py-3" id="message" rows={4} placeholder="Leave your message here..." required></textarea>
+                      <textarea
+                        className="form-control border py-3"
+                        id="message"
+                        rows={4}
+                        placeholder="Leave your message here..."
+                        required
+                        value={formData.message}
+                        onChange={(e) => setFormData((p) => ({ ...p, message: e.target.value }))}
+                      />
                     </div>
                     <div className="col-12 pt-2">
-                      <button className="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm" type="submit">Submit Request</button>
+                      <button
+                        className="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm"
+                        type="submit"
+                        disabled={loading}
+                      >
+                        {loading ? "Submitting..." : "Submit Request"}
+                      </button>
                     </div>
                   </div>
                 </form>

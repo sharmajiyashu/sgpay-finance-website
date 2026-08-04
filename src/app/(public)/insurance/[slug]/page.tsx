@@ -4,6 +4,8 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { INSURANCE_SERVICES } from "@/data/servicesData";
 import { notFound } from "next/navigation";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
 export default function InsuranceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -22,12 +24,31 @@ export default function InsuranceDetailPage({ params }: { params: Promise<{ slug
     nominee: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", age: "", nominee: "" });
+    setLoading(true);
+    setError(null);
+    try {
+      await submitPublicEnquiry(
+        buildEnquiryPayload("insurance", slug, {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          pageUrl: `/insurance/${slug}`,
+          message: `Age: ${formData.age}. Nominee: ${formData.nominee}. Enquiry for ${plan.title}`,
+        })
+      );
+      setSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", age: "", nominee: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit enquiry");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

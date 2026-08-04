@@ -5,8 +5,13 @@ import Link from "next/link";
 import { FINANCE_SERVICES } from "@/data/servicesData";
 import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 const ChoiceCreditCardWidget = dynamic(
-  () => import("@/components/ChoiceCreditCardWidget").then((mod) => mod.ChoiceCreditCardWidget),
+  () =>
+    import("@/components/choice-connect/ChoiceConnectWebsiteApply").then(
+      (mod) => mod.ChoiceConnectWebsiteApply
+    ),
   { ssr: false }
 );
 
@@ -26,12 +31,31 @@ export default function FinanceDetailPage({ params }: { params: Promise<{ slug: 
     message: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", message: "" });
+    setLoading(true);
+    setError(null);
+    try {
+      await submitPublicEnquiry(
+        buildEnquiryPayload("finance", slug, {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          pageUrl: `/finance/${slug}`,
+          message: formData.message.trim() || `Enquiry for ${service.title}`,
+        })
+      );
+      setSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit enquiry");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -221,7 +245,9 @@ export default function FinanceDetailPage({ params }: { params: Promise<{ slug: 
               <div className="col-12">
                 <div className="bg-light p-4 rounded border">
                   <h4 className="mb-3 text-center">Apply for Credit Card</h4>
-                  <p className="text-muted text-center small mb-4">Complete your application securely via Choice Connect.</p>
+                  <p className="text-muted text-center small mb-4">
+                    Complete your application securely via Choice Connect.
+                  </p>
                   <ChoiceCreditCardWidget />
                 </div>
               </div>

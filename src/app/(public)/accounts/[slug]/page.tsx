@@ -4,6 +4,8 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { ACCOUNT_SERVICES } from "@/data/servicesData";
 import { notFound } from "next/navigation";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
 export default function AccountDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -22,12 +24,31 @@ export default function AccountDetailPage({ params }: { params: Promise<{ slug: 
     aadhaar: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", pan: "", aadhaar: "" });
+    setLoading(true);
+    setError(null);
+    try {
+      await submitPublicEnquiry(
+        buildEnquiryPayload("accounts", slug, {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          pageUrl: `/accounts/${slug}`,
+          message: `PAN: ${formData.pan}. Aadhaar: ${formData.aadhaar}. Enquiry for ${account.title}`,
+        })
+      );
+      setSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", pan: "", aadhaar: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit enquiry");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

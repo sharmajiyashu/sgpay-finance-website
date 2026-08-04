@@ -4,12 +4,43 @@ import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { mockProjects } from "@/data/projects";
 import { motion } from "framer-motion";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
 export default function ProjectDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const project = mockProjects.find((p) => p.slug === slug);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [formData, setFormData] = useState({ name: "", email: "", mobile: "", message: "" });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleEnquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!project) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await submitPublicEnquiry(
+        buildEnquiryPayload("projects", slug, {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.mobile.trim(),
+          pageUrl: `/projects/${slug}`,
+          message: formData.message.trim() || `Enquiry for ${project.name}`,
+          metadata: { projectName: project.name, builder: project.builder },
+        })
+      );
+      setSubmitted(true);
+      setFormData({ name: "", email: "", mobile: "", message: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit enquiry");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!project) {
     return (
@@ -245,34 +276,75 @@ export default function ProjectDetailPage() {
 
                 <div className="bg-light p-5 rounded shadow-sm border border-2 border-white">
                   <h4 className="mb-4 text-center text-primary">Enquire Now</h4>
-                  <form>
+                  {submitted && (
+                    <div className="alert alert-success small" role="alert">
+                      Thank you! Our team will contact you shortly.
+                    </div>
+                  )}
+                  {error && (
+                    <div className="alert alert-danger small" role="alert">{error}</div>
+                  )}
+                  <form onSubmit={handleEnquirySubmit}>
                     <div className="row g-3">
                       <div className="col-12">
                         <div className="form-floating">
-                          <input type="text" className="form-control" id="name" placeholder="Your Name" />
+                          <input
+                            type="text"
+                            className="form-control"
+                            id="name"
+                            placeholder="Your Name"
+                            required
+                            value={formData.name}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                          />
                           <label htmlFor="name">Your Name</label>
                         </div>
                       </div>
                       <div className="col-12">
                         <div className="form-floating">
-                          <input type="email" className="form-control" id="email" placeholder="Your Email" />
+                          <input
+                            type="email"
+                            className="form-control"
+                            id="email"
+                            placeholder="Your Email"
+                            required
+                            value={formData.email}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                          />
                           <label htmlFor="email">Your Email</label>
                         </div>
                       </div>
                       <div className="col-12">
                         <div className="form-floating">
-                          <input type="text" className="form-control" id="mobile" placeholder="Mobile Number" />
+                          <input
+                            type="text"
+                            className="form-control"
+                            id="mobile"
+                            placeholder="Mobile Number"
+                            required
+                            value={formData.mobile}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, mobile: e.target.value }))}
+                          />
                           <label htmlFor="mobile">Mobile Number</label>
                         </div>
                       </div>
                       <div className="col-12">
                         <div className="form-floating">
-                          <textarea className="form-control" placeholder="Leave a message here" id="message" style={{ height: "100px" }}></textarea>
+                          <textarea
+                            className="form-control"
+                            placeholder="Leave a message here"
+                            id="message"
+                            style={{ height: "100px" }}
+                            value={formData.message}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
+                          />
                           <label htmlFor="message">Message</label>
                         </div>
                       </div>
                       <div className="col-12">
-                        <button className="btn btn-primary w-100 py-3" type="submit">Submit Enquiry</button>
+                        <button className="btn btn-primary w-100 py-3" type="submit" disabled={loading}>
+                          {loading ? "Submitting..." : "Submit Enquiry"}
+                        </button>
                       </div>
                       <div className="col-12 mt-3 text-center">
                         <a href={`https://wa.me/919999999999?text=I am interested in ${project.name}`} target="_blank" className="btn btn-success w-100 py-3 d-flex align-items-center justify-content-center gap-2">

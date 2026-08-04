@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { APP_CONFIG } from "@/lib/constants";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
 export default function CheckCibilScore() {
   const [formData, setFormData] = useState({
@@ -17,6 +19,7 @@ export default function CheckCibilScore() {
 
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -26,15 +29,33 @@ export default function CheckCibilScore() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Mocking an API call to get CIBIL score
-    setTimeout(() => {
-      setLoading(false);
-      // Random mock score between 600 and 850
+    setError(null);
+    try {
+      const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
+      await submitPublicEnquiry(
+        buildEnquiryPayload("cibil", "check-cibil", {
+          name: fullName,
+          email: formData.email.trim(),
+          phone: formData.mobileNumber.trim(),
+          pageUrl: "/check-cibil",
+          message: `CIBIL score check request for PAN ${formData.panNumber.toUpperCase()}`,
+          metadata: {
+            panNumber: formData.panNumber.toUpperCase(),
+            dob: formData.dob,
+            consent: formData.consent,
+          },
+        })
+      );
+      // Mock score display until live CIBIL API is integrated
       setScore(Math.floor(Math.random() * (850 - 600 + 1)) + 600);
-    }, 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit CIBIL request");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getScoreColorClass = (scoreValue: number) => {
@@ -80,6 +101,9 @@ export default function CheckCibilScore() {
                 {!score ? (
                   <>
                     <h3 className="mb-4">Personal Details</h3>
+                    {error && (
+                      <div className="alert alert-danger" role="alert">{error}</div>
+                    )}
                     <form onSubmit={handleSubmit}>
                       <div className="row g-3">
                         <div className="col-12">

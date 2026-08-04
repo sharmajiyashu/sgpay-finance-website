@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
 interface BillService {
   id: string;
@@ -73,18 +75,45 @@ const BILL_SERVICES: BillService[] = [
 
 export default function BillPayment() {
   const [selectedService, setSelectedService] = useState<BillService>(BILL_SERVICES[0] as BillService);
+  const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "" });
   const [accountInput, setAccountInput] = useState("");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handlePay = (e: React.FormEvent) => {
+  const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (accountInput && amount) {
+    if (!accountInput || !amount) {
+      setStatus("error");
+      return;
+    }
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      await submitPublicEnquiry(
+        buildEnquiryPayload("bill-payment", selectedService.id, {
+          name: contactForm.name.trim(),
+          email: contactForm.email.trim(),
+          phone: contactForm.phone.trim(),
+          pageUrl: "/bill-payment",
+          message: `${selectedService.name} payment request — Account/ID: ${accountInput}, Amount: ₹${amount}`,
+          metadata: {
+            billType: selectedService.id,
+            accountDetail: accountInput,
+            amount,
+          },
+        })
+      );
       setStatus("success");
       setAccountInput("");
       setAmount("");
-    } else {
+      setContactForm({ name: "", email: "", phone: "" });
+    } catch (err) {
       setStatus("error");
+      setErrorMessage(err instanceof Error ? err.message : "Failed to submit bill payment request");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,6 +195,43 @@ export default function BillPayment() {
                 ) : (
                   <form onSubmit={handlePay}>
                     <div className="mb-3">
+                      <label htmlFor="bill-name" className="form-label small fw-medium">Your Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="bill-name"
+                        required
+                        placeholder="Enter your full name"
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="bill-email" className="form-label small fw-medium">Email Address</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        id="bill-email"
+                        required
+                        placeholder="you@example.com"
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm((prev) => ({ ...prev, email: e.target.value }))}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="bill-phone" className="form-label small fw-medium">Mobile Number</label>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        id="bill-phone"
+                        required
+                        pattern="[0-9]{10}"
+                        placeholder="9876543210"
+                        value={contactForm.phone}
+                        onChange={(e) => setContactForm((prev) => ({ ...prev, phone: e.target.value }))}
+                      />
+                    </div>
+                    <div className="mb-3">
                       <label htmlFor="account" className="form-label small fw-medium">{selectedService.name} Detail</label>
                       <input
                         type={selectedService.inputType}
@@ -206,7 +272,13 @@ export default function BillPayment() {
                       </div>
                     </div>
 
-                    <button type="submit" className="btn btn-primary w-100 py-3">Pay Bill Now</button>
+                    {errorMessage && (
+                      <div className="alert alert-danger small py-2" role="alert">{errorMessage}</div>
+                    )}
+
+                    <button type="submit" className="btn btn-primary w-100 py-3" disabled={loading}>
+                      {loading ? "Processing..." : "Pay Bill Now"}
+                    </button>
                   </form>
                 )}
               </div>

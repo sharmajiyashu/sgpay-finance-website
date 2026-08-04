@@ -1,10 +1,45 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { APP_CONFIG } from "@/lib/constants";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
 export default function HomePage() {
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
+
+  async function handleHomeContactSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setContactLoading(true);
+    setContactError(null);
+    try {
+      await submitPublicEnquiry(
+        buildEnquiryPayload("contact", "homepage", {
+          name: contactForm.name.trim(),
+          email: contactForm.email.trim(),
+          subject: contactForm.subject.trim(),
+          pageUrl: "/",
+          message: contactForm.message.trim(),
+        })
+      );
+      setContactSubmitted(true);
+      setContactForm({ name: "", email: "", subject: "", message: "" });
+    } catch (err) {
+      setContactError(err instanceof Error ? err.message : "Failed to submit enquiry");
+    } finally {
+      setContactLoading(false);
+    }
+  }
+
   useEffect(() => {
     // Dynamically trigger Bootstrap Carousel initialization to guarantee autoplay works in React
     if (typeof window !== "undefined" && (window as any).bootstrap) {
@@ -820,26 +855,74 @@ export default function HomePage() {
             <div className="col-lg-7">
               <div className="card shadow-sm border rounded-4 p-4 p-md-5 bg-white">
                 <h4 className="fw-bold text-dark mb-4">Send Us A Message</h4>
-                <form onSubmit={(e) => { e.preventDefault(); alert("Thank you! Your query has been submitted."); }}>
+                {contactSubmitted && (
+                  <div className="alert alert-success mb-4" role="alert">
+                    Thank you! Your enquiry has been submitted successfully.
+                  </div>
+                )}
+                {contactError && (
+                  <div className="alert alert-danger mb-4" role="alert">
+                    {contactError}
+                  </div>
+                )}
+                <form onSubmit={handleHomeContactSubmit}>
                   <div className="row g-3">
                     <div className="col-md-6">
                       <label htmlFor="home-name" className="form-label small fw-bold text-secondary">Your Name</label>
-                      <input type="text" className="form-control border py-3" id="home-name" placeholder="Enter your name" required />
+                      <input
+                        type="text"
+                        className="form-control border py-3"
+                        id="home-name"
+                        placeholder="Enter your name"
+                        required
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))}
+                      />
                     </div>
                     <div className="col-md-6">
                       <label htmlFor="home-email" className="form-label small fw-bold text-secondary">Your Email</label>
-                      <input type="email" className="form-control border py-3" id="home-email" placeholder="name@example.com" required />
+                      <input
+                        type="email"
+                        className="form-control border py-3"
+                        id="home-email"
+                        placeholder="name@example.com"
+                        required
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm((prev) => ({ ...prev, email: e.target.value }))}
+                      />
                     </div>
                     <div className="col-12">
                       <label htmlFor="home-subject" className="form-label small fw-bold text-secondary">Subject</label>
-                      <input type="text" className="form-control border py-3" id="home-subject" placeholder="What is this about?" required />
+                      <input
+                        type="text"
+                        className="form-control border py-3"
+                        id="home-subject"
+                        placeholder="What is this about?"
+                        required
+                        value={contactForm.subject}
+                        onChange={(e) => setContactForm((prev) => ({ ...prev, subject: e.target.value }))}
+                      />
                     </div>
                     <div className="col-12">
                       <label htmlFor="home-message" className="form-label small fw-bold text-secondary">Message</label>
-                      <textarea className="form-control border py-3" id="home-message" rows={4} placeholder="Leave your message here..." required></textarea>
+                      <textarea
+                        className="form-control border py-3"
+                        id="home-message"
+                        rows={4}
+                        placeholder="Leave your message here..."
+                        required
+                        value={contactForm.message}
+                        onChange={(e) => setContactForm((prev) => ({ ...prev, message: e.target.value }))}
+                      />
                     </div>
                     <div className="col-12 pt-2">
-                      <button className="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm" type="submit">Submit Request</button>
+                      <button
+                        className="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm"
+                        type="submit"
+                        disabled={contactLoading}
+                      >
+                        {contactLoading ? "Submitting..." : "Submit Request"}
+                      </button>
                     </div>
                   </div>
                 </form>

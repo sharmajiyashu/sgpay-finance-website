@@ -5,6 +5,8 @@ import Link from "next/link";
 import { LOAN_PRODUCTS } from "@/data/servicesData";
 import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
+import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
+import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
 const ChoiceLoanWidget = dynamic(
   () => import("@/components/ChoiceLoanWidget").then((mod) => mod.ChoiceLoanWidget),
@@ -28,12 +30,32 @@ export default function LoanDetailPage({ params }: { params: Promise<{ slug: str
     message: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", amount: "", message: "" });
+    setLoading(true);
+    setError(null);
+    try {
+      const amountLine = formData.amount ? `Required amount: ₹${formData.amount}. ` : "";
+      await submitPublicEnquiry(
+        buildEnquiryPayload("loans", slug, {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          pageUrl: `/loans/${slug}`,
+          message: `${amountLine}${formData.message.trim() || `Enquiry for ${loan.title}`}`,
+        })
+      );
+      setSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", amount: "", message: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit enquiry");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
