@@ -6,7 +6,12 @@ import { ADMIN_API_PATHS, API_CONFIG } from "@/lib/config/env";
 
 const BASE_URL = API_CONFIG.admin;
 
-const PUBLIC_PATHS = [ADMIN_API_PATHS.health, ADMIN_API_PATHS.login];
+const PUBLIC_PATHS = [
+  ADMIN_API_PATHS.health,
+  ADMIN_API_PATHS.login,
+  ADMIN_API_PATHS.forgotPassword,
+  ADMIN_API_PATHS.resetPassword,
+];
 
 const TOKEN_EXPIRY_MS = 6 * 60 * 60 * 1000;
 const TOKEN_KEY = "sgAdminToken";

@@ -10,6 +10,7 @@ import {
   uploadAgentProfileImage,
   type AgentProfile,
 } from "@/sg-agent/lib/services/agentProfileService";
+import { AgentChangePasswordForm } from "@/sg-agent/components/AgentChangePasswordForm";
 
 interface AgentDashboardContentProps {
   title: string;
@@ -131,6 +132,7 @@ export function AgentDashboardContent({ title, showEdit = false }: AgentDashboar
             ) : (
               <ProfileDetails profile={profile} fullName={fullName} />
             )}
+            {showEdit && <AgentChangePasswordForm />}
           </div>
         </div>
       ) : null}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { staffLogin, getLoginRedirectPath } from "@/lib/staffAuthService";
 import { adminLoginSchema } from "@/sg-admin/lib/validations/admin-login";
@@ -125,6 +126,11 @@ export default function LoginPage() {
             >
               {showPassword ? "Hide" : "Show"}
             </button>
+          </div>
+          <div className="mt-1 text-right">
+            <Link href="/forgot-password" className="text-[11px] font-medium text-[#1565a8] hover:underline">
+              Forgot password?
+            </Link>
           </div>
         </AuthField>
 

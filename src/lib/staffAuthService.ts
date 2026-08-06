@@ -18,6 +18,17 @@ export interface StaffLoginPayload {
   user: Record<string, unknown>;
 }
 
+export interface StaffForgotPasswordInput {
+  email: string;
+}
+
+export interface StaffResetPasswordInput {
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 function buildAuthUser(user: Record<string, unknown>): AuthUser {
   const firstName = typeof user.firstName === "string" ? user.firstName : "";
   const lastName = typeof user.lastName === "string" ? user.lastName : "";
@@ -53,6 +64,14 @@ export async function staffLogin(body: AdminLoginDto): Promise<StaffLoginPayload
   }
 
   return data;
+}
+
+export async function staffForgotPassword(input: StaffForgotPasswordInput): Promise<void> {
+  await adminPost<{ sent: boolean }>(ADMIN_API_PATHS.forgotPassword, input);
+}
+
+export async function staffResetPassword(input: StaffResetPasswordInput): Promise<void> {
+  await adminPost<{ reset: boolean }>(ADMIN_API_PATHS.resetPassword, input);
 }
 
 export function getLoginRedirectPath(userRole?: string): string {

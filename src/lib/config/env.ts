@@ -69,6 +69,9 @@ export const APP_API_PATHS = {
 /** Relative paths under the admin API */
 export const ADMIN_API_PATHS = {
   login: "/login",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+  changePassword: "/change-password",
   health: "/health",
   dashboardStats: "/dashboard/stats",
   users: "/users",
@@ -93,6 +96,7 @@ export const ADMIN_API_PATHS = {
 export const AGENT_API_PATHS = {
   me: "/me",
   profileImage: "/profile-image",
+  changePassword: "/change-password",
   choiceConnectConfig: "/choice-connect/config",
   choiceConnectLeads: "/choice-connect/leads",
   choiceConnectSummary: "/choice-connect/summary",
