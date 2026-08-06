@@ -36,6 +36,7 @@ export const agentSidebarNav: AgentSidebarNavEntry[] = [
       { title: "Summary", href: "/agent/choice-connect/summary", icon: IconList },
       { title: "Credit Card", href: "/agent/choice-connect/credit-card" },
       { title: "Loans", href: "/agent/choice-connect/loans" },
+      { title: "Referral Links", href: "/agent/choice-connect/referral-links" },
     ],
   },
   { title: "Profile", href: "/agent/profile", icon: IconUser },

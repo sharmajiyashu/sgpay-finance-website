@@ -7,6 +7,14 @@ export type ChoiceProductType =
 
 export type ChoiceSourceChannel = "website" | "admin" | "agent";
 
+export interface ChoiceConnectProfile {
+  onboarded: boolean;
+  agentCode?: string;
+  oprId?: string;
+  subjectId?: string;
+  onboardedAt?: string;
+}
+
 export interface ChoiceWidgetConfig {
   clientCode: string;
   agentCode: string;
@@ -15,6 +23,50 @@ export interface ChoiceWidgetConfig {
   sourceLabel: string;
   widgetBaseUrl: string;
   configured?: boolean;
+  authConfigured?: boolean;
+  ssoConfigured?: boolean;
+  choiceConnectProfile?: ChoiceConnectProfile;
+}
+
+export interface ChoiceSsoPayload {
+  opr_id: string;
+  user_type: string;
+  unique_request_number: string;
+  hash_value: string;
+  request_number: string;
+  hash: string;
+  login_url: string;
+}
+
+export interface ChoiceReferralLinkItem {
+  title?: string;
+  description?: string;
+  link?: string;
+  productType?: string;
+}
+
+export interface ChoiceReferralLinksResponse {
+  links: ChoiceReferralLinkItem[];
+  agentCode?: string;
+}
+
+export interface ChoiceOnboardInput {
+  userId?: string;
+  firstName: string;
+  lastName?: string;
+  email: string;
+  mobile: string;
+  panCard?: string;
+  oprId: string;
+  referralCode?: string;
+  city?: string;
+  agentCode?: string;
+}
+
+export interface ChoiceOnboardResult {
+  response: unknown;
+  choiceSubjectId?: string;
+  oprId: string;
 }
 
 export interface ChoiceLead {

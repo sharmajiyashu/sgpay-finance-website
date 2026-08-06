@@ -8,11 +8,6 @@ import dynamic from "next/dynamic";
 import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
 import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
-const ChoiceLoanWidget = dynamic(
-  () => import("@/components/ChoiceLoanWidget").then((mod) => mod.ChoiceLoanWidget),
-  { ssr: false }
-);
-
 export default function LoanDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const loan = LOAN_PRODUCTS.find((item) => item.slug === slug);
@@ -270,17 +265,6 @@ export default function LoanDetailPage({ params }: { params: Promise<{ slug: str
                     <button type="submit" className="btn btn-primary w-100 py-3">Submit Application</button>
                   </form>
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Full Width Choice Connect Loan Widget */}
-          <div className="row mt-5 wow fadeInUp" data-wow-delay="0.5s">
-            <div className="col-12">
-              <div className="bg-light p-4 rounded border">
-                <h4 className="mb-3 text-center">Instant Digital Application ({loan.title})</h4>
-                <p className="text-muted text-center small mb-4">Complete your loan application online via Choice Connect digital journey.</p>
-                <ChoiceLoanWidget productType={loan.slug} />
               </div>
             </div>
           </div>

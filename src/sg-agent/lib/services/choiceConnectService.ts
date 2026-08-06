@@ -1,6 +1,8 @@
 import { get, post } from "@/sg-agent/lib/api";
 import { AGENT_API_PATHS } from "@/lib/config/env";
 import type {
+  ChoiceReferralLinksResponse,
+  ChoiceSsoPayload,
   ChoiceSummaryResponse,
   ChoiceWidgetConfig,
   CreateChoiceLeadInput,
@@ -25,12 +27,26 @@ export async function getAgentChoiceConnectSummary(
   }
   const qs = search.toString();
   return get<ChoiceSummaryResponse>(
-    `${AGENT_API_PATHS.choiceConnectSummary}${qs ? `?${qs}` : ""}`
+    `${AGENT_API_PATHS.choiceConnectSummary}${qs ? `?${qs}` : ""}`,
+    { timeout: 30000 }
   );
+}
+
+export async function getAgentChoiceConnectSsoPayload(): Promise<ChoiceSsoPayload> {
+  return get<ChoiceSsoPayload>(AGENT_API_PATHS.choiceConnectSsoPayload);
+}
+
+export async function getAgentChoiceConnectReferralLinks(
+  agentCode?: string
+): Promise<ChoiceReferralLinksResponse> {
+  const qs = agentCode ? `?agentCode=${encodeURIComponent(agentCode)}` : "";
+  return get<ChoiceReferralLinksResponse>(`${AGENT_API_PATHS.choiceConnectReferralLinks}${qs}`);
 }
 
 export const agentChoiceConnectApi = {
   getConfig: getAgentChoiceConnectConfig,
   createLead: createAgentChoiceConnectLead,
   getSummary: getAgentChoiceConnectSummary,
+  getSsoPayload: getAgentChoiceConnectSsoPayload,
+  getReferralLinks: getAgentChoiceConnectReferralLinks,
 };

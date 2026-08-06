@@ -1,20 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ChoiceConnectWidget } from "@/components/choice-connect/ChoiceConnectWidget";
 import { validateWidgetConfig } from "@/lib/choiceConnect/widgetConfig";
-import type {
-  ChoiceProductType,
-  CreateChoiceLeadInput,
-} from "@/lib/choiceConnect/types";
+import type { ChoiceProductType, ChoiceWidgetConfig, CreateChoiceLeadInput } from "@/lib/choiceConnect/types";
 import { CHOICE_LOAN_PRODUCTS } from "@/lib/choiceConnect/types";
-import type { ChoiceWidgetConfig } from "@/lib/choiceConnect/types";
 
 export interface ChoiceConnectApiClient {
   getConfig: () => Promise<ChoiceWidgetConfig & { configured?: boolean }>;
-  createLead: (input: CreateChoiceLeadInput) => Promise<{ _id: string; uuid?: string }>;
+  createLead?: (input: CreateChoiceLeadInput) => Promise<{ _id: string; uuid?: string }>;
 }
 
 interface ChoiceConnectApplyPanelProps {
@@ -35,9 +30,7 @@ export function ChoiceConnectApplyPanel({
   queryScope = "staff",
 }: ChoiceConnectApplyPanelProps) {
   const [productType, setProductType] = useState<ChoiceProductType>(initialProductType);
-  const [customerName, setCustomerName] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
+  const trackedProductsRef = useRef<Set<string>>(new Set());
 
   const { data: widgetConfig, isLoading, error } = useQuery({
     queryKey: ["choice-connect-config", queryScope],
@@ -45,27 +38,16 @@ export function ChoiceConnectApplyPanel({
     staleTime: 5 * 60 * 1000,
   });
 
-  const saveMutation = useMutation({
-    mutationFn: (input: CreateChoiceLeadInput) => api.createLead(input),
-    onSuccess: () => {
-      toast.success("Customer saved — check Summary for this application");
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
+  useEffect(() => {
+    if (!api.createLead || !widgetConfig?.configured) return;
+    const trackKey = `${queryScope}:${productType}`;
+    if (trackedProductsRef.current.has(trackKey)) return;
 
-  const handleSaveCustomer = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customerName.trim() || !customerPhone.trim()) {
-      toast.error("Customer name and phone are required");
-      return;
-    }
-    saveMutation.mutate({
-      productType,
-      customerName: customerName.trim(),
-      customerEmail: customerEmail.trim() || undefined,
-      customerPhone: customerPhone.trim(),
+    trackedProductsRef.current.add(trackKey);
+    api.createLead({ productType }).catch(() => {
+      trackedProductsRef.current.delete(trackKey);
     });
-  };
+  }, [api, productType, queryScope, widgetConfig?.configured]);
 
   const containerId =
     productType === "credit-card"
@@ -76,7 +58,6 @@ export function ChoiceConnectApplyPanel({
     return (
       <div className="space-y-4">
         <div className="h-8 w-48 animate-pulse rounded-lg bg-muted" />
-        <div className="h-40 animate-pulse rounded-xl bg-muted" />
         <div className="h-[420px] animate-pulse rounded-xl bg-muted" />
       </div>
     );
@@ -95,6 +76,7 @@ export function ChoiceConnectApplyPanel({
   }
 
   const configError = validateWidgetConfig(widgetConfig);
+  const profile = widgetConfig.choiceConnectProfile;
 
   return (
     <div className="space-y-6">
@@ -109,22 +91,23 @@ export function ChoiceConnectApplyPanel({
           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
             CBA: <span className="font-medium text-foreground">{widgetConfig.agentCode}</span>
           </span>
+          {widgetConfig.subAgentCode && (
+            <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+              Sub-agent:{" "}
+              <span className="font-medium text-foreground">{widgetConfig.subAgentCode}</span>
+            </span>
+          )}
+          {profile?.onboarded && (
+            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-emerald-800">
+              Choice Connect onboarded
+            </span>
+          )}
         </div>
       </div>
 
-      <form
-        onSubmit={handleSaveCustomer}
-        className="max-w-xl space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm"
-      >
-        <div>
-          <h2 className="text-lg font-medium">Customer Details</h2>
-          <p className="text-xs text-muted-foreground">
-            Save customer info for your Summary report. The widget below works independently — same as the public website.
-          </p>
-        </div>
-
+      <div className="space-y-3">
         {allowLoanProductSelect && (
-          <div>
+          <div className="max-w-xs">
             <label className="mb-1 block text-sm font-medium">Loan Type</label>
             <select
               value={productType}
@@ -140,50 +123,6 @@ export function ChoiceConnectApplyPanel({
           </div>
         )}
 
-        <div>
-          <label className="mb-1 block text-sm font-medium">Full Name *</label>
-          <input
-            type="text"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            placeholder="Customer full name"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium">Email</label>
-          <input
-            type="email"
-            value={customerEmail}
-            onChange={(e) => setCustomerEmail(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            placeholder="customer@email.com"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium">Phone *</label>
-          <input
-            type="tel"
-            value={customerPhone}
-            onChange={(e) => setCustomerPhone(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            placeholder="10-digit mobile number"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={saveMutation.isPending}
-          className="rounded-lg border border-primary bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary transition hover:bg-primary/15 disabled:opacity-50"
-        >
-          {saveMutation.isPending ? "Saving…" : "Save to Summary"}
-        </button>
-      </form>
-
-      <div className="space-y-2">
-        <h2 className="text-lg font-medium">Choice Connect Application</h2>
         {configError ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
             {configError}

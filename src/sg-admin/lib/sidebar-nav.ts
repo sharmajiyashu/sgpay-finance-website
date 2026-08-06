@@ -5,6 +5,7 @@ import {
   IconUsersGroup,
   IconList,
   IconCreditCard,
+  IconSettings,
 } from "@tabler/icons-react";
 import { ENQUIRY_CATEGORIES } from "@/lib/enquiryCatalog";
 
@@ -50,7 +51,11 @@ export const sidebarNav: SidebarNavEntry[] = [
       { title: "Summary", href: "/admin/choice-connect/summary" },
       { title: "Credit Card", href: "/admin/choice-connect/credit-card" },
       { title: "Loans", href: "/admin/choice-connect/loans" },
+      { title: "Referral Links", href: "/admin/choice-connect/referral-links" },
+      { title: "Onboarding", href: "/admin/choice-connect/onboarding" },
+      { title: "SSO Login", href: "/admin/choice-connect/sso" },
     ],
   },
+  { title: "Website Settings", href: "/admin/settings", icon: IconSettings },
   { title: "Users", href: "/admin/users", icon: IconUsers },
 ];

@@ -194,8 +194,10 @@ export function ChoiceConnectSummaryPanel({
       {!data?.authConfigured && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Choice Connect API login not configured on backend. Add{" "}
-          <code className="text-xs">CHOICE_CONNECT_USERNAME</code> and{" "}
-          <code className="text-xs">CHOICE_CONNECT_PASSWORD</code> (or{" "}
+          <code className="text-xs">CHOICE_CONNECT_USERNAME</code>,{" "}
+          <code className="text-xs">CHOICE_CONNECT_PASSWORD</code>,{" "}
+          <code className="text-xs">CHOICE_CONNECT_SECRET_KEY</code>, and{" "}
+          <code className="text-xs">CHOICE_CONNECT_PARTNER_ID</code> (or{" "}
           <code className="text-xs">CHOICE_CONNECT_API_TOKEN</code>) in SG-Backend `.env`.
         </div>
       )}

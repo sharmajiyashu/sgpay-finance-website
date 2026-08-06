@@ -4,19 +4,19 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
-import { APP_CONFIG } from "@/lib/constants";
+import {
+  SiteSettingsProvider,
+  useSiteSettings,
+} from "@/components/providers/SiteSettingsContext";
 
-export default function PublicLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function PublicLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const isAuthStandalone = pathname === "/login" || pathname === "/register-agent";
+  const siteSettings = useSiteSettings();
 
   useEffect(() => {
-    document.title = `${APP_CONFIG.appName} - Loans, Insurance & Financial Solutions`;
+    document.title = `${siteSettings.siteName} - Loans, Insurance & Financial Solutions`;
 
     const spinner = document.getElementById("spinner");
     if (spinner) {
@@ -33,7 +33,7 @@ export default function PublicLayout({
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [siteSettings.siteName]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).WOW) {
@@ -69,7 +69,7 @@ export default function PublicLayout({
           >
             <nav className="navbar navbar-expand-lg navbar-light py-lg-0 px-lg-5 wow fadeIn" data-wow-delay="0.1s">
               <Link href="/" className="navbar-brand ms-4 ms-lg-0 d-flex align-items-center">
-                <img src="/img/logo.png" alt={APP_CONFIG.appName} style={{ height: "80px", objectFit: "contain" }} />
+                <img src="/img/logo.png" alt={siteSettings.siteName} style={{ height: "80px", objectFit: "contain" }} />
               </Link>
               <button type="button" className="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                 <span className="navbar-toggler-icon"></span>
@@ -163,120 +163,138 @@ export default function PublicLayout({
       {children}
 
       {!isAuthStandalone && (
-      <>
-      <div className="container-fluid bg-dark text-light footer mt-5 py-5">
-        <div className="container py-5">
-          <div className="row g-5">
-            <div className="col-lg-3 col-md-6">
-              <div className="d-flex align-items-center mb-4">
-                <img src="/img/logo.png" alt={APP_CONFIG.appName} style={{ height: "80px", objectFit: "contain" }} />
-              </div>
-              <p className="mb-2"><i className="fa fa-map-marker-alt me-3"></i>{APP_CONFIG.address}</p>
-              <p className="mb-2"><i className="fa fa-phone-alt me-3"></i>{APP_CONFIG.phoneRaw}</p>
-              <p className="mb-2"><i className="fa fa-envelope me-3"></i>{APP_CONFIG.email}</p>
-              <div className="d-flex pt-2">
-                <a className="btn btn-square btn-outline-light rounded-circle me-2" href={APP_CONFIG.socials.twitter} target="_blank" rel="noopener noreferrer"><i className="fab fa-twitter"></i></a>
-                <a className="btn btn-square btn-outline-light rounded-circle me-2" href={APP_CONFIG.socials.facebook} target="_blank" rel="noopener noreferrer"><i className="fab fa-facebook-f"></i></a>
-                <a className="btn btn-square btn-outline-light rounded-circle me-2" href={APP_CONFIG.socials.youtube} target="_blank" rel="noopener noreferrer"><i className="fab fa-youtube"></i></a>
-                <a className="btn btn-square btn-outline-light rounded-circle me-2" href={APP_CONFIG.socials.linkedin} target="_blank" rel="noopener noreferrer"><i className="fab fa-linkedin-in"></i></a>
-              </div>
-            </div>
-            <div className="col-lg-2 col-md-6">
-              <h4 className="text-white mb-4">Quick Links</h4>
-              <Link className="btn btn-link text-decoration-none" href="/about">About Us</Link>
-              <Link className="btn btn-link text-decoration-none" href="/contact">Contact Us</Link>
-              <Link className="btn btn-link text-decoration-none" href="/faq">FAQs</Link>
-              <Link className="btn btn-link text-decoration-none" href="/privacy">Privacy Policy</Link>
-              <Link className="btn btn-link text-decoration-none" href="/terms">Terms & Conditions</Link>
-              <Link className="btn btn-link text-decoration-none" href="/emi-calculator">EMI Calculator</Link>
-              <Link className="btn btn-link text-decoration-none text-primary" href="/check-cibil">Check CIBIL Score</Link>
-            </div>
-            <div className="col-lg-2 col-md-6">
-              <h4 className="text-white mb-4">Real Estate</h4>
-              <Link className="btn btn-link text-decoration-none" href="/projects">Projects</Link>
-              <Link className="btn btn-link text-decoration-none" href="/projects?filter=Residential">Residential</Link>
-              <Link className="btn btn-link text-decoration-none" href="/projects?filter=Commercial">Commercial</Link>
-              <Link className="btn btn-link text-decoration-none" href="/projects?filter=Plots">Plots</Link>
-            </div>
-            <div className="col-lg-2 col-md-6">
-              <h4 className="text-white mb-4">Our Services</h4>
-              <Link className="btn btn-link text-decoration-none" href="/loans">Loans</Link>
-              <Link className="btn btn-link text-decoration-none" href="/finance">Finance & Wealth</Link>
-              <Link className="btn btn-link text-decoration-none" href="/bill-payment">Bill Payments</Link>
-              <Link className="btn btn-link text-decoration-none" href="/finance/insurance">Insurance Products</Link>
-              <Link className="btn btn-link text-decoration-none" href="/finance/credit-card">Credit Cards</Link>
-              <Link className="btn btn-link text-decoration-none" href="/contact">Dealer Website</Link>
-            </div>
+        <>
+          <div className="container-fluid bg-dark text-light footer mt-5 py-5">
+            <div className="container py-5">
+              <div className="row g-5">
+                <div className="col-lg-3 col-md-6">
+                  <div className="d-flex align-items-center mb-4">
+                    <img src="/img/logo.png" alt={siteSettings.siteName} style={{ height: "80px", objectFit: "contain" }} />
+                  </div>
+                  <p className="mb-2"><i className="fa fa-map-marker-alt me-3"></i>{siteSettings.address}</p>
+                  <p className="mb-2"><i className="fa fa-phone-alt me-3"></i>{siteSettings.phoneRaw}</p>
+                  <p className="mb-2"><i className="fa fa-envelope me-3"></i>{siteSettings.email}</p>
+                  <div className="d-flex pt-2">
+                    {siteSettings.twitterUrl && (
+                      <a className="btn btn-square btn-outline-light rounded-circle me-2" href={siteSettings.twitterUrl} target="_blank" rel="noopener noreferrer"><i className="fab fa-twitter"></i></a>
+                    )}
+                    {siteSettings.facebookUrl && (
+                      <a className="btn btn-square btn-outline-light rounded-circle me-2" href={siteSettings.facebookUrl} target="_blank" rel="noopener noreferrer"><i className="fab fa-facebook-f"></i></a>
+                    )}
+                    {siteSettings.youtubeUrl && (
+                      <a className="btn btn-square btn-outline-light rounded-circle me-2" href={siteSettings.youtubeUrl} target="_blank" rel="noopener noreferrer"><i className="fab fa-youtube"></i></a>
+                    )}
+                    {siteSettings.linkedinUrl && (
+                      <a className="btn btn-square btn-outline-light rounded-circle me-2" href={siteSettings.linkedinUrl} target="_blank" rel="noopener noreferrer"><i className="fab fa-linkedin-in"></i></a>
+                    )}
+                  </div>
+                </div>
+                <div className="col-lg-2 col-md-6">
+                  <h4 className="text-white mb-4">Quick Links</h4>
+                  <Link className="btn btn-link text-decoration-none" href="/about">About Us</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/contact">Contact Us</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/faq">FAQs</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/privacy">Privacy Policy</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/terms">Terms & Conditions</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/emi-calculator">EMI Calculator</Link>
+                  <Link className="btn btn-link text-decoration-none text-primary" href="/check-cibil">Check CIBIL Score</Link>
+                </div>
+                <div className="col-lg-2 col-md-6">
+                  <h4 className="text-white mb-4">Real Estate</h4>
+                  <Link className="btn btn-link text-decoration-none" href="/projects">Projects</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/projects?filter=Residential">Residential</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/projects?filter=Commercial">Commercial</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/projects?filter=Plots">Plots</Link>
+                </div>
+                <div className="col-lg-2 col-md-6">
+                  <h4 className="text-white mb-4">Our Services</h4>
+                  <Link className="btn btn-link text-decoration-none" href="/loans">Loans</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/finance">Finance & Wealth</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/bill-payment">Bill Payments</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/finance/insurance">Insurance Products</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/finance/credit-card">Credit Cards</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/contact">Dealer Website</Link>
+                </div>
 
-            <div className="col-lg-3 col-md-6">
-              <h4 className="text-white mb-4">Finance & Insurance</h4>
-              <Link className="btn btn-link text-decoration-none" href="/finance/insurance">Insurance Products</Link>
-              <Link className="btn btn-link text-decoration-none" href="/finance/credit-card">Credit Cards</Link>
-              <Link className="btn btn-link text-decoration-none" href="/finance/mutual-funds">Mutual Funds</Link>
-              <Link className="btn btn-link text-decoration-none" href="/finance/sip-investment">SIP Investments</Link>
-              <Link className="btn btn-link text-decoration-none" href="/finance/fixed-deposit">Fixed Deposits</Link>
-              <Link className="btn btn-link text-decoration-none" href="/finance/tax-saving">Tax Saving Advice</Link>
+                <div className="col-lg-3 col-md-6">
+                  <h4 className="text-white mb-4">Finance & Insurance</h4>
+                  <Link className="btn btn-link text-decoration-none" href="/finance/insurance">Insurance Products</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/finance/credit-card">Credit Cards</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/finance/mutual-funds">Mutual Funds</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/finance/sip-investment">SIP Investments</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/finance/fixed-deposit">Fixed Deposits</Link>
+                  <Link className="btn btn-link text-decoration-none" href="/finance/tax-saving">Tax Saving Advice</Link>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="container-fluid copyright py-4">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 text-center">
-              Copyright &copy; 2026 <span className="fw-semi-bold">GIRSHA PAY PRIVATE LIMITED</span>. All Rights Reserved.
+          <div className="container-fluid copyright py-4">
+            <div className="container">
+              <div className="row">
+                <div className="col-12 text-center">
+                  Copyright &copy; 2026 <span className="fw-semi-bold">{siteSettings.siteName.toUpperCase()}</span>. All Rights Reserved.
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <a
-        href={`https://wa.me/${APP_CONFIG.phoneRaw.replace(/\D/g, "")}`}
-        className="whatsapp-btn-float shadow-lg"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          position: "fixed",
-          bottom: "30px",
-          right: "30px",
-          backgroundColor: "#25d366",
-          color: "#fff",
-          borderRadius: "50px",
-          textAlign: "center",
-          fontSize: "32px",
-          zIndex: 9999,
-          width: "60px",
-          height: "60px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          textDecoration: "none",
-          transition: "transform 0.3s ease",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-      >
-        <i className="fab fa-whatsapp"></i>
-      </a>
+          {siteSettings.phoneRaw && (
+            <a
+              href={`https://wa.me/${siteSettings.phoneRaw.replace(/\D/g, "")}`}
+              className="whatsapp-btn-float shadow-lg"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                position: "fixed",
+                bottom: "30px",
+                right: "30px",
+                backgroundColor: "#25d366",
+                color: "#fff",
+                borderRadius: "50px",
+                textAlign: "center",
+                fontSize: "32px",
+                zIndex: 9999,
+                width: "60px",
+                height: "60px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textDecoration: "none",
+                transition: "transform 0.3s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              <i className="fab fa-whatsapp"></i>
+            </a>
+          )}
 
-      <Script src="https://code.jquery.com/jquery-3.4.1.min.js" strategy="beforeInteractive" />
-      <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" strategy="beforeInteractive" />
-      <Script src="/lib/wow/wow.min.js" strategy="beforeInteractive" onReady={() => {
-        if (typeof window !== "undefined" && (window as any).WOW) {
-          try {
-            new (window as any).WOW().init();
-          } catch (e) {
-            console.error("WOW onReady init failed:", e);
-          }
-        }
-      }} />
-      <Script src="/lib/easing/easing.min.js" strategy="beforeInteractive" />
-      <Script src="/lib/waypoints/waypoints.min.js" strategy="beforeInteractive" />
-      <Script src="/lib/owlcarousel/owl.carousel.min.js" strategy="beforeInteractive" />
-      <Script src="/js/main.js" strategy="afterInteractive" />
-      </>
+          <Script src="https://code.jquery.com/jquery-3.4.1.min.js" strategy="beforeInteractive" />
+          <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" strategy="beforeInteractive" />
+          <Script src="/lib/wow/wow.min.js" strategy="beforeInteractive" onReady={() => {
+            if (typeof window !== "undefined" && (window as any).WOW) {
+              try {
+                new (window as any).WOW().init();
+              } catch (e) {
+                console.error("WOW onReady init failed:", e);
+              }
+            }
+          }} />
+          <Script src="/lib/easing/easing.min.js" strategy="beforeInteractive" />
+          <Script src="/lib/waypoints/waypoints.min.js" strategy="beforeInteractive" />
+          <Script src="/lib/owlcarousel/owl.carousel.min.js" strategy="beforeInteractive" />
+          <Script src="/js/main.js" strategy="afterInteractive" />
+        </>
       )}
     </div>
+  );
+}
+
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SiteSettingsProvider>
+      <PublicLayoutContent>{children}</PublicLayoutContent>
+    </SiteSettingsProvider>
   );
 }

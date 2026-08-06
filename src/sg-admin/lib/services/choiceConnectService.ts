@@ -1,6 +1,10 @@
 import { get, post } from "@/sg-admin/lib/api";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
 import type {
+  ChoiceOnboardInput,
+  ChoiceOnboardResult,
+  ChoiceReferralLinksResponse,
+  ChoiceSsoPayload,
   ChoiceSummaryResponse,
   ChoiceWidgetConfig,
   CreateChoiceLeadInput,
@@ -25,8 +29,26 @@ export async function getChoiceConnectSummary(
   }
   const qs = search.toString();
   return get<ChoiceSummaryResponse>(
-    `${ADMIN_API_PATHS.choiceConnectSummary}${qs ? `?${qs}` : ""}`
+    `${ADMIN_API_PATHS.choiceConnectSummary}${qs ? `?${qs}` : ""}`,
+    { timeout: 30000 }
   );
+}
+
+export async function getChoiceConnectSsoPayload(): Promise<ChoiceSsoPayload> {
+  return get<ChoiceSsoPayload>(ADMIN_API_PATHS.choiceConnectSsoPayload);
+}
+
+export async function getChoiceConnectReferralLinks(
+  agentCode?: string
+): Promise<ChoiceReferralLinksResponse> {
+  const qs = agentCode ? `?agentCode=${encodeURIComponent(agentCode)}` : "";
+  return get<ChoiceReferralLinksResponse>(`${ADMIN_API_PATHS.choiceConnectReferralLinks}${qs}`);
+}
+
+export async function onboardChoiceConnectAgent(
+  input: ChoiceOnboardInput
+): Promise<ChoiceOnboardResult> {
+  return post<ChoiceOnboardResult>(ADMIN_API_PATHS.choiceConnectOnboard, input);
 }
 
 export async function getChoiceConnectDiagnostics(): Promise<{
@@ -41,4 +63,7 @@ export const adminChoiceConnectApi = {
   getConfig: getChoiceConnectConfig,
   createLead: createChoiceConnectLead,
   getSummary: getChoiceConnectSummary,
+  getSsoPayload: getChoiceConnectSsoPayload,
+  getReferralLinks: getChoiceConnectReferralLinks,
+  onboardAgent: onboardChoiceConnectAgent,
 };

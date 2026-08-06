@@ -30,20 +30,20 @@ export const API_CONFIG = {
   timeout: Number.isFinite(API_TIMEOUT_MS) ? API_TIMEOUT_MS : 10000,
 } as const;
 
-/** Site + contact info (public website) */
+/** Site + contact info defaults (dynamic settings loaded via API) */
 export const SITE_CONFIG = {
   url: getEnv(process.env.NEXT_PUBLIC_SITE_URL, "http://localhost:3000"),
-  name: getEnv(process.env.NEXT_PUBLIC_SITE_NAME, "Sg Pay 4u"),
-  address: getEnv(process.env.NEXT_PUBLIC_ADDRESS, "PLOT NO 112/39, SECTOR 11, PRATAP NAGAR, SANGANER, JAIPUR, RAJASTHAN 302033"),
-  phone: getEnv(process.env.NEXT_PUBLIC_PHONE, "+91 9887199532"),
-  phoneRaw: getEnv(process.env.NEXT_PUBLIC_PHONE_RAW, "+91-9887199532"),
-  email: getEnv(process.env.NEXT_PUBLIC_EMAIL, "info@sgpay4u.com"),
-  workingHours: getEnv(process.env.NEXT_PUBLIC_HOURS, "9.00 am - 9.00 pm"),
+  name: "Sg Pay 4u",
+  address: "PLOT NO 112/39, SECTOR 11, PRATAP NAGAR, SANGANER, JAIPUR, RAJASTHAN 302033",
+  phone: "+91 9887199532",
+  phoneRaw: "+91-9887199532",
+  email: "info@sgpay4u.com",
+  workingHours: "9.00 am - 9.00 pm",
   socials: {
-    facebook: getEnv(process.env.NEXT_PUBLIC_FACEBOOK_URL, "https://facebook.com"),
-    twitter: getEnv(process.env.NEXT_PUBLIC_TWITTER_URL, "https://twitter.com"),
-    linkedin: getEnv(process.env.NEXT_PUBLIC_LINKEDIN_URL, "https://linkedin.com"),
-    youtube: getEnv(process.env.NEXT_PUBLIC_YOUTUBE_URL, "https://youtube.com"),
+    facebook: "https://facebook.com",
+    twitter: "https://twitter.com",
+    linkedin: "https://linkedin.com",
+    youtube: "https://youtube.com",
   },
 } as const;
 
@@ -63,6 +63,7 @@ export const APP_API_PATHS = {
   health: "/health",
   agentRegister: "/agents/register",
   choiceConnectLeads: "/choice-connect/leads",
+  siteSettings: "/site-settings",
 } as const;
 
 /** Relative paths under the admin API */
@@ -83,7 +84,9 @@ export const ADMIN_API_PATHS = {
   choiceConnectSummary: "/choice-connect/summary",
   choiceConnectSsoPayload: "/choice-connect/sso-payload",
   choiceConnectReferralLinks: "/choice-connect/referral-links",
+  choiceConnectOnboard: "/choice-connect/onboard",
   choiceConnectDiagnostics: "/choice-connect/diagnostics",
+  siteSettings: "/site-settings",
 } as const;
 
 /** Relative paths under the agent API */
@@ -93,5 +96,6 @@ export const AGENT_API_PATHS = {
   choiceConnectConfig: "/choice-connect/config",
   choiceConnectLeads: "/choice-connect/leads",
   choiceConnectSummary: "/choice-connect/summary",
+  choiceConnectSsoPayload: "/choice-connect/sso-payload",
   choiceConnectReferralLinks: "/choice-connect/referral-links",
 } as const;

@@ -4,9 +4,6 @@ import { ChoiceConnectWebsiteApply } from "@/components/choice-connect/ChoiceCon
 
 export function ChoiceCreditCardWidget() {
   return (
-    <ChoiceConnectWebsiteApply
-      productType="credit-card"
-      title="Apply for Credit Card"
-    />
+    <ChoiceConnectWebsiteApply productType="credit-card" />
   );
 }
