@@ -19,6 +19,10 @@ export async function createAgent(body: {
   city?: string;
   panCard?: string;
   status?: "pending" | "approved" | "rejected";
+  agentType?: "super_distributor" | "distributor" | "retailer";
+  parentId?: string;
+  managedById?: string;
+  commissionPercent?: number | null;
 }): Promise<Agent> {
   return post<Agent>(ADMIN_API_PATHS.agents, body);
 }

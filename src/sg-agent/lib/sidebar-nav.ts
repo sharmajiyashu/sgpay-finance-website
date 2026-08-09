@@ -3,6 +3,8 @@ import {
   IconUser,
   IconCreditCard,
   IconList,
+  IconUsersGroup,
+  IconCoin,
 } from "@tabler/icons-react";
 
 export interface AgentSidebarNavItem {
@@ -28,6 +30,8 @@ export function isAgentSidebarNavSection(
 
 export const agentSidebarNav: AgentSidebarNavEntry[] = [
   { title: "Dashboard", href: "/agent/dashboard", icon: IconLayoutDashboard },
+  { title: "Downline", href: "/agent/downline", icon: IconUsersGroup },
+  { title: "Commissions", href: "/agent/commissions", icon: IconCoin },
   {
     title: "Choice Connect",
     href: "/agent/choice-connect/summary",

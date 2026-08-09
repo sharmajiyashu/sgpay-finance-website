@@ -34,6 +34,12 @@ function buildAuthUser(user: Record<string, unknown>): AuthUser {
   const lastName = typeof user.lastName === "string" ? user.lastName : "";
   const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
   const userRole = typeof user.userRole === "string" ? user.userRole : undefined;
+  const roleName =
+    typeof user.roleName === "string"
+      ? user.roleName
+      : userRole === "agent"
+        ? "Agent"
+        : "Admin";
 
   return {
     name: fullName || (typeof user.email === "string" ? user.email : undefined),
@@ -41,7 +47,13 @@ function buildAuthUser(user: Record<string, unknown>): AuthUser {
     lastName: lastName || undefined,
     email: typeof user.email === "string" ? user.email : undefined,
     userRole,
-    roleName: userRole === "agent" ? "Agent" : "Admin",
+    roleName,
+    designation: typeof user.designation === "string" ? user.designation : undefined,
+    agentType: typeof user.agentType === "string" ? user.agentType : undefined,
+    permissions:
+      user.permissions && typeof user.permissions === "object"
+        ? (user.permissions as Record<string, boolean>)
+        : undefined,
   };
 }
 

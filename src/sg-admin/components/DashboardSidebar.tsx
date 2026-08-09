@@ -5,13 +5,13 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  getFilteredSidebarNav,
   isSidebarNavSection,
-  sidebarNav,
   type SidebarNavItem,
 } from "@/sg-admin/lib/sidebar-nav";
 import { IconChevronDown, IconLogout } from "@tabler/icons-react";
 import { twMerge } from "tailwind-merge";
-import { clearToken } from "@/sg-admin/lib/api";
+import { clearToken, getAuthUser } from "@/sg-admin/lib/api";
 import { SITE_CONFIG } from "@/lib/config/env";
 
 function NavLink({
@@ -69,6 +69,9 @@ export function DashboardSidebar() {
     if (pathname.startsWith("/admin/choice-connect")) {
       setOpenSections((prev) => ({ ...prev, "Choice Connect": true }));
     }
+    if (pathname.startsWith("/admin/commissions")) {
+      setOpenSections((prev) => ({ ...prev, Commissions: true }));
+    }
   }, [pathname]);
 
   const handleLogout = () => {
@@ -79,6 +82,8 @@ export function DashboardSidebar() {
   const toggleSection = (title: string) => {
     setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
   };
+
+  const navEntries = getFilteredSidebarNav(getAuthUser());
 
   return (
     <aside className="sg-admin-sidebar flex h-full w-full flex-col text-white">
@@ -99,7 +104,7 @@ export function DashboardSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-5">
-        {sidebarNav.map((entry) => {
+        {navEntries.map((entry) => {
           if (isSidebarNavSection(entry)) {
             const SectionIcon = entry.icon;
             const isSectionActive = pathname.startsWith(entry.href);

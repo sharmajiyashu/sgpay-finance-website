@@ -10,6 +10,10 @@ export interface Agent {
   status?: "pending" | "approved" | "rejected";
   isActive?: boolean;
   generatedPassword?: string;
+  agentType?: "super_distributor" | "distributor" | "retailer";
+  commissionPercent?: number | null;
+  parentId?: { _id?: string; firstName?: string; lastName?: string; email?: string; agentType?: string } | string;
+  managedById?: { _id?: string; firstName?: string; lastName?: string; email?: string; designation?: string } | string;
   profileImage?: { url?: string } | string;
   createdAt?: string;
   lastLoginAt?: string;
