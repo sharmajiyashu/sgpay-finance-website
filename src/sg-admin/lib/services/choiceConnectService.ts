@@ -30,7 +30,7 @@ export async function getChoiceConnectSummary(
   const qs = search.toString();
   return get<ChoiceSummaryResponse>(
     `${ADMIN_API_PATHS.choiceConnectSummary}${qs ? `?${qs}` : ""}`,
-    { timeout: 30000 }
+    { timeout: 60000 }
   );
 }
 

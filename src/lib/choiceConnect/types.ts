@@ -101,6 +101,14 @@ export interface ChoiceRemoteEnquiry {
   updatedAt?: string;
 }
 
+export interface ChoiceRemotePagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  offset: number;
+}
+
 export interface ChoiceRemoteSummary {
   available: boolean;
   error?: string;
@@ -110,6 +118,7 @@ export interface ChoiceRemoteSummary {
     subServiceCounts: Record<string, number>;
   };
   enquiries: ChoiceRemoteEnquiry[];
+  pagination?: ChoiceRemotePagination;
   debug?: {
     steps: Array<{
       step: string;

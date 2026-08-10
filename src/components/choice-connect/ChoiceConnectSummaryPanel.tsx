@@ -24,6 +24,8 @@ interface ChoiceConnectSummaryPanelProps {
   queryScope?: string;
 }
 
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+
 const PRODUCT_FILTER_OPTIONS = [
   { value: "", label: "All products" },
   { value: "credit-card", label: "Credit Card" },
@@ -106,6 +108,7 @@ export function ChoiceConnectSummaryPanel({
   queryScope = "summary",
 }: ChoiceConnectSummaryPanelProps) {
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const [productType, setProductType] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sourceChannel, setSourceChannel] = useState("");
@@ -118,6 +121,7 @@ export function ChoiceConnectSummaryPanel({
       "choice-connect-summary",
       queryScope,
       page,
+      limit,
       productType,
       statusFilter,
       sourceChannel,
@@ -127,7 +131,7 @@ export function ChoiceConnectSummaryPanel({
     queryFn: () =>
       api.getSummary({
         page,
-        limit: 20,
+        limit,
         productType: productType || undefined,
         status: statusFilter || undefined,
         sourceChannel: sourceChannel || undefined,
@@ -137,10 +141,28 @@ export function ChoiceConnectSummaryPanel({
   });
 
   const leads = data?.local.leads ?? [];
-  const pagination = data?.local.pagination;
+  const localPagination = data?.local.pagination;
   const remote = data?.remote;
   const remoteEnquiries = remote?.enquiries ?? [];
+  const remotePagination = remote?.pagination;
+  const remoteTotal =
+    remotePagination?.total ??
+    remote?.overall.totalRecords ??
+    remoteEnquiries.length;
+  const remoteTotalPages =
+    remotePagination?.totalPages ??
+    Math.max(1, Math.ceil(remoteTotal / limit) || 1);
   const debugReport = remote?.debug?.reportText;
+
+  const resetFilters = () => {
+    setProductType("");
+    setStatusFilter("");
+    setSourceChannel("");
+    setFromDate("");
+    setToDate("");
+    setLimit(20);
+    setPage(1);
+  };
 
   const copyReport = async (text: string) => {
     try {
@@ -166,7 +188,7 @@ export function ChoiceConnectSummaryPanel({
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Choice Connect Partner API summary + your local tracking records.
+            Choice Connect Partner API summary with filters and pagination, plus local tracking records.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -271,7 +293,7 @@ export function ChoiceConnectSummaryPanel({
             label="Sub-services"
             value={Object.keys(remote.overall.subServiceCounts).length}
           />
-          <SummaryStatCard label="Local tracked" value={pagination?.total ?? leads.length} />
+          <SummaryStatCard label="Local tracked" value={localPagination?.total ?? leads.length} />
         </div>
       )}
 
@@ -280,12 +302,21 @@ export function ChoiceConnectSummaryPanel({
           <h2 className="mb-3 text-sm font-semibold">Status-wise count</h2>
           <div className="flex flex-wrap gap-2">
             {Object.entries(remote.overall.statusCounts).map(([status, count]) => (
-              <span
+              <button
                 key={status}
-                className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-foreground"
+                type="button"
+                onClick={() => {
+                  setStatusFilter(status);
+                  setPage(1);
+                }}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                  statusFilter === status
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground hover:bg-muted/80"
+                }`}
               >
                 {status}: {count}
-              </span>
+              </button>
             ))}
           </div>
         </div>
@@ -307,92 +338,133 @@ export function ChoiceConnectSummaryPanel({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 rounded-xl border border-border bg-card p-4">
-        <select
-          value={productType}
-          onChange={(e) => {
-            setProductType(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-        >
-          {PRODUCT_FILTER_OPTIONS.map((opt) => (
-            <option key={opt.value || "all"} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-        >
-          {STATUS_FILTER_OPTIONS.map((opt) => (
-            <option key={opt.value || "all-status"} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        {showAllSources && (
+      <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold">Filters</h2>
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          >
+            Clear filters
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-3">
           <select
-            value={sourceChannel}
+            value={productType}
             onChange={(e) => {
-              setSourceChannel(e.target.value);
+              setProductType(e.target.value);
               setPage(1);
             }}
             className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
           >
-            <option value="">All local sources</option>
-            <option value="website">Website</option>
-            <option value="agent">Agent</option>
-            <option value="admin">Admin Panel</option>
+            {PRODUCT_FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value || "all"} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
-        )}
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => {
-            setFromDate(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-        />
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => {
-            setToDate(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-        />
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          >
+            {STATUS_FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value || "all-status"} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {showAllSources && (
+            <select
+              value={sourceChannel}
+              onChange={(e) => {
+                setSourceChannel(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            >
+              <option value="">All local sources</option>
+              <option value="website">Website</option>
+              <option value="agent">Agent</option>
+              <option value="admin">Admin Panel</option>
+            </select>
+          )}
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            From
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => {
+                setFromDate(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            />
+          </label>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            To
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            />
+          </label>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            Page size
+            <select
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
+              }}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+            >
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
       <div className="flex gap-2 border-b border-border">
         <button
           type="button"
-          onClick={() => setActiveTab("choice")}
+          onClick={() => {
+            setActiveTab("choice");
+            setPage(1);
+          }}
           className={`border-b-2 px-4 py-2 text-sm font-medium transition ${
             activeTab === "choice"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          Choice Connect Report ({remoteEnquiries.length})
+          Choice Connect Report ({remoteTotal})
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab("local")}
+          onClick={() => {
+            setActiveTab("local");
+            setPage(1);
+          }}
           className={`border-b-2 px-4 py-2 text-sm font-medium transition ${
             activeTab === "local"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          Local Tracking ({pagination?.total ?? leads.length})
+          Local Tracking ({localPagination?.total ?? leads.length})
         </button>
       </div>
 
@@ -404,96 +476,111 @@ export function ChoiceConnectSummaryPanel({
       )}
 
       {activeTab === "choice" && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left text-sm">
-              <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Customer</th>
-                  <th className="px-4 py-3 font-medium">Product</th>
-                  <th className="px-4 py-3 font-medium">Agent</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Sub-status</th>
-                  <th className="px-4 py-3 font-medium">Ref</th>
-                </tr>
-              </thead>
-              <tbody>
-                {remoteEnquiries.length === 0 && !isLoading ? (
+        <div className="space-y-4">
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left text-sm">
+                <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                      No Choice Connect enquiries returned for selected filters.
-                    </td>
+                    <th className="px-4 py-3 font-medium">Date</th>
+                    <th className="px-4 py-3 font-medium">Customer</th>
+                    <th className="px-4 py-3 font-medium">Product</th>
+                    <th className="px-4 py-3 font-medium">Agent</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Sub-status</th>
+                    <th className="px-4 py-3 font-medium">Ref</th>
                   </tr>
-                ) : (
-                  remoteEnquiries.map((enquiry) => (
-                    <RemoteEnquiryRow key={enquiry.enquiryId || enquiry.uuid} enquiry={enquiry} />
-                  ))
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {remoteEnquiries.length === 0 && !isLoading ? (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                        No Choice Connect enquiries returned for selected filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    remoteEnquiries.map((enquiry) => (
+                      <RemoteEnquiryRow
+                        key={enquiry.enquiryId || enquiry.uuid || `${enquiry.customerMobile}-${enquiry.createdAt}`}
+                        enquiry={enquiry}
+                      />
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+          <Pagination
+            page={remotePagination?.page ?? page}
+            totalPages={remoteTotalPages}
+            onPageChange={setPage}
+            total={remoteTotal}
+            limit={remotePagination?.limit ?? limit}
+          />
         </div>
       )}
 
       {activeTab === "local" && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Customer</th>
-                  <th className="px-4 py-3 font-medium">Product</th>
-                  <th className="px-4 py-3 font-medium">Source</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Ref</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.length === 0 && !isLoading ? (
+        <div className="space-y-4">
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                      No local records found.
-                    </td>
+                    <th className="px-4 py-3 font-medium">Date</th>
+                    <th className="px-4 py-3 font-medium">Customer</th>
+                    <th className="px-4 py-3 font-medium">Product</th>
+                    <th className="px-4 py-3 font-medium">Source</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Ref</th>
                   </tr>
-                ) : (
-                  leads.map((lead: ChoiceLead) => (
-                    <tr key={lead._id} className="border-b border-border/60 last:border-0">
-                      <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium">{lead.customerName || "—"}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">{formatProductLabel(lead.productType)}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${sourceBadgeClass(lead.sourceChannel)}`}
-                        >
-                          {formatSourceLabel(lead)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 capitalize">{lead.status ?? "initiated"}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                        {lead.uuid || lead._id.slice(-8)}
+                </thead>
+                <tbody>
+                  {leads.length === 0 && !isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                        No local records found.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    leads.map((lead: ChoiceLead) => (
+                      <tr key={lead._id} className="border-b border-border/60 last:border-0">
+                        <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{lead.customerName || "—"}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">{formatProductLabel(lead.productType)}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${sourceBadgeClass(lead.sourceChannel)}`}
+                          >
+                            {formatSourceLabel(lead)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 capitalize">{lead.status ?? "initiated"}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                          {lead.uuid || lead._id.slice(-8)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+          {localPagination && (
+            <Pagination
+              page={localPagination.page}
+              totalPages={localPagination.totalPages}
+              onPageChange={setPage}
+              total={localPagination.total}
+              limit={localPagination.limit}
+            />
+          )}
         </div>
-      )}
-
-      {activeTab === "local" && pagination && pagination.totalPages > 1 && (
-        <Pagination
-          page={pagination.page}
-          totalPages={pagination.totalPages}
-          onPageChange={setPage}
-        />
       )}
     </div>
   );

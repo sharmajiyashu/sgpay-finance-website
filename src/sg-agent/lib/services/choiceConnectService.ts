@@ -28,7 +28,7 @@ export async function getAgentChoiceConnectSummary(
   const qs = search.toString();
   return get<ChoiceSummaryResponse>(
     `${AGENT_API_PATHS.choiceConnectSummary}${qs ? `?${qs}` : ""}`,
-    { timeout: 30000 }
+    { timeout: 60000 }
   );
 }
 
