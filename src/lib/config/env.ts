@@ -122,6 +122,7 @@ export const AGENT_API_PATHS = {
   changePassword: "/change-password",
   downline: "/downline",
   commissions: "/commissions",
+  enquiries: "/enquiries",
   choiceConnectConfig: "/choice-connect/config",
   choiceConnectLeads: "/choice-connect/leads",
   choiceConnectSummary: "/choice-connect/summary",

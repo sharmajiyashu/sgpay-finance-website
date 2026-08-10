@@ -33,12 +33,13 @@ export const agentSidebarNav: AgentSidebarNavEntry[] = [
   { title: "Downline", href: "/agent/downline", icon: IconUsersGroup },
   { title: "Commissions", href: "/agent/commissions", icon: IconCoin },
   {
-    title: "Choice Connect",
-    href: "/agent/choice-connect/summary",
+    title: "Credit Card",
+    href: "/agent/choice-connect/credit-card",
     icon: IconCreditCard,
     items: [
+      { title: "Choice Connect", href: "/agent/choice-connect/credit-card" },
+      { title: "Roar Bank Enquiry", href: "/agent/choice-connect/roar-bank-enquiry" },
       { title: "Summary", href: "/agent/choice-connect/summary", icon: IconList },
-      { title: "Credit Card", href: "/agent/choice-connect/credit-card" },
       { title: "Loans", href: "/agent/choice-connect/loans" },
       { title: "Referral Links", href: "/agent/choice-connect/referral-links" },
     ],

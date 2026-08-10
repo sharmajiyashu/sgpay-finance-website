@@ -33,7 +33,10 @@ export const ENQUIRY_CATEGORIES: EnquiryCategory[] = [
     id: "finance",
     label: "Finance",
     href: "/admin/enquiries/finance",
-    services: mapServices(FINANCE_SERVICES),
+    services: [
+      ...mapServices(FINANCE_SERVICES),
+      { slug: "roar-credit-card", label: "Roar Credit Card" },
+    ],
   },
   {
     id: "insurance",

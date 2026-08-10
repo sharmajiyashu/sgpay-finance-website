@@ -84,17 +84,46 @@ export const sidebarNav: SidebarNavEntry[] = [
     ],
   },
   {
-    title: "Choice Connect",
-    href: "/admin/choice-connect/summary",
+    title: "Credit Card",
+    href: "/admin/choice-connect/credit-card",
     icon: IconCreditCard,
-    permission: "admin:choice-connect:get",
+    permission: ["admin:choice-connect:get", "admin:enquiry:get"],
     items: [
-      { title: "Summary", href: "/admin/choice-connect/summary" },
-      { title: "Credit Card", href: "/admin/choice-connect/credit-card" },
-      { title: "Loans", href: "/admin/choice-connect/loans" },
-      { title: "Referral Links", href: "/admin/choice-connect/referral-links" },
-      { title: "Onboarding", href: "/admin/choice-connect/onboarding" },
-      { title: "SSO Login", href: "/admin/choice-connect/sso" },
+      {
+        title: "Choice Connect",
+        href: "/admin/choice-connect/credit-card",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "Roar Bank Enquiry",
+        href: "/admin/choice-connect/roar-bank-enquiry",
+        permission: "admin:enquiry:get",
+      },
+      {
+        title: "Summary",
+        href: "/admin/choice-connect/summary",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "Loans",
+        href: "/admin/choice-connect/loans",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "Referral Links",
+        href: "/admin/choice-connect/referral-links",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "Onboarding",
+        href: "/admin/choice-connect/onboarding",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "SSO Login",
+        href: "/admin/choice-connect/sso",
+        permission: "admin:choice-connect:get",
+      },
     ],
   },
   {

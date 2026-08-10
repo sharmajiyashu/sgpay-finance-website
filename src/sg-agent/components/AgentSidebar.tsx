@@ -45,7 +45,7 @@ export function AgentSidebar() {
 
   useEffect(() => {
     if (pathname.startsWith("/agent/choice-connect")) {
-      setOpenSections((prev) => ({ ...prev, "Choice Connect": true }));
+      setOpenSections((prev) => ({ ...prev, "Credit Card": true }));
     }
   }, [pathname]);
 

@@ -12,6 +12,10 @@ export async function getEnquiries(url: string): Promise<EnquiriesListResponse> 
   return get<EnquiriesListResponse>(url);
 }
 
+export async function getEnquiryById(id: string): Promise<Enquiry> {
+  return get<Enquiry>(ADMIN_API_PATHS.enquiryById(id));
+}
+
 export async function updateEnquiryStatus(
   id: string,
   status: EnquiryStatus
