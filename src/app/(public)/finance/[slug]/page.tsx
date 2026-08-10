@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
 import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
 import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
+import { CreditCardPartners } from "@/components/CreditCardPartners";
 const ChoiceCreditCardWidget = dynamic(
   () =>
     import("@/components/choice-connect/ChoiceConnectWebsiteApply").then(
@@ -239,19 +240,22 @@ export default function FinanceDetailPage({ params }: { params: Promise<{ slug: 
             )}
           </div>
 
-          {/* Full Width Widget for Credit Card */}
+          {/* Partner credit cards (e.g. Roar Credit Card) + Choice Connect widget */}
           {slug === "credit-card" && (
-            <div className="row mt-5 wow fadeInUp" data-wow-delay="0.5s">
-              <div className="col-12">
-                <div className="bg-light p-4 rounded border">
-                  <h4 className="mb-3 text-center">Apply for Credit Card</h4>
-                  <p className="text-muted text-center small mb-4">
-                    Complete your application securely via Choice Connect.
-                  </p>
-                  <ChoiceCreditCardWidget />
+            <>
+              <CreditCardPartners />
+              <div className="row mt-2 wow fadeInUp" data-wow-delay="0.5s">
+                <div className="col-12">
+                  <div className="bg-light p-4 rounded border">
+                    <h4 className="mb-3 text-center">Apply for Credit Card</h4>
+                    <p className="text-muted text-center small mb-4">
+                      Complete your application securely via Choice Connect.
+                    </p>
+                    <ChoiceCreditCardWidget />
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>

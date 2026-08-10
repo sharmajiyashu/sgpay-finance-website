@@ -47,6 +47,17 @@ export const SITE_CONFIG = {
   },
 } as const;
 
+/**
+ * Partner credit card apply URLs (see also `creditCards.ts` for full product details).
+ * Override with NEXT_PUBLIC_ROAR_CREDIT_CARD_APPLY_URL in root `.env` if needed.
+ */
+export const CREDIT_CARD_APPLY_URLS = {
+  roar: getEnv(
+    process.env.NEXT_PUBLIC_ROAR_CREDIT_CARD_APPLY_URL,
+    "https://wee.bnking.in/c/MTVmZTMxO"
+  ),
+} as const;
+
 /** Choice Connect widget (public website only — secrets stay in SG-Backend .env) */
 export const CHOICE_CONNECT_CONFIG = {
   apiBaseUrl: getEnv(process.env.NEXT_PUBLIC_CHOICE_CONNECT_API_BASE_URL, "https://apidev.choiceconnect.in"),

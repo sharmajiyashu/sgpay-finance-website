@@ -1,0 +1,41 @@
+# Working Nginx config for https://sgpay4u.in
+# IMPORTANT: proxy_pass MUST end with `/` so `/api/` is stripped before Express.
+
+server {
+    server_name sgpay4u.in www.sgpay4u.in;
+
+    # Backend API (Express on :5000)
+    # Browser:  https://sgpay4u.in/api/v1/api/admin/login
+    # Upstream: http://127.0.0.1:5000/v1/api/admin/login
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000/;   # <-- trailing slash is required
+
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 60s;
+        proxy_connect_timeout 60s;
+    }
+
+    # Next.js frontend (:3000)
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    listen [::]:443 ssl ipv6only=on;
+    listen 443 ssl;
+    # ssl_* lines stay as Certbot managed them
+}
+
+# HTTP → HTTPS block stays as Certbot managed it
