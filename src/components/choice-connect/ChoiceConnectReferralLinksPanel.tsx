@@ -28,10 +28,16 @@ async function copyText(text: string) {
   toast.success("Link copied to clipboard");
 }
 
-function ReferralCard({ item }: { item: ChoiceReferralLinkItem }) {
+function ReferralCard({ item, agentId }: { item: ChoiceReferralLinkItem; agentId?: string }) {
   const title =
     item.title ||
     (item.productType ? formatProductLabel(item.productType) : "Referral Link");
+
+  let shareableLink = item.link;
+  if (shareableLink && agentId) {
+    const hasQuery = shareableLink.includes("?");
+    shareableLink = `${shareableLink}${hasQuery ? "&" : "?"}refId=${encodeURIComponent(agentId)}`;
+  }
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -44,16 +50,16 @@ function ReferralCard({ item }: { item: ChoiceReferralLinkItem }) {
           {item.description && (
             <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
           )}
-          {item.link ? (
-            <p className="mt-2 break-all text-xs text-muted-foreground">{item.link}</p>
+          {shareableLink ? (
+            <p className="mt-2 break-all text-xs text-muted-foreground">{shareableLink}</p>
           ) : (
             <p className="mt-2 text-xs text-amber-700">No link returned from Choice Connect</p>
           )}
         </div>
-        {item.link && (
+        {shareableLink && (
           <button
             type="button"
-            onClick={() => copyText(item.link!)}
+            onClick={() => copyText(shareableLink!)}
             className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted"
           >
             <IconCopy className="h-3.5 w-3.5" />
@@ -141,7 +147,11 @@ export function ChoiceConnectReferralLinksPanel({
       {!isLoading && data?.links && data.links.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2">
           {data.links.map((item, index) => (
-            <ReferralCard key={`${item.link ?? item.title ?? index}`} item={item} />
+            <ReferralCard
+              key={`${item.link ?? item.title ?? index}`}
+              item={item}
+              agentId={data.agentCode}
+            />
           ))}
         </div>
       )}

@@ -26,8 +26,11 @@ export function ChoiceConnectWebsiteApply({
     const trackKey = `website:${productType}`;
     if (trackedProductsRef.current.has(trackKey)) return;
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const refId = searchParams.get("refId") || searchParams.get("agentId") || searchParams.get("agentCode") || undefined;
+
     trackedProductsRef.current.add(trackKey);
-    createWebsiteChoiceLead({ productType }).catch(() => {
+    createWebsiteChoiceLead({ productType, refId }).catch(() => {
       trackedProductsRef.current.delete(trackKey);
     });
   }, [productType]);

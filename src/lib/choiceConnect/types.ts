@@ -157,6 +157,7 @@ export interface CreateChoiceLeadInput {
   uuid?: string;
   agentCode?: string;
   subAgentCode?: string;
+  refId?: string;
 }
 
 export const CHOICE_LOAN_PRODUCTS = [

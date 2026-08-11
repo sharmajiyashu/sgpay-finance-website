@@ -543,29 +543,40 @@ export function ChoiceConnectSummaryPanel({
                       </td>
                     </tr>
                   ) : (
-                    leads.map((lead: ChoiceLead) => (
-                      <tr key={lead._id} className="border-b border-border/60 last:border-0">
-                        <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium">{lead.customerName || "—"}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">{formatProductLabel(lead.productType)}</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${sourceBadgeClass(lead.sourceChannel)}`}
-                          >
-                            {formatSourceLabel(lead)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 capitalize">{lead.status ?? "initiated"}</td>
-                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                          {lead.uuid || lead._id.slice(-8)}
-                        </td>
-                      </tr>
-                    ))
+                    leads.map((lead: ChoiceLead & { createdByUserId?: { firstName?: string; lastName?: string; email?: string; userRole?: string; designation?: string; agentType?: string } }) => {
+                      const referee = typeof lead.createdByUserId === 'object' && lead.createdByUserId ? lead.createdByUserId : null;
+                      const refereeName = referee ? [referee.firstName, referee.lastName].filter(Boolean).join(' ') || referee.email : null;
+                      const refereeRole = referee ? (referee.agentType || referee.designation || referee.userRole) : null;
+
+                      return (
+                        <tr key={lead._id} className="border-b border-border/60 last:border-0">
+                          <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
+                          <td className="px-4 py-3">
+                            <div className="font-medium">{lead.customerName || "—"}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">{formatProductLabel(lead.productType)}</td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${sourceBadgeClass(lead.sourceChannel)}`}
+                            >
+                              {formatSourceLabel(lead)}
+                            </span>
+                            {refereeName && (
+                              <div className="mt-1 text-xs text-muted-foreground">
+                                <span className="font-medium text-foreground">Referred by:</span> {refereeName} ({refereeRole})
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 capitalize">{lead.status ?? "initiated"}</td>
+                          <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                            {lead.uuid || lead._id.slice(-8)}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
