@@ -9,6 +9,8 @@ export interface AgentProfile {
   address?: string;
   city?: string;
   panCard?: string;
+  kycStatus?: string;
+  aadhaarCardNumber?: string;
   status?: string;
   profileImage?: { url?: string } | string;
   createdAt?: string;
@@ -33,6 +35,25 @@ export async function uploadAgentProfileImage(file: File): Promise<AgentProfile>
   const formData = new FormData();
   formData.append("image", file);
   return postForm<AgentProfile>(AGENT_API_PATHS.profileImage, formData);
+}
+
+export async function uploadKycDocuments(payload: {
+  aadhaarCardNumber?: string;
+  panCard?: string;
+  panCardFile?: File;
+  aadhaarFrontFile?: File;
+  aadhaarBackFile?: File;
+  bankPassbookFile?: File;
+}): Promise<AgentProfile> {
+  const formData = new FormData();
+  if (payload.aadhaarCardNumber) formData.append("aadhaarCardNumber", payload.aadhaarCardNumber);
+  if (payload.panCard) formData.append("panCard", payload.panCard);
+  if (payload.panCardFile) formData.append("panCardFile", payload.panCardFile);
+  if (payload.aadhaarFrontFile) formData.append("aadhaarFrontFile", payload.aadhaarFrontFile);
+  if (payload.aadhaarBackFile) formData.append("aadhaarBackFile", payload.aadhaarBackFile);
+  if (payload.bankPassbookFile) formData.append("bankPassbookFile", payload.bankPassbookFile);
+
+  return postForm<AgentProfile>("/kyc", formData);
 }
 
 function profileImageUrl(profile: AgentProfile): string | null {

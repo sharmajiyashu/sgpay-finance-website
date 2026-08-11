@@ -11,6 +11,7 @@ import {
   type AgentProfile,
 } from "@/sg-agent/lib/services/agentProfileService";
 import { AgentChangePasswordForm } from "@/sg-agent/components/AgentChangePasswordForm";
+import { KycDocumentUploadSection } from "@/sg-agent/components/KycDocumentUploadSection";
 
 interface AgentDashboardContentProps {
   title: string;
@@ -136,6 +137,14 @@ export function AgentDashboardContent({ title, showEdit = false }: AgentDashboar
           </div>
         </div>
       ) : null}
+
+      {profile && (
+        <KycDocumentUploadSection
+          kycStatus={profile.kycStatus}
+          panCard={profile.panCard}
+          aadhaarCardNumber={profile.aadhaarCardNumber}
+        />
+      )}
     </div>
   );
 }

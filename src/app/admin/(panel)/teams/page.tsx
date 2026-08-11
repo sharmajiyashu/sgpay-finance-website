@@ -25,17 +25,17 @@ import { getAuthUser } from "@/sg-admin/lib/api";
 
 const DESIGNATION_OPTIONS = [
   { value: "", label: "All designations" },
-  { value: "state_head", label: "State Head" },
-  { value: "asm", label: "ASM" },
-  { value: "r", label: "R" },
+  { value: "state_head", label: "State Head (SH)" },
+  { value: "asm", label: "Sales Manager (ASM)" },
+  { value: "rm", label: "Relationship Manager (RM)" },
 ];
 
-function creatableDesignations(): Array<"state_head" | "asm" | "r"> {
+function creatableDesignations(): Array<"state_head" | "asm" | "rm"> {
   const user = getAuthUser();
   const designation = typeof user?.designation === "string" ? user.designation : "super_admin";
-  if (designation === "super_admin" || !designation) return ["state_head", "asm", "r"];
+  if (designation === "super_admin" || !designation) return ["state_head", "asm", "rm"];
   if (designation === "state_head") return ["asm"];
-  if (designation === "asm") return ["r"];
+  if (designation === "asm") return ["rm"];
   return [];
 }
 
@@ -78,7 +78,7 @@ export default function AdminTeamsPage() {
     fullName: "",
     email: "",
     mobile: "",
-    designation: (allowedDesignations[0] || "state_head") as "state_head" | "asm" | "r",
+    designation: (allowedDesignations[0] || "state_head") as "state_head" | "asm" | "rm",
     stateCode: "",
     territory: "",
     address: "",

@@ -19,7 +19,7 @@ export async function createTeamMember(body: {
   fullName: string;
   email: string;
   mobile: string;
-  designation: "state_head" | "asm" | "r";
+  designation: "state_head" | "asm" | "rm";
   parentId?: string;
   stateCode?: string;
   territory?: string;
