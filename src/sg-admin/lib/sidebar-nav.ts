@@ -100,6 +100,16 @@ export const sidebarNav: SidebarNavEntry[] = [
         permission: "admin:enquiry:get",
       },
       {
+        title: "Roar Referral Link",
+        href: "/admin/choice-connect/roar-referral-link",
+        permission: "admin:enquiry:get",
+      },
+      {
+        title: "Roar Referral Tree",
+        href: "/admin/choice-connect/roar-referral-tree",
+        permission: "admin:enquiry:get",
+      },
+      {
         title: "Summary",
         href: "/admin/choice-connect/summary",
         permission: "admin:choice-connect:get",
@@ -122,6 +132,19 @@ export const sidebarNav: SidebarNavEntry[] = [
       {
         title: "SSO Login",
         href: "/admin/choice-connect/sso",
+        permission: "admin:choice-connect:get",
+      },
+    ],
+  },
+  {
+    title: "Insurance",
+    href: "/admin/insurance/motor",
+    icon: IconShield,
+    permission: "admin:choice-connect:get",
+    items: [
+      {
+        title: "Motor Insurance",
+        href: "/admin/insurance/motor",
         permission: "admin:choice-connect:get",
       },
     ],

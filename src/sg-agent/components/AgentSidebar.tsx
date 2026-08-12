@@ -47,6 +47,9 @@ export function AgentSidebar() {
     if (pathname.startsWith("/agent/choice-connect")) {
       setOpenSections((prev) => ({ ...prev, "Credit Card": true }));
     }
+    if (pathname.startsWith("/agent/insurance")) {
+      setOpenSections((prev) => ({ ...prev, Insurance: true }));
+    }
   }, [pathname]);
 
   const handleLogout = () => {

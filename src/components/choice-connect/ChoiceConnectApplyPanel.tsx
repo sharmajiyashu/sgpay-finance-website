@@ -3,9 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChoiceConnectWidget } from "@/components/choice-connect/ChoiceConnectWidget";
+import { MotorInsuranceWidget } from "@/components/insurance/MotorInsuranceWidget";
 import { validateWidgetConfig } from "@/lib/choiceConnect/widgetConfig";
-import type { ChoiceProductType, ChoiceWidgetConfig, CreateChoiceLeadInput } from "@/lib/choiceConnect/types";
-import { CHOICE_LOAN_PRODUCTS } from "@/lib/choiceConnect/types";
+import type {
+  ChoiceProductType,
+  ChoiceVehicleType,
+  ChoiceWidgetConfig,
+  CreateChoiceLeadInput,
+} from "@/lib/choiceConnect/types";
+import { CHOICE_LOAN_PRODUCTS, CHOICE_VEHICLE_TYPES } from "@/lib/choiceConnect/types";
 
 export interface ChoiceConnectApiClient {
   getConfig: () => Promise<ChoiceWidgetConfig & { configured?: boolean }>;
@@ -30,6 +36,7 @@ export function ChoiceConnectApplyPanel({
   queryScope = "staff",
 }: ChoiceConnectApplyPanelProps) {
   const [productType, setProductType] = useState<ChoiceProductType>(initialProductType);
+  const [vehicleType, setVehicleType] = useState<ChoiceVehicleType>("bike");
   const trackedProductsRef = useRef<Set<string>>(new Set());
 
   const { data: widgetConfig, isLoading, error } = useQuery({
@@ -38,19 +45,29 @@ export function ChoiceConnectApplyPanel({
     staleTime: 5 * 60 * 1000,
   });
 
+  const isMotor = productType === "motor-insurance";
+
   useEffect(() => {
     if (!api.createLead || !widgetConfig?.configured) return;
-    const trackKey = `${queryScope}:${productType}`;
+    const trackKey = isMotor
+      ? `${queryScope}:${productType}:${vehicleType}`
+      : `${queryScope}:${productType}`;
     if (trackedProductsRef.current.has(trackKey)) return;
 
     trackedProductsRef.current.add(trackKey);
-    api.createLead({ productType }).catch(() => {
-      trackedProductsRef.current.delete(trackKey);
-    });
-  }, [api, productType, queryScope, widgetConfig?.configured]);
+    api
+      .createLead({
+        productType,
+        metadata: isMotor ? { vehicleType } : undefined,
+      })
+      .catch(() => {
+        trackedProductsRef.current.delete(trackKey);
+      });
+  }, [api, productType, vehicleType, queryScope, widgetConfig?.configured, isMotor]);
 
-  const containerId =
-    productType === "credit-card"
+  const containerId = isMotor
+    ? `${queryScope}-insuranceWidgetContainer`
+    : productType === "credit-card"
       ? `${queryScope}-creditCardWidgetContainer`
       : `${queryScope}-loanWidgetContainer`;
 
@@ -75,7 +92,7 @@ export function ChoiceConnectApplyPanel({
     );
   }
 
-  const configError = validateWidgetConfig(widgetConfig);
+  const configError = validateWidgetConfig(widgetConfig, productType);
   const profile = widgetConfig.choiceConnectProfile;
 
   return (
@@ -123,10 +140,34 @@ export function ChoiceConnectApplyPanel({
           </div>
         )}
 
+        {isMotor && (
+          <div className="max-w-xs">
+            <label className="mb-1 block text-sm font-medium">Vehicle Type</label>
+            <div className="flex gap-2">
+              {CHOICE_VEHICLE_TYPES.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setVehicleType(opt.value)}
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium ${
+                    vehicleType === opt.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background hover:bg-muted"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {configError ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
             {configError}
           </div>
+        ) : isMotor ? (
+          <MotorInsuranceWidget config={widgetConfig} vehicleType={vehicleType} />
         ) : (
           <ChoiceConnectWidget
             config={widgetConfig}

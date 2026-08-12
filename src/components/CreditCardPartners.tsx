@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CREDIT_CARD_PARTNERS, type CreditCardPartner } from "@/lib/config/creditCards";
 import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
 import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
@@ -17,10 +18,12 @@ function PartnerApplyModal({
   card,
   open,
   onClose,
+  roarRef,
 }: {
   card: CreditCardPartner;
   open: boolean;
   onClose: () => void;
+  roarRef?: string;
 }) {
   const titleId = useId();
   const [form, setForm] = useState<ApplyFormState>(EMPTY_FORM);
@@ -75,6 +78,7 @@ function PartnerApplyModal({
             partnerName: card.name,
             bank: card.bank,
             applyUrl: card.applyUrl,
+            ...(roarRef ? { roarRef } : {}),
           },
         })
       );
@@ -232,7 +236,7 @@ function PartnerApplyModal({
   );
 }
 
-function PartnerCard({ card }: { card: CreditCardPartner }) {
+function PartnerCard({ card, roarRef }: { card: CreditCardPartner; roarRef?: string }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -361,12 +365,16 @@ function PartnerCard({ card }: { card: CreditCardPartner }) {
         card={card}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        roarRef={roarRef}
       />
     </>
   );
 }
 
 export function CreditCardPartners() {
+  const searchParams = useSearchParams();
+  const roarRef = searchParams.get("roarRef")?.trim() || undefined;
+
   if (CREDIT_CARD_PARTNERS.length === 0) return null;
 
   return (
@@ -381,7 +389,7 @@ export function CreditCardPartners() {
         <div className="row g-4">
           {CREDIT_CARD_PARTNERS.map((card) => (
             <div key={card.id} className="col-12">
-              <PartnerCard card={card} />
+              <PartnerCard card={card} roarRef={roarRef} />
             </div>
           ))}
         </div>

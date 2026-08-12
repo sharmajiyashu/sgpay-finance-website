@@ -90,6 +90,11 @@ function EnquiryDetailDialog({
   const applyUrl = typeof meta.applyUrl === "string" ? meta.applyUrl : undefined;
   const partnerId =
     typeof meta.partnerId === "string" ? meta.partnerId : undefined;
+  const referredByName =
+    typeof meta.referredByName === "string" ? meta.referredByName : undefined;
+  const referredByRole =
+    typeof meta.referredByRole === "string" ? meta.referredByRole : undefined;
+  const roarRef = typeof meta.roarRef === "string" ? meta.roarRef : undefined;
   const isPartnerLead = Boolean(partnerName || partnerId || applyUrl);
 
   return (
@@ -192,6 +197,17 @@ function EnquiryDetailDialog({
             {partnerId && (
               <DetailRow label="Partner ID">
                 <span className="font-mono text-xs">{partnerId}</span>
+              </DetailRow>
+            )}
+            {referredByName && (
+              <DetailRow label="Referred by">{referredByName}</DetailRow>
+            )}
+            {referredByRole && (
+              <DetailRow label="Referrer role">{referredByRole}</DetailRow>
+            )}
+            {roarRef && (
+              <DetailRow label="Referral code">
+                <span className="font-mono text-xs">{roarRef}</span>
               </DetailRow>
             )}
             <DetailRow label="Status">
@@ -428,6 +444,7 @@ export function EnquiriesPanel({
                 <th className="px-4 py-3 font-medium">Contact</th>
                 <th className="px-4 py-3 font-medium">Category</th>
                 <th className="px-4 py-3 font-medium">Service</th>
+                <th className="px-4 py-3 font-medium">Referred by</th>
                 <th className="px-4 py-3 font-medium">Message</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Date</th>
@@ -437,13 +454,13 @@ export function EnquiriesPanel({
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                     Loading enquiries...
                   </td>
                 </tr>
               ) : enquiries.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                     No enquiries found
                   </td>
                 </tr>
@@ -452,6 +469,14 @@ export function EnquiriesPanel({
                   const partnerName =
                     typeof enquiry.metadata?.partnerName === "string"
                       ? enquiry.metadata.partnerName
+                      : null;
+                  const referredByName =
+                    typeof enquiry.metadata?.referredByName === "string"
+                      ? enquiry.metadata.referredByName
+                      : null;
+                  const referredByRole =
+                    typeof enquiry.metadata?.referredByRole === "string"
+                      ? enquiry.metadata.referredByRole
                       : null;
 
                   return (
@@ -472,6 +497,20 @@ export function EnquiriesPanel({
                         <div>{getServiceLabel(enquiry.type, enquiry.service)}</div>
                         {partnerName && (
                           <div className="mt-1 text-xs text-primary">{partnerName}</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {referredByName ? (
+                          <>
+                            <div className="font-medium text-foreground">{referredByName}</div>
+                            {referredByRole && (
+                              <div className="mt-0.5 text-xs text-muted-foreground">
+                                {referredByRole}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          "—"
                         )}
                       </td>
                       <td className="max-w-xs px-4 py-3">

@@ -69,6 +69,9 @@ export function DashboardSidebar() {
     if (pathname.startsWith("/admin/choice-connect")) {
       setOpenSections((prev) => ({ ...prev, "Credit Card": true }));
     }
+    if (pathname.startsWith("/admin/insurance")) {
+      setOpenSections((prev) => ({ ...prev, Insurance: true }));
+    }
     if (pathname.startsWith("/admin/commissions")) {
       setOpenSections((prev) => ({ ...prev, Commissions: true }));
     }

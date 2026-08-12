@@ -29,6 +29,7 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const PRODUCT_FILTER_OPTIONS = [
   { value: "", label: "All products" },
   { value: "credit-card", label: "Credit Card" },
+  { value: "motor-insurance", label: "Motor Insurance" },
   { value: "personal-loan", label: "Personal Loan" },
   { value: "business-loan", label: "Business Loan" },
   { value: "home-loan", label: "Home Loan" },

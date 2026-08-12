@@ -3,7 +3,10 @@ export type ChoiceProductType =
   | "personal-loan"
   | "business-loan"
   | "home-loan"
-  | "other-loan";
+  | "other-loan"
+  | "motor-insurance";
+
+export type ChoiceVehicleType = "bike" | "car";
 
 export type ChoiceSourceChannel = "website" | "admin" | "agent";
 
@@ -22,6 +25,8 @@ export interface ChoiceWidgetConfig {
   sourceChannel: ChoiceSourceChannel;
   sourceLabel: string;
   widgetBaseUrl: string;
+  /** Choice access token for Motor Insurance widget (X_API_KEY) */
+  xApiKey?: string;
   configured?: boolean;
   authConfigured?: boolean;
   ssoConfigured?: boolean;
@@ -158,6 +163,7 @@ export interface CreateChoiceLeadInput {
   agentCode?: string;
   subAgentCode?: string;
   refId?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export const CHOICE_LOAN_PRODUCTS = [
@@ -167,8 +173,14 @@ export const CHOICE_LOAN_PRODUCTS = [
   { value: "other-loan" as const, label: "Other Loan" },
 ];
 
+export const CHOICE_VEHICLE_TYPES: { value: ChoiceVehicleType; label: string }[] = [
+  { value: "bike", label: "Bike (2W)" },
+  { value: "car", label: "Car (4W)" },
+];
+
 export function formatProductLabel(productType: string): string {
   if (productType === "credit-card") return "Credit Card";
+  if (productType === "motor-insurance") return "Motor Insurance";
   const loan = CHOICE_LOAN_PRODUCTS.find((p) => p.value === productType);
   return loan?.label ?? productType.replace(/-/g, " ");
 }

@@ -6,6 +6,13 @@ export interface EnquiryMetadata {
   partnerName?: string;
   bank?: string;
   applyUrl?: string;
+  roarRef?: string;
+  referredByUserId?: string;
+  referredByName?: string;
+  /** Display label e.g. "Sales Manager (ASM)", "Retailer" */
+  referredByRole?: string;
+  /** Raw key e.g. asm, rm, retailer */
+  referredByRoleKey?: string;
   [key: string]: unknown;
 }
 

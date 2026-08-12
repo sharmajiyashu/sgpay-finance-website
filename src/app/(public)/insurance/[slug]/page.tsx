@@ -1,11 +1,20 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { Suspense, use, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { INSURANCE_SERVICES } from "@/data/servicesData";
 import { notFound } from "next/navigation";
 import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
 import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
+
+const ChoiceMotorInsuranceWidget = dynamic(
+  () =>
+    import("@/components/ChoiceMotorInsuranceWidget").then(
+      (mod) => mod.ChoiceMotorInsuranceWidget
+    ),
+  { ssr: false }
+);
 
 export default function InsuranceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -261,6 +270,20 @@ export default function InsuranceDetailPage({ params }: { params: Promise<{ slug
         </div>
       </div>
       {/* Main Details End */}
+
+      {slug === "vehicle-insurance" && (
+        <div className="container-xxl pb-5">
+          <div className="bg-light p-4 rounded border wow fadeInUp" data-wow-delay="0.2s">
+            <h4 className="mb-2 text-center">Apply Motor Insurance Online</h4>
+            <p className="text-muted text-center small mb-4">
+              Choose bike or car and complete your application securely via Choice Connect.
+            </p>
+            <Suspense fallback={<div className="text-center text-muted small py-4">Loading insurance widget…</div>}>
+              <ChoiceMotorInsuranceWidget />
+            </Suspense>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -5,6 +5,7 @@ import {
   IconList,
   IconUsersGroup,
   IconCoin,
+  IconShield,
 } from "@tabler/icons-react";
 
 export interface AgentSidebarNavItem {
@@ -39,10 +40,17 @@ export const agentSidebarNav: AgentSidebarNavEntry[] = [
     items: [
       { title: "Choice Connect", href: "/agent/choice-connect/credit-card" },
       { title: "Roar Bank Enquiry", href: "/agent/choice-connect/roar-bank-enquiry" },
+      { title: "Roar Referral Link", href: "/agent/choice-connect/roar-referral-link" },
       { title: "Summary", href: "/agent/choice-connect/summary", icon: IconList },
       { title: "Loans", href: "/agent/choice-connect/loans" },
       { title: "Referral Links", href: "/agent/choice-connect/referral-links" },
     ],
+  },
+  {
+    title: "Insurance",
+    href: "/agent/insurance/motor",
+    icon: IconShield,
+    items: [{ title: "Motor Insurance", href: "/agent/insurance/motor" }],
   },
   { title: "Profile", href: "/agent/profile", icon: IconUser },
 ];

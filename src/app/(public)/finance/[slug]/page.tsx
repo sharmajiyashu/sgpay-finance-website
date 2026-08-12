@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { Suspense, use, useState } from "react";
 import Link from "next/link";
 import { FINANCE_SERVICES } from "@/data/servicesData";
 import { notFound } from "next/navigation";
@@ -243,7 +243,9 @@ export default function FinanceDetailPage({ params }: { params: Promise<{ slug: 
           {/* Partner credit cards (e.g. Roar Credit Card) + Choice Connect widget */}
           {slug === "credit-card" && (
             <>
-              <CreditCardPartners />
+              <Suspense fallback={<div className="mb-5 text-muted small">Loading partner cards…</div>}>
+                <CreditCardPartners />
+              </Suspense>
               <div className="row mt-2 wow fadeInUp" data-wow-delay="0.5s">
                 <div className="col-12">
                   <div className="bg-light p-4 rounded border">

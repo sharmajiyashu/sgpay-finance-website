@@ -9,8 +9,12 @@ import {
   IconProgress,
   IconCircleCheck,
   IconUsersGroup,
+  IconLink,
+  IconHierarchy,
 } from "@tabler/icons-react";
 import { getDashboardStats } from "@/sg-admin/lib/services/dashboardService";
+import { RoarReferralCopyCard } from "@/components/roar/RoarReferralCopyCard";
+import { getRoarReferralLink } from "@/sg-admin/lib/services/roarReferralService";
 import { twMerge } from "tailwind-merge";
 
 function StatCard({
@@ -64,7 +68,7 @@ export default function AdminDashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Overview of users and enquiries
+          Overview of users, enquiries, and Roar referrals
         </p>
       </div>
 
@@ -74,6 +78,50 @@ export default function AdminDashboardPage() {
         <StatCard label="Total Enquiries" value={stats.totalEnquiries} icon={IconHelp} />
         <StatCard label="Pending Enquiries" value={stats.enquiriesByStatus.pending} icon={IconClock} />
         <StatCard label="Pending Agents" value={stats.pendingAgents ?? 0} icon={IconUsersGroup} />
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">Roar Credit Card Referrals</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard
+            label="Roar Enquiries"
+            value={stats.roarEnquiries ?? 0}
+            icon={IconLink}
+          />
+          <StatCard
+            label="Attributed Referrals"
+            value={stats.roarAttributed ?? 0}
+            icon={IconHierarchy}
+          />
+          <StatCard
+            label="Roar Pending"
+            value={stats.roarPending ?? 0}
+            icon={IconClock}
+          />
+        </div>
+        <div className="mt-4 space-y-3">
+          <RoarReferralCopyCard getLink={getRoarReferralLink} queryScope="admin-dashboard" />
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/admin/choice-connect/roar-bank-enquiry"
+              className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
+            >
+              Roar Bank Enquiry
+            </Link>
+            <Link
+              href="/admin/choice-connect/roar-referral-tree"
+              className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
+            >
+              Roar Referral Tree
+            </Link>
+            <Link
+              href="/admin/choice-connect/roar-referral-link"
+              className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
+            >
+              My Referral Link
+            </Link>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -155,6 +203,12 @@ export default function AdminDashboardPage() {
           className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
         >
           Manage Enquiries
+        </Link>
+        <Link
+          href="/admin/insurance/motor"
+          className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
+        >
+          Motor Insurance
         </Link>
       </div>
     </div>

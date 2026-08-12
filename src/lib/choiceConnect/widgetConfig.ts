@@ -1,9 +1,14 @@
 import { CHOICE_CONNECT_CONFIG } from "@/lib/config/env";
-import type { ChoiceSourceChannel, ChoiceWidgetConfig } from "@/lib/choiceConnect/types";
+import type {
+  ChoiceSourceChannel,
+  ChoiceVehicleType,
+  ChoiceWidgetConfig,
+} from "@/lib/choiceConnect/types";
 
 export interface WidgetPartnerConfigOptions {
   uuid?: string;
   productType?: string;
+  vehicleType?: ChoiceVehicleType;
 }
 
 /** Build partner_config for Choice Connect widget.js (per integration PDF). */
@@ -11,11 +16,18 @@ export function buildWidgetPartnerConfig(
   config: ChoiceWidgetConfig,
   options: WidgetPartnerConfigOptions = {}
 ): Record<string, string> {
+  const isMotor = options.productType === "motor-insurance";
+
   const partner_config: Record<string, string> = {
     CLIENT_CODE: config.clientCode.trim(),
-    SOURCE: "PARTNER_WEB",
+    // Motor Insurance doc uses SOURCE=connect; credit-card/loans use PARTNER_WEB.
+    SOURCE: isMotor ? "connect" : "PARTNER_WEB",
     AGENT_CODE: config.agentCode.trim(),
   };
+
+  if (isMotor && config.xApiKey?.trim()) {
+    partner_config.X_API_KEY = config.xApiKey.trim();
+  }
 
   // PDF: UUID only when continuing an existing enquiry from summary API.
   if (options.uuid?.trim()) {
@@ -27,7 +39,15 @@ export function buildWidgetPartnerConfig(
     partner_config.SUB_AGENT_CODE = config.subAgentCode.trim();
   }
 
-  if (options.productType && options.productType !== "credit-card") {
+  if (isMotor && options.vehicleType) {
+    partner_config.VEHICLE_TYPE = options.vehicleType;
+  }
+
+  if (
+    options.productType &&
+    options.productType !== "credit-card" &&
+    options.productType !== "motor-insurance"
+  ) {
     partner_config.PRODUCT_TYPE = options.productType;
   }
 
@@ -46,10 +66,18 @@ export function getWebsiteWidgetConfig(): ChoiceWidgetConfig {
   };
 }
 
-export function validateWidgetConfig(config: ChoiceWidgetConfig): string | null {
+export function validateWidgetConfig(
+  config: ChoiceWidgetConfig,
+  productType?: string
+): string | null {
   if (!config.clientCode?.trim()) return "CLIENT_CODE (partner_id) is not configured.";
-  if (!config.agentCode?.trim()) return "CBA code (AGENT_CODE) is required. Set NEXT_PUBLIC_CHOICE_CONNECT_CBA_CODE=C0002020 for UAT.";
+  if (!config.agentCode?.trim()) {
+    return "CBA code (AGENT_CODE) is required. Set NEXT_PUBLIC_CHOICE_CONNECT_CBA_CODE.";
+  }
   if (!config.widgetBaseUrl?.trim()) return "Widget base URL is not configured.";
+  if (productType === "motor-insurance" && !config.xApiKey?.trim()) {
+    return "X_API_KEY is required for Motor Insurance. Ensure Choice Connect API credentials are configured on SG-Backend.";
+  }
   return null;
 }
 

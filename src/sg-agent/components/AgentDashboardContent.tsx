@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -12,6 +13,11 @@ import {
 } from "@/sg-agent/lib/services/agentProfileService";
 import { AgentChangePasswordForm } from "@/sg-agent/components/AgentChangePasswordForm";
 import { KycDocumentUploadSection } from "@/sg-agent/components/KycDocumentUploadSection";
+import { RoarReferralCopyCard } from "@/components/roar/RoarReferralCopyCard";
+import {
+  getRoarReferralLink,
+  getRoarReferralStats,
+} from "@/sg-agent/lib/services/roarReferralService";
 
 interface AgentDashboardContentProps {
   title: string;
@@ -32,6 +38,12 @@ export function AgentDashboardContent({ title, showEdit = false }: AgentDashboar
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ["agent-profile"],
     queryFn: getAgentProfile,
+  });
+
+  const { data: roarStats } = useQuery({
+    queryKey: ["agent-roar-referral-stats"],
+    queryFn: getRoarReferralStats,
+    staleTime: 60 * 1000,
   });
 
   const updateMutation = useMutation({
@@ -73,10 +85,39 @@ export function AgentDashboardContent({ title, showEdit = false }: AgentDashboar
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Your agent account details</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your agent profile, Roar referrals, and account details
+        </p>
       </div>
 
       {error && <p className="text-sm text-destructive">{error instanceof Error ? error.message : "Failed to load profile"}</p>}
+
+      {roarStats && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold text-foreground">Roar Credit Card Referrals</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <StatMini label="Total referrals" value={roarStats.total} />
+            <StatMini label="Pending" value={roarStats.pending} />
+            <StatMini label="In progress" value={roarStats.inProgress} />
+            <StatMini label="Resolved" value={roarStats.resolved} />
+          </div>
+          <RoarReferralCopyCard getLink={getRoarReferralLink} queryScope="agent-dashboard" />
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/agent/choice-connect/roar-bank-enquiry"
+              className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+            >
+              View my Roar enquiries
+            </Link>
+            <Link
+              href="/agent/choice-connect/roar-referral-link"
+              className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+            >
+              Full referral page
+            </Link>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading profile...</p>
@@ -145,6 +186,15 @@ export function AgentDashboardContent({ title, showEdit = false }: AgentDashboar
           aadhaarCardNumber={profile.aadhaarCardNumber}
         />
       )}
+    </div>
+  );
+}
+
+function StatMini({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
     </div>
   );
 }

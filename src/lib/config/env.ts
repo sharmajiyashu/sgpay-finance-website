@@ -60,8 +60,14 @@ export const CREDIT_CARD_APPLY_URLS = {
 
 /** Choice Connect widget (public website only — secrets stay in SG-Backend .env) */
 export const CHOICE_CONNECT_CONFIG = {
-  apiBaseUrl: getEnv(process.env.NEXT_PUBLIC_CHOICE_CONNECT_API_BASE_URL, "https://apidev.choiceconnect.in"),
-  widgetBaseUrl: getEnv(process.env.NEXT_PUBLIC_CHOICE_CONNECT_WIDGET_BASE_URL, "https://embed-uat.choiceconnect.in"),
+  apiBaseUrl: getEnv(
+    process.env.NEXT_PUBLIC_CHOICE_CONNECT_API_BASE_URL,
+    "https://api.choiceconnect.in"
+  ),
+  widgetBaseUrl: getEnv(
+    process.env.NEXT_PUBLIC_CHOICE_CONNECT_WIDGET_BASE_URL,
+    "https://embed.choiceconnect.in"
+  ),
   clientCode: getEnv(process.env.NEXT_PUBLIC_CHOICE_CONNECT_CLIENT_CODE, "t girshapay"),
   cbaCode: getEnv(process.env.NEXT_PUBLIC_CHOICE_CONNECT_CBA_CODE, "C0002020"),
   /** Alias used by widget integration */
@@ -74,6 +80,7 @@ export const APP_API_PATHS = {
   health: "/health",
   agentRegister: "/agents/register",
   choiceConnectLeads: "/choice-connect/leads",
+  choiceConnectConfig: "/choice-connect/config",
   siteSettings: "/site-settings",
 } as const;
 
@@ -112,6 +119,9 @@ export const ADMIN_API_PATHS = {
   choiceConnectReferralLinks: "/choice-connect/referral-links",
   choiceConnectOnboard: "/choice-connect/onboard",
   choiceConnectDiagnostics: "/choice-connect/diagnostics",
+  roarReferralLink: "/roar-referral-link",
+  roarReferralStats: "/roar-referral-stats",
+  roarReferralTree: "/roar-referral-tree",
   siteSettings: "/site-settings",
 } as const;
 
@@ -128,4 +138,6 @@ export const AGENT_API_PATHS = {
   choiceConnectSummary: "/choice-connect/summary",
   choiceConnectSsoPayload: "/choice-connect/sso-payload",
   choiceConnectReferralLinks: "/choice-connect/referral-links",
+  roarReferralLink: "/roar-referral-link",
+  roarReferralStats: "/roar-referral-stats",
 } as const;

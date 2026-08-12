@@ -15,6 +15,9 @@ export interface DashboardStats {
     resolved: number;
   };
   recentEnquiries: Enquiry[];
+  roarEnquiries?: number;
+  roarAttributed?: number;
+  roarPending?: number;
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
