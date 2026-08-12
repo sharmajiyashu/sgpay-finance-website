@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import type { ChoiceVehicleType, ChoiceWidgetConfig } from "@/lib/choiceConnect/types";
-import { buildWidgetPartnerConfig, validateWidgetConfig } from "@/lib/choiceConnect/widgetConfig";
+import type { InsuranceVehicleType, InsuranceWidgetConfig } from "@/modules/insurance/types";
+import {
+  buildMotorPartnerConfig,
+  validateMotorWidgetConfig,
+} from "@/modules/insurance/widgetConfig";
 
 interface MotorInsuranceWidgetProps {
-  config: ChoiceWidgetConfig;
-  vehicleType: ChoiceVehicleType;
+  config: InsuranceWidgetConfig;
+  vehicleType: InsuranceVehicleType;
   uuid?: string;
   className?: string;
 }
@@ -22,9 +25,6 @@ function resolveMotorInit(win: WidgetHost): ((id: string, cfg: unknown) => void)
   return null;
 }
 
-/**
- * Dedicated Motor Insurance embed — never falls back to CreditCardWidget.
- */
 export function MotorInsuranceWidget({
   config,
   vehicleType,
@@ -35,7 +35,7 @@ export function MotorInsuranceWidget({
   const containerId = `insuranceWidgetContainer-${reactId}`;
   const containerRef = useRef<HTMLDivElement>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const configError = validateWidgetConfig(config, "motor-insurance");
+  const configError = validateMotorWidgetConfig(config);
 
   useEffect(() => {
     if (configError) return;
@@ -44,12 +44,7 @@ export function MotorInsuranceWidget({
     const scriptId = "choice-motor-insurance-widget-script";
 
     const initializeWidget = () => {
-      const partner_config = buildWidgetPartnerConfig(config, {
-        uuid,
-        productType: "motor-insurance",
-        vehicleType,
-      });
-
+      const partner_config = buildMotorPartnerConfig(config, { uuid, vehicleType });
       const widgetConfig = {
         theme: {
           mode: "light",
@@ -69,14 +64,8 @@ export function MotorInsuranceWidget({
       const init = resolveMotorInit(win);
 
       if (!init) {
-        const host = win as unknown as Record<string, unknown>;
-        const available = Object.keys(host).filter(
-          (k) => /widget|insurance|motor/i.test(k) && typeof host[k] === "function"
-        );
         setLoadError(
-          `Motor insurance widget is not available from Choice Connect script. Expected window.MotorInsuranceWidget.${
-            available.length ? ` Found: ${available.join(", ")}` : ""
-          }`
+          "Motor insurance widget is not available. Expected window.MotorInsuranceWidget from Choice Connect script."
         );
         return;
       }
@@ -134,10 +123,6 @@ export function MotorInsuranceWidget({
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         <p className="font-medium">Motor Insurance widget could not start</p>
         <p className="mt-1">{loadError}</p>
-        <p className="mt-2 text-xs">
-          Credit Card widget is intentionally not used here. Confirm Choice Connect enabled Motor
-          Insurance for your partner and that LIVE embed URL is set.
-        </p>
       </div>
     );
   }

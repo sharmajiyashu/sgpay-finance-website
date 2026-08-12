@@ -50,7 +50,11 @@ export const agentSidebarNav: AgentSidebarNavEntry[] = [
     title: "Insurance",
     href: "/agent/insurance/motor",
     icon: IconShield,
-    items: [{ title: "Motor Insurance", href: "/agent/insurance/motor" }],
+    items: [
+      { title: "Motor Apply", href: "/agent/insurance/motor" },
+      { title: "Summary", href: "/agent/insurance/summary", icon: IconList },
+      { title: "Referral Links", href: "/agent/insurance/referral-links" },
+    ],
   },
   { title: "Profile", href: "/agent/profile", icon: IconUser },
 ];

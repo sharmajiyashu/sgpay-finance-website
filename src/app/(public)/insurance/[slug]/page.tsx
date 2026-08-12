@@ -8,11 +8,9 @@ import { notFound } from "next/navigation";
 import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
 import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
-const ChoiceMotorInsuranceWidget = dynamic(
+const WebsiteMotorInsuranceApply = dynamic(
   () =>
-    import("@/components/ChoiceMotorInsuranceWidget").then(
-      (mod) => mod.ChoiceMotorInsuranceWidget
-    ),
+    import("@/modules/insurance").then((mod) => mod.WebsiteMotorInsuranceApply),
   { ssr: false }
 );
 
@@ -279,7 +277,7 @@ export default function InsuranceDetailPage({ params }: { params: Promise<{ slug
               Choose bike or car and complete your application securely via Choice Connect.
             </p>
             <Suspense fallback={<div className="text-center text-muted small py-4">Loading insurance widget…</div>}>
-              <ChoiceMotorInsuranceWidget />
+              <WebsiteMotorInsuranceApply />
             </Suspense>
           </div>
         </div>

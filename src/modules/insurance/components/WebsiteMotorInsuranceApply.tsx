@@ -2,29 +2,31 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MotorInsuranceWidget } from "@/components/insurance/MotorInsuranceWidget";
-import type { ChoiceVehicleType } from "@/lib/choiceConnect/types";
-import { CHOICE_VEHICLE_TYPES } from "@/lib/choiceConnect/types";
+import { MotorInsuranceWidget } from "@/modules/insurance/components/MotorInsuranceWidget";
+import type { InsuranceVehicleType } from "@/modules/insurance/types";
+import { INSURANCE_VEHICLE_TYPES } from "@/modules/insurance/types";
 import {
-  createWebsiteChoiceLead,
-  getWebsiteChoiceConnectConfig,
-} from "@/lib/choiceConnect/publicService";
-import { getWebsiteWidgetConfig } from "@/lib/choiceConnect/widgetConfig";
+  createWebsiteInsuranceLead,
+  getWebsiteInsuranceConfig,
+} from "@/modules/insurance/publicService";
 
-/** Public website Motor Insurance apply — never uses Credit Card widget. */
 export function WebsiteMotorInsuranceApply() {
-  const [vehicleType, setVehicleType] = useState<ChoiceVehicleType>("bike");
+  const [vehicleType, setVehicleType] = useState<InsuranceVehicleType>("bike");
   const trackedRef = useRef<Set<string>>(new Set());
 
-  const { data: remoteConfig, isLoading } = useQuery({
+  const {
+    data: widgetConfig,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["website-insurance-widget-config"],
-    queryFn: getWebsiteChoiceConnectConfig,
-    staleTime: 5 * 60 * 1000,
+    queryFn: getWebsiteInsuranceConfig,
+    staleTime: 2 * 60 * 1000,
+    retry: 1,
   });
 
-  const widgetConfig = remoteConfig || getWebsiteWidgetConfig();
-
   useEffect(() => {
+    if (!widgetConfig?.xApiKey) return;
     const trackKey = `website:motor-insurance:${vehicleType}`;
     if (trackedRef.current.has(trackKey)) return;
 
@@ -36,19 +38,18 @@ export function WebsiteMotorInsuranceApply() {
       undefined;
 
     trackedRef.current.add(trackKey);
-    createWebsiteChoiceLead({
-      productType: "motor-insurance",
+    createWebsiteInsuranceLead({
       refId,
       metadata: { vehicleType },
     }).catch(() => {
       trackedRef.current.delete(trackKey);
     });
-  }, [vehicleType]);
+  }, [vehicleType, widgetConfig?.xApiKey]);
 
   return (
     <div>
       <div className="mx-auto mb-3 d-flex gap-2 justify-content-center flex-wrap">
-        {CHOICE_VEHICLE_TYPES.map((opt) => (
+        {INSURANCE_VEHICLE_TYPES.map((opt) => (
           <button
             key={opt.value}
             type="button"
@@ -60,9 +61,18 @@ export function WebsiteMotorInsuranceApply() {
         ))}
       </div>
 
-      {isLoading && !remoteConfig ? (
+      {isLoading && (
         <div className="text-center text-muted small py-4">Loading insurance widget…</div>
-      ) : (
+      )}
+
+      {error && (
+        <div className="alert alert-danger small">
+          {(error instanceof Error && error.message) ||
+            "Could not load Motor Insurance config from backend (ptr/token)."}
+        </div>
+      )}
+
+      {widgetConfig && !error && (
         <MotorInsuranceWidget config={widgetConfig} vehicleType={vehicleType} />
       )}
     </div>

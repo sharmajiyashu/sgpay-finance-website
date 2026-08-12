@@ -1,19 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { MotorInsuranceWidget } from "@/components/insurance/MotorInsuranceWidget";
-import { validateWidgetConfig } from "@/lib/choiceConnect/widgetConfig";
+import { MotorInsuranceWidget } from "@/modules/insurance/components/MotorInsuranceWidget";
+import { validateMotorWidgetConfig } from "@/modules/insurance/widgetConfig";
 import type {
-  ChoiceVehicleType,
-  ChoiceWidgetConfig,
-  CreateChoiceLeadInput,
-} from "@/lib/choiceConnect/types";
-import { CHOICE_VEHICLE_TYPES } from "@/lib/choiceConnect/types";
+  CreateInsuranceLeadInput,
+  InsuranceVehicleType,
+  InsuranceWidgetConfig,
+} from "@/modules/insurance/types";
+import { INSURANCE_VEHICLE_TYPES } from "@/modules/insurance/types";
 
 export interface InsuranceApplyApiClient {
-  getConfig: () => Promise<ChoiceWidgetConfig & { configured?: boolean }>;
-  createLead?: (input: CreateChoiceLeadInput) => Promise<{ _id: string; uuid?: string }>;
+  getConfig: () => Promise<InsuranceWidgetConfig>;
+  createLead?: (input: CreateInsuranceLeadInput) => Promise<{ _id: string; uuid?: string }>;
 }
 
 interface InsuranceApplyPanelProps {
@@ -21,41 +22,47 @@ interface InsuranceApplyPanelProps {
   title?: string;
   description?: string;
   queryScope?: string;
+  applyBasePath: string;
 }
 
-/**
- * Staff Motor Insurance apply UI — separate from Credit Card ChoiceConnectApplyPanel.
- */
 export function InsuranceApplyPanel({
   api,
   title = "Motor Insurance",
-  description = "Bike / car insurance via Choice Connect. This module is separate from Credit Card.",
+  description = "Bike / car insurance via Choice Connect. Separate from Credit Card.",
   queryScope = "insurance",
+  applyBasePath,
 }: InsuranceApplyPanelProps) {
-  const [vehicleType, setVehicleType] = useState<ChoiceVehicleType>("bike");
+  const searchParams = useSearchParams();
+  const resumeUuid = searchParams.get("uuid")?.trim() || "";
+  const resumeVehicle = searchParams.get("vehicleType");
+  const initialVehicle: InsuranceVehicleType =
+    resumeVehicle === "car" || resumeVehicle === "bike" ? resumeVehicle : "bike";
+
+  const [vehicleType, setVehicleType] = useState<InsuranceVehicleType>(initialVehicle);
   const trackedRef = useRef<Set<string>>(new Set());
 
   const { data: widgetConfig, isLoading, error } = useQuery({
     queryKey: ["insurance-widget-config", queryScope],
     queryFn: () => api.getConfig(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    retry: 1,
   });
 
   useEffect(() => {
-    if (!api.createLead || !widgetConfig?.configured) return;
-    const trackKey = `${queryScope}:motor-insurance:${vehicleType}`;
+    if (!api.createLead || !widgetConfig?.xApiKey) return;
+    const trackKey = `${queryScope}:motor-insurance:${vehicleType}:${resumeUuid || "new"}`;
     if (trackedRef.current.has(trackKey)) return;
 
     trackedRef.current.add(trackKey);
     api
       .createLead({
-        productType: "motor-insurance",
-        metadata: { vehicleType },
+        uuid: resumeUuid || undefined,
+        metadata: { vehicleType, resumed: Boolean(resumeUuid) },
       })
       .catch(() => {
         trackedRef.current.delete(trackKey);
       });
-  }, [api, vehicleType, queryScope, widgetConfig?.configured]);
+  }, [api, vehicleType, queryScope, widgetConfig?.xApiKey, resumeUuid]);
 
   if (isLoading) {
     return (
@@ -67,21 +74,27 @@ export function InsuranceApplyPanel({
   }
 
   if (error || !widgetConfig) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to load Insurance widget config from backend.";
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800">
-        Failed to load Insurance widget config from backend.
-        {error instanceof Error ? ` ${error.message}` : ""}
+        <p className="font-medium">Motor Insurance config failed</p>
+        <p className="mt-1">{message}</p>
+        <p className="mt-2 text-xs">
+          Backend must return a live ptr/token as xApiKey from GET /insurance/config.
+        </p>
       </div>
     );
   }
 
-  const configError = validateWidgetConfig(widgetConfig, "motor-insurance");
+  const configError = validateMotorWidgetConfig(widgetConfig);
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-primary">Insurance</p>
-        <h1 className="mt-1 text-2xl font-semibold text-foreground">{title}</h1>
+        <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         <div className="mt-2 flex flex-wrap gap-2 text-xs">
           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
@@ -97,13 +110,18 @@ export function InsuranceApplyPanel({
               <span className="font-medium text-foreground">{widgetConfig.subAgentCode}</span>
             </span>
           )}
+          {resumeUuid && (
+            <span className="rounded-full bg-sky-100 px-2.5 py-1 text-sky-900">
+              Resuming UUID: <span className="font-mono">{resumeUuid}</span>
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="max-w-md">
+      <div className="max-w-xs">
         <label className="mb-1 block text-sm font-medium">Vehicle Type</label>
         <div className="flex gap-2">
-          {CHOICE_VEHICLE_TYPES.map((opt) => (
+          {INSURANCE_VEHICLE_TYPES.map((opt) => (
             <button
               key={opt.value}
               type="button"
@@ -120,12 +138,25 @@ export function InsuranceApplyPanel({
         </div>
       </div>
 
+      {resumeUuid && (
+        <p className="text-xs text-muted-foreground">
+          Resume link:{" "}
+          <code className="rounded bg-muted px-1">
+            {applyBasePath}?uuid={resumeUuid}&vehicleType={vehicleType}
+          </code>
+        </p>
+      )}
+
       {configError ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           {configError}
         </div>
       ) : (
-        <MotorInsuranceWidget config={widgetConfig} vehicleType={vehicleType} />
+        <MotorInsuranceWidget
+          config={widgetConfig}
+          vehicleType={vehicleType}
+          uuid={resumeUuid || undefined}
+        />
       )}
     </div>
   );

@@ -1,15 +1,19 @@
 "use client";
 
-import { InsuranceApplyPanel } from "@/components/insurance/InsuranceApplyPanel";
-import { agentChoiceConnectApi } from "@/sg-agent/lib/services/choiceConnectService";
+import { Suspense } from "react";
+import { InsuranceApplyPanel } from "@/modules/insurance";
+import { agentInsuranceApi } from "@/sg-agent/lib/services/insuranceService";
 
 export default function AgentInsuranceMotorPage() {
   return (
-    <InsuranceApplyPanel
-      api={agentChoiceConnectApi}
-      queryScope="agent-insurance"
-      title="Motor Insurance"
-      description="Bike / car insurance for your customers. Separate from the Credit Card module."
-    />
+    <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
+      <InsuranceApplyPanel
+        api={agentInsuranceApi}
+        queryScope="agent-insurance"
+        applyBasePath="/agent/insurance/motor"
+        title="Motor Insurance"
+        description="Bike / car insurance via Choice Connect. Separate from the Credit Card module."
+      />
+    </Suspense>
   );
 }

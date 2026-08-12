@@ -81,6 +81,8 @@ export const APP_API_PATHS = {
   agentRegister: "/agents/register",
   choiceConnectLeads: "/choice-connect/leads",
   choiceConnectConfig: "/choice-connect/config",
+  insuranceConfig: "/insurance/config",
+  insuranceLeads: "/insurance/leads",
   siteSettings: "/site-settings",
 } as const;
 
@@ -119,6 +121,10 @@ export const ADMIN_API_PATHS = {
   choiceConnectReferralLinks: "/choice-connect/referral-links",
   choiceConnectOnboard: "/choice-connect/onboard",
   choiceConnectDiagnostics: "/choice-connect/diagnostics",
+  insuranceConfig: "/insurance/config",
+  insuranceLeads: "/insurance/leads",
+  insuranceSummary: "/insurance/summary",
+  insuranceReferralLinks: "/insurance/referral-links",
   roarReferralLink: "/roar-referral-link",
   roarReferralStats: "/roar-referral-stats",
   roarReferralTree: "/roar-referral-tree",
@@ -138,6 +144,10 @@ export const AGENT_API_PATHS = {
   choiceConnectSummary: "/choice-connect/summary",
   choiceConnectSsoPayload: "/choice-connect/sso-payload",
   choiceConnectReferralLinks: "/choice-connect/referral-links",
+  insuranceConfig: "/insurance/config",
+  insuranceLeads: "/insurance/leads",
+  insuranceSummary: "/insurance/summary",
+  insuranceReferralLinks: "/insurance/referral-links",
   roarReferralLink: "/roar-referral-link",
   roarReferralStats: "/roar-referral-stats",
 } as const;

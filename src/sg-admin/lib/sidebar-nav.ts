@@ -143,8 +143,18 @@ export const sidebarNav: SidebarNavEntry[] = [
     permission: "admin:choice-connect:get",
     items: [
       {
-        title: "Motor Insurance",
+        title: "Motor Apply",
         href: "/admin/insurance/motor",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "Summary",
+        href: "/admin/insurance/summary",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "Referral Links",
+        href: "/admin/insurance/referral-links",
         permission: "admin:choice-connect:get",
       },
     ],

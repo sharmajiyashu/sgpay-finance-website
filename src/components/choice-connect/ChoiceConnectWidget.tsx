@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type {
-  ChoiceProductType,
-  ChoiceVehicleType,
-  ChoiceWidgetConfig,
-} from "@/lib/choiceConnect/types";
+import type { ChoiceProductType, ChoiceWidgetConfig } from "@/lib/choiceConnect/types";
 import {
   buildWidgetPartnerConfig,
   validateWidgetConfig,
@@ -16,7 +12,6 @@ interface ChoiceConnectWidgetProps {
   productType: ChoiceProductType;
   /** Choice Connect enquiry UUID — only when resuming an existing application */
   uuid?: string;
-  vehicleType?: ChoiceVehicleType;
   containerId?: string;
   className?: string;
 }
@@ -25,37 +20,28 @@ export function ChoiceConnectWidget({
   config,
   productType,
   uuid,
-  vehicleType,
   containerId,
   className = "",
 }: ChoiceConnectWidgetProps) {
   const resolvedContainerId =
     containerId ||
-    (productType === "motor-insurance"
-      ? "insuranceWidgetContainer"
-      : productType === "credit-card"
-        ? "creditCardWidgetContainer"
-        : "loanWidgetContainer");
+    (productType === "credit-card" ? "creditCardWidgetContainer" : "loanWidgetContainer");
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const configError = validateWidgetConfig(config, productType);
+  const configError = validateWidgetConfig(config);
 
   useEffect(() => {
     if (configError) return;
-    if (productType === "motor-insurance" && !vehicleType) return;
 
     const scriptId =
       productType === "credit-card"
         ? "choice-credit-card-widget-script"
-        : productType === "motor-insurance"
-          ? "choice-motor-insurance-widget-script"
-          : "choice-loan-widget-script";
+        : "choice-loan-widget-script";
 
     const initializeWidget = () => {
       const partner_config = buildWidgetPartnerConfig(config, {
         uuid,
         productType,
-        vehicleType,
       });
 
       const widgetConfig = {
@@ -77,20 +63,7 @@ export function ChoiceConnectWidget({
       const win = window as Window & {
         CreditCardWidget?: (id: string, cfg: unknown) => void;
         LoanWidget?: (id: string, cfg: unknown) => void;
-        MotorInsuranceWidget?: (id: string, cfg: unknown) => void;
       };
-
-      // Never fall back across product types (insurance must not open credit card).
-      if (productType === "motor-insurance") {
-        if (win.MotorInsuranceWidget) {
-          win.MotorInsuranceWidget(resolvedContainerId, widgetConfig);
-        } else {
-          console.error(
-            "MotorInsuranceWidget is not available. Credit Card widget will NOT be used as fallback."
-          );
-        }
-        return;
-      }
 
       if (productType === "credit-card") {
         if (win.CreditCardWidget) {
@@ -139,27 +112,12 @@ export function ChoiceConnectWidget({
         containerRef.current.innerHTML = "";
       }
     };
-  }, [
-    config,
-    productType,
-    uuid,
-    vehicleType,
-    resolvedContainerId,
-    configError,
-  ]);
+  }, [config, productType, uuid, resolvedContainerId, configError]);
 
   if (configError) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
         {configError}
-      </div>
-    );
-  }
-
-  if (productType === "motor-insurance" && !vehicleType) {
-    return (
-      <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-        Select bike or car to load the Motor Insurance widget.
       </div>
     );
   }
@@ -170,12 +128,7 @@ export function ChoiceConnectWidget({
         id={resolvedContainerId}
         ref={containerRef}
         style={{
-          minHeight:
-            productType === "credit-card"
-              ? "400px"
-              : productType === "motor-insurance"
-                ? "480px"
-                : "450px",
+          minHeight: productType === "credit-card" ? "400px" : "450px",
         }}
       />
     </div>
