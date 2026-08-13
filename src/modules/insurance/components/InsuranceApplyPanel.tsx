@@ -11,6 +11,10 @@ import type {
   InsuranceWidgetConfig,
 } from "@/modules/insurance/types";
 import { INSURANCE_VEHICLE_TYPES } from "@/modules/insurance/types";
+import {
+  navigateWithVehicleType,
+  readVehicleTypeFromSearch,
+} from "@/modules/insurance/lib/vehicleSwitch";
 
 export interface InsuranceApplyApiClient {
   getConfig: () => Promise<InsuranceWidgetConfig>;
@@ -33,19 +37,25 @@ export function InsuranceApplyPanel({
   applyBasePath,
 }: InsuranceApplyPanelProps) {
   const searchParams = useSearchParams();
-  const resumeUuid = searchParams.get("uuid")?.trim() || "";
-  const resumeVehicle = searchParams.get("vehicleType");
-  const initialVehicle: InsuranceVehicleType =
-    resumeVehicle === "car" || resumeVehicle === "bike" ? resumeVehicle : "bike";
-
-  const [vehicleType, setVehicleType] = useState<InsuranceVehicleType>(initialVehicle);
+  const resumeUuid =
+    searchParams.get("uuid")?.trim() ||
+    searchParams.get("lead_uuid")?.trim() ||
+    searchParams.get("UUID")?.trim() ||
+    "";
+  const vehicleType = readVehicleTypeFromSearch(searchParams);
+  const [switching, setSwitching] = useState(false);
   const trackedRef = useRef<Set<string>>(new Set());
 
-  const { data: widgetConfig, isLoading, error } = useQuery({
-    queryKey: ["insurance-widget-config", queryScope],
+  const {
+    data: widgetConfig,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["insurance-widget-config", queryScope, vehicleType],
     queryFn: () => api.getConfig(),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 60 * 1000,
     retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
@@ -64,11 +74,21 @@ export function InsuranceApplyPanel({
       });
   }, [api, vehicleType, queryScope, widgetConfig?.xApiKey, resumeUuid]);
 
-  if (isLoading) {
+  const onSelectVehicle = (next: InsuranceVehicleType) => {
+    if (next === vehicleType || switching) return;
+    setSwitching(true);
+    // Full page load — Choice singleton store cannot change VEHICLE_TYPE without reload.
+    navigateWithVehicleType(next);
+  };
+
+  if (isLoading || switching) {
     return (
       <div className="space-y-4">
         <div className="h-8 w-48 animate-pulse rounded-lg bg-muted" />
         <div className="h-[420px] animate-pulse rounded-xl bg-muted" />
+        {switching && (
+          <p className="text-sm text-muted-foreground">Switching vehicle type…</p>
+        )}
       </div>
     );
   }
@@ -125,8 +145,9 @@ export function InsuranceApplyPanel({
             <button
               key={opt.value}
               type="button"
-              onClick={() => setVehicleType(opt.value)}
-              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium ${
+              onClick={() => onSelectVehicle(opt.value)}
+              disabled={switching}
+              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-60 ${
                 vehicleType === opt.value
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border bg-background hover:bg-muted"
@@ -140,9 +161,10 @@ export function InsuranceApplyPanel({
 
       {resumeUuid && (
         <p className="text-xs text-muted-foreground">
-          Resume link:{" "}
+          Resuming enquiry with widget <code className="rounded bg-muted px-1">UUID</code> from
+          summary-report. Link:{" "}
           <code className="rounded bg-muted px-1">
-            {applyBasePath}?uuid={resumeUuid}&vehicleType={vehicleType}
+            {applyBasePath}?uuid={resumeUuid}&lead_uuid={resumeUuid}&vehicleType={vehicleType}
           </code>
         </p>
       )}
@@ -153,6 +175,7 @@ export function InsuranceApplyPanel({
         </div>
       ) : (
         <MotorInsuranceWidget
+          key={`staff-motor-${queryScope}-${vehicleType}`}
           config={widgetConfig}
           vehicleType={vehicleType}
           uuid={resumeUuid || undefined}

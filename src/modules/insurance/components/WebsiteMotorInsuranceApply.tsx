@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MotorInsuranceWidget } from "@/modules/insurance/components/MotorInsuranceWidget";
 import type { InsuranceVehicleType } from "@/modules/insurance/types";
@@ -9,9 +9,35 @@ import {
   createWebsiteInsuranceLead,
   getWebsiteInsuranceConfig,
 } from "@/modules/insurance/publicService";
+import {
+  navigateWithVehicleType,
+  readVehicleTypeFromSearch,
+} from "@/modules/insurance/lib/vehicleSwitch";
+
+function readResumeFromLocation(): {
+  uuid: string;
+  vehicleType: InsuranceVehicleType;
+} {
+  if (typeof window === "undefined") {
+    return { uuid: "", vehicleType: "bike" };
+  }
+  const searchParams = new URLSearchParams(window.location.search);
+  const uuid =
+    searchParams.get("uuid")?.trim() ||
+    searchParams.get("lead_uuid")?.trim() ||
+    searchParams.get("UUID")?.trim() ||
+    "";
+  return {
+    uuid,
+    vehicleType: readVehicleTypeFromSearch(searchParams),
+  };
+}
 
 export function WebsiteMotorInsuranceApply() {
-  const [vehicleType, setVehicleType] = useState<InsuranceVehicleType>("bike");
+  const initial = useMemo(() => readResumeFromLocation(), []);
+  const [vehicleType] = useState<InsuranceVehicleType>(initial.vehicleType);
+  const [switching, setSwitching] = useState(false);
+  const resumeUuid = initial.uuid;
   const trackedRef = useRef<Set<string>>(new Set());
 
   const {
@@ -19,15 +45,16 @@ export function WebsiteMotorInsuranceApply() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["website-insurance-widget-config"],
+    queryKey: ["website-insurance-widget-config", vehicleType],
     queryFn: getWebsiteInsuranceConfig,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 60 * 1000,
     retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     if (!widgetConfig?.xApiKey) return;
-    const trackKey = `website:motor-insurance:${vehicleType}`;
+    const trackKey = `website:motor-insurance:${vehicleType}:${resumeUuid || "new"}`;
     if (trackedRef.current.has(trackKey)) return;
 
     const searchParams = new URLSearchParams(window.location.search);
@@ -40,11 +67,19 @@ export function WebsiteMotorInsuranceApply() {
     trackedRef.current.add(trackKey);
     createWebsiteInsuranceLead({
       refId,
-      metadata: { vehicleType },
+      uuid: resumeUuid || undefined,
+      metadata: { vehicleType, resumed: Boolean(resumeUuid) },
     }).catch(() => {
       trackedRef.current.delete(trackKey);
     });
-  }, [vehicleType, widgetConfig?.xApiKey]);
+  }, [vehicleType, widgetConfig?.xApiKey, resumeUuid]);
+
+  const onSelectVehicle = (next: InsuranceVehicleType) => {
+    if (next === vehicleType || switching) return;
+    setSwitching(true);
+    // Full page load — required because Choice widget singleton store cannot switch VEHICLE_TYPE in-place.
+    navigateWithVehicleType(next);
+  };
 
   return (
     <div>
@@ -54,14 +89,25 @@ export function WebsiteMotorInsuranceApply() {
             key={opt.value}
             type="button"
             className={`btn ${vehicleType === opt.value ? "btn-primary" : "btn-outline-primary"}`}
-            onClick={() => setVehicleType(opt.value)}
+            onClick={() => onSelectVehicle(opt.value)}
+            disabled={switching}
           >
             {opt.label}
           </button>
         ))}
       </div>
 
-      {isLoading && (
+      {switching && (
+        <div className="text-center text-muted small py-2">Switching vehicle type…</div>
+      )}
+
+      {resumeUuid && (
+        <p className="text-center text-muted small mb-3">
+          Continuing enquiry UUID: <code>{resumeUuid}</code>
+        </p>
+      )}
+
+      {isLoading && !switching && (
         <div className="text-center text-muted small py-4">Loading insurance widget…</div>
       )}
 
@@ -72,8 +118,13 @@ export function WebsiteMotorInsuranceApply() {
         </div>
       )}
 
-      {widgetConfig && !error && (
-        <MotorInsuranceWidget config={widgetConfig} vehicleType={vehicleType} />
+      {widgetConfig && !error && !switching && (
+        <MotorInsuranceWidget
+          key={`website-motor-${vehicleType}`}
+          config={widgetConfig}
+          vehicleType={vehicleType}
+          uuid={resumeUuid || undefined}
+        />
       )}
     </div>
   );

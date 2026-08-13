@@ -22,10 +22,11 @@ function NavLink({
   pathname: string;
 }) {
   const Icon = item.icon;
+  // Exact match for list roots so /admin/agents does not stay active on /admin/agents/pending.
+  const exactOnlyRoots = new Set(["/admin/enquiries", "/admin/agents"]);
   const isActive =
     pathname === item.href ||
-    (item.href !== "/admin/enquiries" && pathname.startsWith(`${item.href}/`)) ||
-    (item.href === "/admin/enquiries" && pathname === "/admin/enquiries");
+    (!exactOnlyRoots.has(item.href) && pathname.startsWith(`${item.href}/`));
 
   return (
     <Link
@@ -65,6 +66,9 @@ export function DashboardSidebar() {
   useEffect(() => {
     if (pathname.startsWith("/admin/enquiries")) {
       setOpenSections((prev) => ({ ...prev, Enquiries: true }));
+    }
+    if (pathname.startsWith("/admin/agents")) {
+      setOpenSections((prev) => ({ ...prev, Agents: true }));
     }
     if (pathname.startsWith("/admin/choice-connect")) {
       setOpenSections((prev) => ({ ...prev, "Credit Card": true }));

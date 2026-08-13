@@ -51,12 +51,21 @@ function formatDate(value?: string): string {
   }
 }
 
+/** Choice docs: open widget with UUID from summary-report to continue journey. */
 function resumeHref(applyHref: string, uuid: string, vehicleType?: string): string {
-  const params = new URLSearchParams({ uuid });
+  const params = new URLSearchParams({
+    uuid,
+    lead_uuid: uuid,
+  });
   if (vehicleType === "bike" || vehicleType === "car") {
     params.set("vehicleType", vehicleType);
+    params.set("type", vehicleType);
   }
   return `${applyHref}?${params.toString()}`;
+}
+
+function pickResumeUuid(enquiry: InsuranceRemoteEnquiry): string {
+  return (enquiry.uuid || enquiry.enquiryId || "").trim();
 }
 
 function RemoteRow({
@@ -66,7 +75,7 @@ function RemoteRow({
   enquiry: InsuranceRemoteEnquiry;
   applyHref: string;
 }) {
-  const uuid = enquiry.uuid?.trim();
+  const uuid = pickResumeUuid(enquiry);
   return (
     <tr className="border-b border-border/60 last:border-0">
       <td className="px-4 py-3 whitespace-nowrap">{formatDate(enquiry.createdAt)}</td>
@@ -79,9 +88,7 @@ function RemoteRow({
       <td className="px-4 py-3">{enquiry.subService || enquiry.serviceType || "—"}</td>
       <td className="px-4 py-3">{enquiry.agentName || enquiry.agentCode || "—"}</td>
       <td className="px-4 py-3 capitalize">{enquiry.status ?? "—"}</td>
-      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-        {uuid || enquiry.enquiryId || "—"}
-      </td>
+      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{uuid || "—"}</td>
       <td className="px-4 py-3">
         {uuid ? (
           <Link

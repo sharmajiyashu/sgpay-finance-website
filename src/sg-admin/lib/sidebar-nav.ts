@@ -3,7 +3,6 @@ import {
   IconUsers,
   IconHelp,
   IconUsersGroup,
-  IconList,
   IconCreditCard,
   IconSettings,
   IconShield,
@@ -53,6 +52,12 @@ export const sidebarNav: SidebarNavEntry[] = [
     href: "/admin/agents",
     icon: IconUsersGroup,
     permission: "admin:agent:get",
+    items: [
+      { title: "All Agents", href: "/admin/agents", permission: "admin:agent:get" },
+      { title: "Pending", href: "/admin/agents/pending", permission: "admin:agent:get" },
+      { title: "Approved", href: "/admin/agents/approved", permission: "admin:agent:get" },
+      { title: "Rejected", href: "/admin/agents/rejected", permission: "admin:agent:get" },
+    ],
   },
   {
     title: "Roles",
@@ -76,7 +81,7 @@ export const sidebarNav: SidebarNavEntry[] = [
     icon: IconHelp,
     permission: "admin:enquiry:get",
     items: [
-      { title: "All Enquiries", href: "/admin/enquiries", icon: IconList },
+      { title: "All Enquiries", href: "/admin/enquiries" },
       ...ENQUIRY_CATEGORIES.map((category) => ({
         title: category.label,
         href: category.href,
