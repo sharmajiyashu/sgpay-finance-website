@@ -14,10 +14,17 @@ function TreeNode({ node, depth = 0 }: { node: RoarReferralTreeNode; depth?: num
           <p className="text-sm font-medium text-foreground">{node.name}</p>
           <p className="text-xs text-muted-foreground">
             {node.roleLabel}
+            {typeof node.commissionPercent === "number" ? ` · ${node.commissionPercent}%` : ""}
+            {node.commissionSource === "override" ? " (override)" : ""}
             {node.email ? ` · ${node.email}` : ""}
           </p>
         </div>
         <div className="flex gap-3 text-xs">
+          {typeof node.commissionPercent === "number" && (
+            <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 font-medium text-emerald-700 dark:text-emerald-400">
+              {node.commissionPercent}%
+            </span>
+          )}
           <span className="rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
             Own: {node.referralCount}
           </span>
@@ -48,7 +55,7 @@ export default function AdminRoarReferralTreePage() {
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Roar Referral Tree</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Team and agent hierarchy with Roar Credit Card referral counts (own + downline).
+          Team and agent hierarchy with Roar referral counts and each role&apos;s commission %.
         </p>
       </div>
 

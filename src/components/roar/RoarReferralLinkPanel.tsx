@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { IconCopy, IconLink, IconRefresh } from "@tabler/icons-react";
 import { toast } from "sonner";
+import { buildRoarReferralUrl } from "@/lib/config/env";
 
 export interface RoarReferralLink {
   code: string;
@@ -69,7 +70,9 @@ export function RoarReferralLinkPanel({
                 <IconLink className="h-4 w-4 shrink-0 text-primary" />
                 <h2 className="font-medium text-foreground">Your shareable link</h2>
               </div>
-              <p className="mt-2 break-all text-sm text-foreground">{data.url}</p>
+              <p className="mt-2 break-all text-sm text-foreground">
+                {buildRoarReferralUrl(data.code)}
+              </p>
               <p className="mt-2 text-xs text-muted-foreground">
                 Referral code:{" "}
                 <span className="font-mono font-medium text-foreground">{data.code}</span>
@@ -77,7 +80,7 @@ export function RoarReferralLinkPanel({
             </div>
             <button
               type="button"
-              onClick={() => copyText(data.url)}
+              onClick={() => copyText(buildRoarReferralUrl(data.code))}
               className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted"
             >
               <IconCopy className="h-3.5 w-3.5" />

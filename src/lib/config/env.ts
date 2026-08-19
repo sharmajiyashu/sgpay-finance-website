@@ -47,6 +47,12 @@ export const SITE_CONFIG = {
   },
 } as const;
 
+/** Roar Bank share URL — host always follows NEXT_PUBLIC_SITE_URL. */
+export function buildRoarReferralUrl(code: string): string {
+  const base = trimTrailingSlash(SITE_CONFIG.url).replace(/\/login$/i, "");
+  return `${base}/finance/credit-card?roarRef=${encodeURIComponent(code)}`;
+}
+
 /**
  * Partner credit card apply URLs (see also `creditCards.ts` for full product details).
  * Override with NEXT_PUBLIC_ROAR_CREDIT_CARD_APPLY_URL in root `.env` if needed.

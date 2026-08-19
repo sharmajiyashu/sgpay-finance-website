@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { IconCopy, IconLink } from "@tabler/icons-react";
 import { toast } from "sonner";
 import type { RoarReferralLink } from "@/components/roar/RoarReferralLinkPanel";
+import { buildRoarReferralUrl } from "@/lib/config/env";
 
 interface RoarReferralCopyCardProps {
   getLink: () => Promise<RoarReferralLink>;
@@ -17,9 +18,11 @@ export function RoarReferralCopyCard({ getLink, queryScope }: RoarReferralCopyCa
     staleTime: 5 * 60 * 1000,
   });
 
+  const shareUrl = data?.code ? buildRoarReferralUrl(data.code) : "";
+
   const copy = async () => {
-    if (!data?.url) return;
-    await navigator.clipboard.writeText(data.url);
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
     toast.success("Roar referral link copied");
   };
 
@@ -39,14 +42,14 @@ export function RoarReferralCopyCard({ getLink, queryScope }: RoarReferralCopyCa
               {error instanceof Error ? error.message : "Failed to load link"}
             </p>
           )}
-          {data?.url && (
-            <p className="mt-1 break-all text-xs text-muted-foreground">{data.url}</p>
+          {shareUrl && (
+            <p className="mt-1 break-all text-xs text-muted-foreground">{shareUrl}</p>
           )}
         </div>
         <button
           type="button"
           onClick={copy}
-          disabled={!data?.url}
+          disabled={!shareUrl}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
         >
           <IconCopy className="h-4 w-4" />

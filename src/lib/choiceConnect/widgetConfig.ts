@@ -28,6 +28,12 @@ export function buildWidgetPartnerConfig(
     partner_config.SUB_AGENT_CODE = config.subAgentCode.trim();
   }
 
+  const staffName = config.agentName?.trim() || config.sourceLabel?.trim();
+  if (staffName) {
+    partner_config.AGENT_NAME = staffName;
+    partner_config.SUB_AGENT_NAME = staffName;
+  }
+
   if (
     options.productType &&
     options.productType !== "credit-card" &&

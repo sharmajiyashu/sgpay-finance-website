@@ -93,8 +93,11 @@ export function ChoiceConnectApplyPanel({
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
         <div className="mt-2 flex flex-wrap gap-2 text-xs">
           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
-            Source:{" "}
-            <span className="font-medium text-foreground">{widgetConfig.sourceLabel}</span>
+            Applying as:{" "}
+            <span className="font-medium text-foreground">
+              {widgetConfig.agentName || widgetConfig.sourceLabel}
+            </span>
+            {widgetConfig.staffRoleLabel ? ` · ${widgetConfig.staffRoleLabel}` : ""}
           </span>
           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
             CBA: <span className="font-medium text-foreground">{widgetConfig.agentCode}</span>
@@ -103,6 +106,11 @@ export function ChoiceConnectApplyPanel({
             <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
               Sub-agent:{" "}
               <span className="font-medium text-foreground">{widgetConfig.subAgentCode}</span>
+            </span>
+          )}
+          {widgetConfig.staffMobile && (
+            <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+              Mobile: <span className="font-medium text-foreground">{widgetConfig.staffMobile}</span>
             </span>
           )}
           {profile?.onboarded && (

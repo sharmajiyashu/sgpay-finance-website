@@ -10,7 +10,11 @@ import type {
   ChoiceRemoteEnquiry,
   ChoiceSummaryResponse,
 } from "@/lib/choiceConnect/types";
-import { formatProductLabel, formatSourceLabel } from "@/lib/choiceConnect/types";
+import {
+  formatProductLabel,
+  formatSourceLabel,
+  resolveLeadStaff,
+} from "@/lib/choiceConnect/types";
 import { getChoiceConnectDiagnostics } from "@/sg-admin/lib/services/choiceConnectService";
 
 export interface ChoiceConnectSummaryApiClient {
@@ -76,28 +80,225 @@ function SummaryStatCard({ label, value }: { label: string; value: number | stri
   );
 }
 
-function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
+function DetailChips({ items }: { items: Array<[string, string | undefined]> }) {
+  const visible = items.filter(([, value]) => Boolean(value && String(value).trim()));
+  if (visible.length === 0) return null;
   return (
-    <tr className="border-b border-border/60 last:border-0">
-      <td className="px-4 py-3 whitespace-nowrap">{formatDate(enquiry.createdAt)}</td>
-      <td className="px-4 py-3">
-        <div className="font-medium">{enquiry.customerName || "—"}</div>
-        <div className="text-xs text-muted-foreground">
-          {[enquiry.customerMobile, enquiry.customerEmail].filter(Boolean).join(" · ") || "—"}
+    <dl className="mt-2 grid gap-x-4 gap-y-1 text-xs sm:grid-cols-2 lg:grid-cols-3">
+      {visible.map(([label, value]) => (
+        <div key={label}>
+          <dt className="text-muted-foreground">{label}</dt>
+          <dd className="break-all font-medium text-foreground">{value}</dd>
         </div>
-      </td>
-      <td className="px-4 py-3">
-        {enquiry.subService || enquiry.serviceType || "—"}
-      </td>
-      <td className="px-4 py-3">{enquiry.agentName || enquiry.agentCode || "—"}</td>
-      <td className="px-4 py-3 capitalize">{enquiry.status ?? "—"}</td>
-      <td className="px-4 py-3 text-xs text-muted-foreground capitalize">
-        {enquiry.subStatus ?? "—"}
-      </td>
-      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-        {enquiry.uuid || enquiry.enquiryId || "—"}
-      </td>
-    </tr>
+      ))}
+    </dl>
+  );
+}
+
+function extraRawFields(raw?: Record<string, unknown>, skip: string[] = []): Array<[string, string]> {
+  if (!raw) return [];
+  const skipSet = new Set(skip.map((k) => k.toLowerCase()));
+  const rows: Array<[string, string]> = [];
+  for (const [key, value] of Object.entries(raw)) {
+    if (skipSet.has(key.toLowerCase())) continue;
+    if (value == null || value === "") continue;
+    if (typeof value === "object") continue;
+    rows.push([key.replace(/_/g, " "), String(value)]);
+  }
+  return rows.slice(0, 24);
+}
+
+function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
+  const [open, setOpen] = useState(false);
+  const location = [enquiry.city, enquiry.district, enquiry.state, enquiry.pincode]
+    .filter(Boolean)
+    .join(", ");
+  const extra = extraRawFields(enquiry.raw, [
+    "enquiry_id",
+    "enquiryId",
+    "id",
+    "uuid",
+    "customer_name",
+    "customerName",
+    "name",
+    "customer_email",
+    "customerEmail",
+    "email",
+    "customer_mobile",
+    "customerMobile",
+    "mobile",
+    "agent_name",
+    "agentName",
+    "agent_code",
+    "agentCode",
+    "status",
+    "sub_status",
+    "subStatus",
+    "state",
+    "district",
+    "created_at",
+    "createdAt",
+    "updated_at",
+    "updatedAt",
+  ]);
+
+  return (
+    <>
+      <tr className="border-b border-border/60 last:border-0">
+        <td className="px-4 py-3 whitespace-nowrap">{formatDate(enquiry.createdAt)}</td>
+        <td className="px-4 py-3">
+          <div className="font-medium">{enquiry.customerName || "—"}</div>
+          <div className="text-xs text-muted-foreground">
+            {[enquiry.customerMobile, enquiry.customerEmail].filter(Boolean).join(" · ") || "—"}
+          </div>
+        </td>
+        <td className="px-4 py-3">
+          <div>{enquiry.subService || enquiry.serviceType || "—"}</div>
+          {enquiry.cardType || enquiry.bankName ? (
+            <div className="text-xs text-muted-foreground">
+              {[enquiry.bankName, enquiry.cardType].filter(Boolean).join(" · ")}
+            </div>
+          ) : null}
+        </td>
+        <td className="px-4 py-3">
+          <div className="font-medium">
+            {enquiry.subAgentName || enquiry.agentName || "—"}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {[enquiry.subAgentCode, enquiry.agentCode].filter(Boolean).join(" · ") || "—"}
+          </div>
+        </td>
+        <td className="px-4 py-3 text-xs">{location || "—"}</td>
+        <td className="px-4 py-3 capitalize">{enquiry.status ?? "—"}</td>
+        <td className="px-4 py-3 text-xs text-muted-foreground capitalize">
+          {enquiry.subStatus ?? "—"}
+        </td>
+        <td className="px-4 py-3">
+          <div className="font-mono text-xs text-muted-foreground">
+            {enquiry.uuid || enquiry.enquiryId || "—"}
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="mt-1 text-xs font-medium text-primary hover:underline"
+          >
+            {open ? "Hide details" : "Full details"}
+          </button>
+        </td>
+      </tr>
+      {open && (
+        <tr className="border-b border-border/60 bg-muted/30">
+          <td colSpan={8} className="px-4 py-3">
+            <DetailChips
+              items={[
+                ["Enquiry ID", enquiry.enquiryId],
+                ["UUID", enquiry.uuid],
+                ["Customer", enquiry.customerName],
+                ["Mobile", enquiry.customerMobile],
+                ["Email", enquiry.customerEmail],
+                ["Service", enquiry.serviceType],
+                ["Sub-service", enquiry.subService],
+                ["Agent", enquiry.agentName],
+                ["Agent code", enquiry.agentCode],
+                ["Sub-agent", enquiry.subAgentName],
+                ["Sub-agent code", enquiry.subAgentCode],
+                ["Status", enquiry.status],
+                ["Sub-status", enquiry.subStatus],
+                ["State", enquiry.state],
+                ["District", enquiry.district],
+                ["City", enquiry.city],
+                ["Pincode", enquiry.pincode],
+                ["Bank", enquiry.bankName],
+                ["Card", enquiry.cardType],
+                ["Remarks", enquiry.remarks],
+                ["Created", formatDate(enquiry.createdAt)],
+                ["Updated", formatDate(enquiry.updatedAt)],
+                ...extra,
+              ]}
+            />
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+function LocalLeadRow({ lead }: { lead: ChoiceLead }) {
+  const [open, setOpen] = useState(false);
+  const staff = resolveLeadStaff(lead);
+
+  return (
+    <>
+      <tr className="border-b border-border/60 last:border-0">
+        <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
+        <td className="px-4 py-3">
+          <div className="font-medium">{lead.customerName || "—"}</div>
+          <div className="text-xs text-muted-foreground">
+            {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
+          </div>
+        </td>
+        <td className="px-4 py-3">{formatProductLabel(lead.productType)}</td>
+        <td className="px-4 py-3">
+          <div className="font-medium">{staff.name || formatSourceLabel(lead)}</div>
+          <div className="text-xs text-muted-foreground">{staff.role || "—"}</div>
+          <div className="text-xs text-muted-foreground">
+            {[staff.mobile, staff.email].filter(Boolean).join(" · ")}
+          </div>
+        </td>
+        <td className="px-4 py-3">
+          <span
+            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${sourceBadgeClass(lead.sourceChannel)}`}
+          >
+            {formatSourceLabel(lead)}
+          </span>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {[lead.agentCode, lead.subAgentCode].filter(Boolean).join(" · ") || "—"}
+          </div>
+        </td>
+        <td className="px-4 py-3 capitalize">{lead.status ?? "initiated"}</td>
+        <td className="px-4 py-3">
+          <div className="font-mono text-xs text-muted-foreground">
+            {lead.uuid || lead._id.slice(-8)}
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="mt-1 text-xs font-medium text-primary hover:underline"
+          >
+            {open ? "Hide details" : "Full details"}
+          </button>
+        </td>
+      </tr>
+      {open && (
+        <tr className="border-b border-border/60 bg-muted/30">
+          <td colSpan={7} className="px-4 py-3">
+            <DetailChips
+              items={[
+                ["Lead ID", lead._id],
+                ["UUID", lead.uuid],
+                ["Product", formatProductLabel(lead.productType)],
+                ["Source", formatSourceLabel(lead)],
+                ["Channel", lead.sourceChannel],
+                ["Staff name", staff.name],
+                ["Staff role", staff.role],
+                ["Staff email", staff.email],
+                ["Staff mobile", staff.mobile],
+                ["Staff Choice code", staff.agentCode],
+                ["Agent code", lead.agentCode],
+                ["Sub-agent code", lead.subAgentCode],
+                ["Customer", lead.customerName],
+                ["Customer phone", lead.customerPhone],
+                ["Customer email", lead.customerEmail],
+                ["Status", lead.status],
+                ["Sub-status", lead.subStatus],
+                ["Created", formatDate(lead.createdAt)],
+                ["Updated", formatDate(lead.updatedAt)],
+              ]}
+            />
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
 
@@ -479,13 +680,14 @@ export function ChoiceConnectSummaryPanel({
         <div className="space-y-4">
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] text-left text-sm">
+              <table className="w-full min-w-[1100px] text-left text-sm">
                 <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3 font-medium">Date</th>
                     <th className="px-4 py-3 font-medium">Customer</th>
                     <th className="px-4 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Agent</th>
+                    <th className="px-4 py-3 font-medium">Agent / Team</th>
+                    <th className="px-4 py-3 font-medium">Location</th>
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Sub-status</th>
                     <th className="px-4 py-3 font-medium">Ref</th>
@@ -494,7 +696,7 @@ export function ChoiceConnectSummaryPanel({
                 <tbody>
                   {remoteEnquiries.length === 0 && !isLoading ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                         No Choice Connect enquiries returned for selected filters.
                       </td>
                     </tr>
@@ -524,13 +726,14 @@ export function ChoiceConnectSummaryPanel({
         <div className="space-y-4">
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
+              <table className="w-full min-w-[980px] text-left text-sm">
                 <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3 font-medium">Date</th>
                     <th className="px-4 py-3 font-medium">Customer</th>
                     <th className="px-4 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Source</th>
+                    <th className="px-4 py-3 font-medium">Team / Agent</th>
+                    <th className="px-4 py-3 font-medium">Source / Codes</th>
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Ref</th>
                   </tr>
@@ -538,45 +741,12 @@ export function ChoiceConnectSummaryPanel({
                 <tbody>
                   {leads.length === 0 && !isLoading ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                         No local records found.
                       </td>
                     </tr>
                   ) : (
-                    leads.map((lead: ChoiceLead & { createdByUserId?: { firstName?: string; lastName?: string; email?: string; userRole?: string; designation?: string; agentType?: string } }) => {
-                      const referee = typeof lead.createdByUserId === 'object' && lead.createdByUserId ? lead.createdByUserId : null;
-                      const refereeName = referee ? [referee.firstName, referee.lastName].filter(Boolean).join(' ') || referee.email : null;
-                      const refereeRole = referee ? (referee.agentType || referee.designation || referee.userRole) : null;
-
-                      return (
-                        <tr key={lead._id} className="border-b border-border/60 last:border-0">
-                          <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
-                          <td className="px-4 py-3">
-                            <div className="font-medium">{lead.customerName || "—"}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">{formatProductLabel(lead.productType)}</td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${sourceBadgeClass(lead.sourceChannel)}`}
-                            >
-                              {formatSourceLabel(lead)}
-                            </span>
-                            {refereeName && (
-                              <div className="mt-1 text-xs text-muted-foreground">
-                                <span className="font-medium text-foreground">Referred by:</span> {refereeName} ({refereeRole})
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 capitalize">{lead.status ?? "initiated"}</td>
-                          <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                            {lead.uuid || lead._id.slice(-8)}
-                          </td>
-                        </tr>
-                      );
-                    })
+                    leads.map((lead) => <LocalLeadRow key={lead._id} lead={lead} />)
                   )}
                 </tbody>
               </table>

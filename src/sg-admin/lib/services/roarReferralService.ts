@@ -31,6 +31,8 @@ export interface RoarReferralTreeNode {
   userRole: string;
   referralCount: number;
   subtreeReferralCount: number;
+  commissionPercent?: number;
+  commissionSource?: "override" | "rule" | "none";
   children: RoarReferralTreeNode[];
 }
 

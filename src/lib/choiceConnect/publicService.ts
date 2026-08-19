@@ -20,7 +20,7 @@ export async function getWebsiteChoiceConnectConfig(): Promise<ChoiceWidgetConfi
       ...remote,
       clientCode: remote.clientCode?.trim() || fallback.clientCode,
       agentCode: remote.agentCode?.trim() || fallback.agentCode,
-      subAgentCode: "",
+      subAgentCode: remote.subAgentCode?.trim() || "",
       sourceChannel: "website",
       sourceLabel: "Website",
       widgetBaseUrl: remote.widgetBaseUrl?.trim() || fallback.widgetBaseUrl,

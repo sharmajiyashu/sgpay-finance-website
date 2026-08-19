@@ -22,6 +22,11 @@ export interface ChoiceWidgetConfig {
   clientCode: string;
   agentCode: string;
   subAgentCode: string;
+  agentName?: string;
+  staffRole?: string;
+  staffRoleLabel?: string;
+  staffEmail?: string;
+  staffMobile?: string;
   sourceChannel: ChoiceSourceChannel;
   sourceLabel: string;
   widgetBaseUrl: string;
@@ -74,18 +79,51 @@ export interface ChoiceOnboardResult {
   oprId: string;
 }
 
+export interface ChoiceLeadStaff {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  mobile?: string;
+  userRole?: string;
+  designation?: string;
+  agentType?: string;
+  city?: string;
+  stateCode?: string;
+  choiceConnectAgentCode?: string;
+}
+
+export interface ChoiceLeadStaffSnapshot {
+  userId?: string;
+  name?: string;
+  email?: string;
+  mobile?: string;
+  userRole?: string;
+  designation?: string;
+  agentType?: string;
+  roleLabel?: string;
+  choiceConnectAgentCode?: string;
+}
+
 export interface ChoiceLead {
   _id: string;
   uuid?: string;
   productType: ChoiceProductType;
   sourceChannel: ChoiceSourceChannel;
   sourceLabel: string;
+  agentCode?: string;
+  subAgentCode?: string;
   customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
   status?: string;
   subStatus?: string;
   createdAt: string;
+  updatedAt?: string;
+  createdByUserId?: string | ChoiceLeadStaff;
+  metadata?: {
+    staff?: ChoiceLeadStaffSnapshot;
+    [key: string]: unknown;
+  };
 }
 
 export interface ChoiceRemoteEnquiry {
@@ -98,12 +136,20 @@ export interface ChoiceRemoteEnquiry {
   subService?: string;
   agentName?: string;
   agentCode?: string;
+  subAgentName?: string;
+  subAgentCode?: string;
   status?: string;
   subStatus?: string;
   state?: string;
   district?: string;
+  city?: string;
+  pincode?: string;
+  remarks?: string;
+  bankName?: string;
+  cardType?: string;
   createdAt?: string;
   updatedAt?: string;
+  raw?: Record<string, unknown>;
 }
 
 export interface ChoiceRemotePagination {
@@ -187,4 +233,59 @@ export function formatProductLabel(productType: string): string {
 
 export function formatSourceLabel(lead: ChoiceLead): string {
   return lead.sourceLabel || lead.sourceChannel;
+}
+
+export function formatStaffRole(role?: string | null): string {
+  if (!role) return "";
+  const labels: Record<string, string> = {
+    super_admin: "Super Admin",
+    state_head: "State Head (SH)",
+    asm: "Sales Manager (ASM)",
+    rm: "Relationship Manager (RM)",
+    super_distributor: "Super Distributor",
+    distributor: "Distributor",
+    retailer: "Retailer",
+    admin: "Admin",
+    agent: "Agent",
+  };
+  return labels[role] || role.replace(/_/g, " ");
+}
+
+export function resolveLeadStaff(lead: ChoiceLead): {
+  name: string;
+  role: string;
+  email?: string;
+  mobile?: string;
+  agentCode?: string;
+} {
+  const snapshot = lead.metadata?.staff;
+  const populated =
+    lead.createdByUserId && typeof lead.createdByUserId === "object"
+      ? lead.createdByUserId
+      : null;
+
+  const name =
+    snapshot?.name ||
+    (populated
+      ? [populated.firstName, populated.lastName].filter(Boolean).join(" ").trim() ||
+        populated.email
+      : "") ||
+    "";
+
+  const roleKey =
+    snapshot?.roleLabel ||
+    snapshot?.agentType ||
+    snapshot?.designation ||
+    populated?.agentType ||
+    populated?.designation ||
+    populated?.userRole ||
+    "";
+
+  return {
+    name,
+    role: snapshot?.roleLabel || formatStaffRole(roleKey),
+    email: snapshot?.email || populated?.email,
+    mobile: snapshot?.mobile || populated?.mobile,
+    agentCode: snapshot?.choiceConnectAgentCode || populated?.choiceConnectAgentCode,
+  };
 }
