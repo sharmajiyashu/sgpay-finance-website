@@ -12,7 +12,11 @@ import {
 function PublicLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const isAuthStandalone = pathname === "/login" || pathname === "/register-agent";
+  const isAuthStandalone =
+    pathname === "/login" ||
+    pathname === "/register-agent" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password";
   const siteSettings = useSiteSettings();
 
   useEffect(() => {
@@ -27,7 +31,7 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
       setScrolled(window.scrollY > 45);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     return () => {
@@ -36,14 +40,32 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
   }, [siteSettings.siteName]);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).WOW) {
+    const collapse = document.getElementById("navbarCollapse");
+    const bootstrap = (window as unknown as { bootstrap?: { Collapse: { getInstance: (el: Element) => { hide: () => void } | null } } }).bootstrap;
+    if (!collapse || !bootstrap || !collapse.classList.contains("show")) return;
+    bootstrap.Collapse.getInstance(collapse)?.hide();
+  }, [pathname]);
+
+  useEffect(() => {
+    const win = window as unknown as { WOW?: new () => { init: () => void }; __sgWowReady?: boolean };
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      if (win.__sgWowReady || attempts > 40) {
+        window.clearInterval(timer);
+        return;
+      }
+      if (!win.WOW) return;
       try {
-        new (window as any).WOW().init();
+        new win.WOW().init();
+        win.__sgWowReady = true;
       } catch (e) {
         console.error("WOW initialization failed:", e);
       }
-    }
-  }, [pathname]);
+      window.clearInterval(timer);
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
     <div className="public-template">
@@ -54,7 +76,7 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
       <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet" />
       <link href="/lib/animate/animate.min.css" rel="stylesheet" />
       <link href="/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet" />
-      <link href="/css/bootstrap.min.css" rel="stylesheet" />
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" />
       <link href="/css/style.css" rel="stylesheet" />
 
       {!isAuthStandalone && (
@@ -68,8 +90,8 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
             data-wow-delay="0.1s"
           >
             <nav className="navbar navbar-expand-lg navbar-light py-lg-0 px-lg-5 wow fadeIn" data-wow-delay="0.1s">
-              <Link href="/" className="navbar-brand ms-4 ms-lg-0 d-flex align-items-center">
-                <img src="/img/logo.png" alt={siteSettings.siteName} style={{ height: "80px", objectFit: "contain" }} />
+              <Link href="/" className="navbar-brand ms-3 ms-lg-0 d-flex align-items-center">
+                <img src="/img/logo.png" alt={siteSettings.siteName} className="site-logo" />
               </Link>
               <button type="button" className="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                 <span className="navbar-toggler-icon"></span>
@@ -169,7 +191,7 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
               <div className="row g-5">
                 <div className="col-lg-3 col-md-6">
                   <div className="d-flex align-items-center mb-4">
-                    <img src="/img/logo.png" alt={siteSettings.siteName} style={{ height: "80px", objectFit: "contain" }} />
+                    <img src="/img/logo.png" alt={siteSettings.siteName} className="site-logo" />
                   </div>
                   <p className="mb-2"><i className="fa fa-map-marker-alt me-3"></i>{siteSettings.address}</p>
                   <p className="mb-2"><i className="fa fa-phone-alt me-3"></i>{siteSettings.phoneRaw}</p>
@@ -245,45 +267,18 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
               className="whatsapp-btn-float shadow-lg"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                position: "fixed",
-                bottom: "30px",
-                right: "30px",
-                backgroundColor: "#25d366",
-                color: "#fff",
-                borderRadius: "50px",
-                textAlign: "center",
-                fontSize: "32px",
-                zIndex: 9999,
-                width: "60px",
-                height: "60px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                textDecoration: "none",
-                transition: "transform 0.3s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              aria-label="Chat on WhatsApp"
             >
               <i className="fab fa-whatsapp"></i>
             </a>
           )}
 
-          <Script src="https://code.jquery.com/jquery-3.4.1.min.js" strategy="beforeInteractive" />
-          <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" strategy="beforeInteractive" />
-          <Script src="/lib/wow/wow.min.js" strategy="beforeInteractive" onReady={() => {
-            if (typeof window !== "undefined" && (window as any).WOW) {
-              try {
-                new (window as any).WOW().init();
-              } catch (e) {
-                console.error("WOW onReady init failed:", e);
-              }
-            }
-          }} />
-          <Script src="/lib/easing/easing.min.js" strategy="beforeInteractive" />
-          <Script src="/lib/waypoints/waypoints.min.js" strategy="beforeInteractive" />
-          <Script src="/lib/owlcarousel/owl.carousel.min.js" strategy="beforeInteractive" />
+          <Script src="https://code.jquery.com/jquery-3.4.1.min.js" strategy="afterInteractive" />
+          <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
+          <Script src="/lib/wow/wow.min.js" strategy="afterInteractive" />
+          <Script src="/lib/easing/easing.min.js" strategy="afterInteractive" />
+          <Script src="/lib/waypoints/waypoints.min.js" strategy="afterInteractive" />
+          <Script src="/lib/owlcarousel/owl.carousel.min.js" strategy="afterInteractive" />
           <Script src="/js/main.js" strategy="afterInteractive" />
         </>
       )}

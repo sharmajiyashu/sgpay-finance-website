@@ -7,7 +7,9 @@ export default function ProjectPage() {
     // Programmatically initialize jQuery Owl Carousel to guarantee it works on React hydration
     if (typeof window !== "undefined" && (window as any).$ && (window as any).$.fn.owlCarousel) {
       const initCarousel = () => {
-        (window as any).$(".project-carousel").owlCarousel({
+        const $el = (window as any).$(".project-carousel");
+        if (!$el.length || $el.hasClass("owl-loaded")) return;
+        $el.owlCarousel({
           autoplay: true,
           smartSpeed: 1000,
           margin: 25,

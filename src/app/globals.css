@@ -396,3 +396,35 @@
     hsl(210, 65%, 26%) 100%
   );
 }
+
+#main-content {
+  overflow-wrap: anywhere;
+}
+
+#main-content table {
+  overflow-wrap: normal;
+}
+
+#main-content input,
+#main-content select,
+#main-content textarea {
+  max-width: 100%;
+}
+
+@media (max-width: 1023px) {
+  #main-content h1 {
+    font-size: 1.35rem;
+    line-height: 1.3;
+  }
+
+  #main-content h2 {
+    font-size: 1.1rem;
+    line-height: 1.35;
+  }
+
+  #main-content input,
+  #main-content select,
+  #main-content textarea {
+    font-size: 16px;
+  }
+}

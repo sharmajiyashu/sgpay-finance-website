@@ -41,24 +41,35 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    // Dynamically trigger Bootstrap Carousel initialization to guarantee autoplay works in React
-    if (typeof window !== "undefined" && (window as any).bootstrap) {
+    let cancelled = false;
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      const bootstrap = (window as unknown as { bootstrap?: { Carousel: { getOrCreateInstance: (el: Element, opts: object) => { cycle?: () => void } } } }).bootstrap;
       const carouselEl = document.getElementById("header-carousel");
-      if (carouselEl) {
-        new (window as any).bootstrap.Carousel(carouselEl, {
-          interval: 5000,
-          ride: "carousel",
-          wrap: true
-        });
+      if (cancelled || attempts > 40) {
+        window.clearInterval(timer);
+        return;
       }
-    }
+      if (!bootstrap || !carouselEl) return;
+      const instance = bootstrap.Carousel.getOrCreateInstance(carouselEl, {
+        interval: 5000,
+        wrap: true,
+      });
+      instance.cycle?.();
+      window.clearInterval(timer);
+    }, 100);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
   }, []);
 
   return (
     <>
       {/* Carousel Start */}
       <div className="container-fluid p-0 mb-5 wow fadeIn" data-wow-delay="0.1s">
-        <div id="header-carousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div id="header-carousel" className="carousel slide carousel-fade">
           <div className="carousel-inner">
             {/* Slide 1: Loans */}
             <div className="carousel-item active">

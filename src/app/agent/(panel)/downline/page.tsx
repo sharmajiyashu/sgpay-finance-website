@@ -178,7 +178,8 @@ export default function AgentDownlinePage() {
       )}
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-border bg-muted/30">
             <tr className="text-left text-muted-foreground">
               <th className="px-4 py-3 font-medium">Agent</th>
@@ -222,6 +223,7 @@ export default function AgentDownlinePage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {pagination && (

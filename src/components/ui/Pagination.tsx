@@ -53,7 +53,7 @@ export function Pagination({
   const showingTo = limit ? Math.min(page * limit, total || 0) : null;
 
   return (
-    <div className={twMerge("flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-border bg-card/50 backdrop-blur-sm px-6 py-4 shadow-sm", className)}>
+    <div className={twMerge("flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border border-border bg-card/50 backdrop-blur-sm px-3 py-3 text-center sm:px-6 sm:py-4 sm:text-left shadow-sm", className)}>
       <div className="text-sm text-muted-foreground">
         <span className="font-semibold text-foreground">
           {t("common.page")} {page}
@@ -74,7 +74,7 @@ export function Pagination({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex max-w-full items-center gap-2 overflow-x-auto">
         <button
           type="button"
           disabled={page <= 1}

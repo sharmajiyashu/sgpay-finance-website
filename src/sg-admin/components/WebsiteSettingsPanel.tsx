@@ -115,7 +115,7 @@ export function WebsiteSettingsPanel() {
         <button
           onClick={handleSubmit}
           disabled={mutation.isPending}
-          className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2.5 rounded-lg transition shadow-sm disabled:opacity-50"
+          className="inline-flex w-full items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2.5 rounded-lg transition shadow-sm disabled:opacity-50 sm:w-auto"
         >
           {mutation.isPending ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

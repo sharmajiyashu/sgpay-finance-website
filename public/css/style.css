@@ -467,3 +467,293 @@ h6,
     box-shadow: none !important;
     border-color: rgba(0, 0, 0, 0.125) !important;
 }
+
+.public-template {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+.public-template,
+.public-template p,
+.public-template h1,
+.public-template h2,
+.public-template h3,
+.public-template h4,
+.public-template h5,
+.public-template h6,
+.public-template li,
+.public-template span,
+.public-template a,
+.public-template label {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.site-logo {
+    height: 80px;
+    width: auto;
+    max-width: 220px;
+    object-fit: contain;
+}
+
+.whatsapp-btn-float {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #25d366;
+    color: #fff;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 32px;
+    z-index: 9999;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.whatsapp-btn-float:hover {
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.cibil-score {
+    font-size: 6rem;
+    line-height: 1.1;
+}
+
+@media (max-width: 991.98px) {
+    .public-template .fixed-top {
+        background: #fff;
+    }
+
+    .public-template .navbar {
+        padding-top: 0.35rem;
+        padding-bottom: 0.35rem;
+    }
+
+    .public-template .navbar-brand {
+        margin-left: 0.5rem;
+    }
+
+    .site-logo {
+        height: 52px;
+        max-width: 140px;
+    }
+
+    .public-template .navbar-toggler {
+        padding: 0.35rem 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    .public-template .navbar-collapse {
+        max-height: calc(100vh - 72px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .public-template .navbar .navbar-nav .nav-link {
+        padding: 12px 4px;
+        font-size: 15px;
+        line-height: 1.4;
+        text-align: left;
+    }
+
+    .public-template .navbar .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        min-width: 100%;
+        box-shadow: none !important;
+        border: 0 !important;
+        padding: 0 0 8px 12px !important;
+        background: transparent;
+    }
+
+    .public-template .navbar .dropdown-item {
+        padding: 8px 8px;
+        font-size: 14px;
+        transform: none !important;
+    }
+
+    .public-template .navbar .dropdown-item:hover {
+        transform: none !important;
+    }
+
+    .public-template .page-header {
+        padding-top: 6.5rem;
+        padding-bottom: 2.5rem;
+        background-position: center;
+    }
+
+    .public-template .page-header .display-4,
+    .public-template .page-header h1 {
+        font-size: 1.75rem !important;
+        line-height: 1.3;
+        margin-bottom: 0.75rem;
+    }
+
+    .public-template .carousel-caption {
+        padding: 5.5rem 1rem 1.25rem;
+        align-items: flex-end;
+        text-align: left;
+        background: linear-gradient(to top, rgba(1, 26, 65, 0.72), rgba(1, 26, 65, 0.15) 55%, transparent);
+    }
+
+    .public-template .carousel-caption .display-1,
+    .public-template .carousel-caption h1 {
+        font-size: 1.7rem !important;
+        line-height: 1.25;
+        margin-bottom: 0.75rem;
+    }
+
+    .public-template .carousel-caption .fs-5,
+    .public-template .carousel-caption p {
+        font-size: 0.9rem !important;
+        line-height: 1.45;
+        margin-bottom: 0.85rem;
+    }
+
+    .public-template .carousel-caption .btn {
+        padding: 0.65rem 1.15rem !important;
+        font-size: 0.9rem;
+    }
+
+    .public-template .display-5,
+    .public-template .display-4 {
+        font-size: 1.65rem !important;
+        line-height: 1.3;
+    }
+
+    .public-template .container,
+    .public-template .container-xxl,
+    .public-template .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .public-template .py-5 {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    .public-template form input,
+    .public-template form select,
+    .public-template form textarea {
+        font-size: 16px !important;
+        max-width: 100%;
+    }
+
+    .public-template form .btn,
+    .public-template .btn.w-100 {
+        width: 100%;
+    }
+
+    .public-template .card {
+        max-width: 100%;
+    }
+
+    .public-template .card h4,
+    .public-template .card h5 {
+        font-size: 1.05rem;
+        line-height: 1.35;
+    }
+
+    .public-template .card p {
+        height: auto !important;
+    }
+
+    .cibil-score {
+        font-size: 3.5rem !important;
+        line-height: 1.1;
+    }
+
+    .public-template .footer {
+        padding-top: 2.5rem !important;
+        padding-bottom: 2rem !important;
+        text-align: left;
+    }
+
+    .public-template .footer .py-5 {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .public-template .copyright {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .whatsapp-btn-float {
+        width: 52px;
+        height: 52px;
+        font-size: 26px;
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        right: calc(16px + env(safe-area-inset-right, 0px));
+    }
+
+    .back-to-top {
+        right: 16px;
+        bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media (max-width: 767.98px) {
+    #header-carousel .carousel-item {
+        min-height: 420px;
+    }
+
+    .public-template .carousel-control-prev,
+    .public-template .carousel-control-next {
+        display: none;
+    }
+
+    .public-template .page-header {
+        padding-top: 5.5rem;
+        padding-bottom: 2rem;
+    }
+
+    .public-template .breadcrumb {
+        flex-wrap: wrap;
+        justify-content: center;
+        row-gap: 4px;
+        font-size: 0.85rem;
+    }
+
+    .public-template img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    #header-carousel .carousel-item img {
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .public-template .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .site-logo {
+        height: 44px;
+        max-width: 120px;
+    }
+
+    .public-template .carousel-caption .display-1,
+    .public-template .carousel-caption h1 {
+        font-size: 1.4rem !important;
+    }
+
+    .public-template .display-5,
+    .public-template .display-4,
+    .public-template .page-header h1 {
+        font-size: 1.4rem !important;
+    }
+}

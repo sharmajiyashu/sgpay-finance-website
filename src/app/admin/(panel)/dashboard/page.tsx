@@ -29,7 +29,7 @@ function StatCard({
   className?: string;
 }) {
   return (
-    <div className={twMerge("rounded-2xl border border-border bg-card p-6 shadow-sm", className)}>
+    <div className={twMerge("rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6", className)}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
@@ -150,7 +150,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold">Recent Enquiries</h2>
             <Link href="/admin/enquiries" className="text-sm font-medium text-primary hover:underline">
               View all

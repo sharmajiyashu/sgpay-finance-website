@@ -382,7 +382,7 @@ export function EnquiriesPanel({
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+          className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.label} value={opt.value}>{opt.label}</option>
@@ -398,7 +398,7 @@ export function EnquiriesPanel({
                 setServiceFilter("");
                 setPage(1);
               }}
-              className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm disabled:opacity-70"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm disabled:opacity-70"
             >
               <option value="">All categories</option>
               {ENQUIRY_CATEGORIES.map((c) => (
@@ -411,7 +411,7 @@ export function EnquiriesPanel({
                 setServiceFilter(e.target.value);
                 setPage(1);
               }}
-              className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm lg:col-span-2"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm lg:col-span-2"
             >
               <option value="">All services</option>
               {typeFilter

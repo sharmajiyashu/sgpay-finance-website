@@ -3,7 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { AgentSidebar } from "@/sg-agent/components/AgentSidebar";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { IconChevronDown, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconLogout } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
+  IconLogout,
+  IconMenu2,
+  IconX,
+} from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import { clearToken, getAuthUser, type AuthUser } from "@/sg-agent/lib/api";
 
@@ -13,7 +20,8 @@ function displayName(user: AuthUser | null): string {
 }
 
 export function AgentShell({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [desktopOpen, setDesktopOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [authUser, setAuthUserState] = useState<AuthUser | null>(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -25,25 +33,62 @@ export function AgentShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 });
+    setMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
+
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-sky-50">
-      <aside className={`shrink-0 overflow-hidden transition-[width] duration-500 ease-out ${sidebarOpen ? "w-64" : "w-0"}`}>
+    <div className="flex h-dvh overflow-hidden bg-gradient-to-br from-slate-50 via-white to-sky-50">
+      {mobileOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-30 bg-slate-900/40 lg:hidden"
+          aria-label="Close sidebar"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`z-40 shrink-0 overflow-hidden transition-[width,transform] duration-300 ease-out max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:w-64 ${
+          mobileOpen ? "max-lg:translate-x-0" : "max-lg:-translate-x-full"
+        } ${desktopOpen ? "lg:w-64" : "lg:w-0"}`}
+      >
         <div className="flex h-full w-64 flex-col overflow-hidden shadow-xl">
           <AgentSidebar />
         </div>
       </aside>
+
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-white/80 px-4 shadow-sm backdrop-blur-md sm:px-6">
-          <button type="button" onClick={() => setSidebarOpen((o) => !o)} className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted" aria-label="Toggle sidebar">
-            {sidebarOpen ? <IconLayoutSidebarLeftCollapse className="h-5 w-5" /> : <IconLayoutSidebarLeftExpand className="h-5 w-5" />}
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-white/80 px-3 shadow-sm backdrop-blur-md sm:px-6">
+          <button
+            type="button"
+            onClick={() => setMobileOpen((o) => !o)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted lg:hidden"
+            aria-label="Toggle sidebar"
+          >
+            {mobileOpen ? <IconX className="h-5 w-5" /> : <IconMenu2 className="h-5 w-5" />}
           </button>
-          <div className="flex flex-1 items-center justify-end">
+          <button
+            type="button"
+            onClick={() => setDesktopOpen((o) => !o)}
+            className="hidden h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted lg:flex"
+            aria-label="Toggle sidebar"
+          >
+            {desktopOpen ? <IconLayoutSidebarLeftCollapse className="h-5 w-5" /> : <IconLayoutSidebarLeftExpand className="h-5 w-5" />}
+          </button>
+          <div className="flex min-w-0 flex-1 items-center justify-end">
             <DropdownMenu.Root>
-              <DropdownMenu.Trigger className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted">
-                <span className="max-w-[180px] truncate">{displayName(authUser)}</span>
-                <IconChevronDown className="h-4 w-4 opacity-60" />
+              <DropdownMenu.Trigger className="flex min-w-0 items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium hover:bg-muted sm:px-3">
+                <span className="max-w-[140px] truncate sm:max-w-[180px]">{displayName(authUser)}</span>
+                <IconChevronDown className="h-4 w-4 shrink-0 opacity-60" />
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
                 <DropdownMenu.Content className="min-w-[180px] rounded-lg border border-border bg-background p-1 shadow-lg" sideOffset={6} align="end">
@@ -56,8 +101,8 @@ export function AgentShell({ children }: { children: React.ReactNode }) {
             </DropdownMenu.Root>
           </div>
         </header>
-        <main ref={mainRef} className="min-h-0 flex-1 overflow-auto p-6">
-          <div key={pathname} className="mx-auto max-w-5xl">{children}</div>
+        <main ref={mainRef} className="min-h-0 min-w-0 flex-1 overflow-auto p-4 sm:p-6" id="main-content">
+          <div key={pathname} className="mx-auto min-w-0 max-w-5xl break-words">{children}</div>
         </main>
       </div>
     </div>

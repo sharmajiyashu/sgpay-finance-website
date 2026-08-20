@@ -45,7 +45,7 @@ export default function AgentCommissionsPage() {
           setStatusFilter(e.target.value);
           setPage(1);
         }}
-        className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm"
+        className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
       >
         <option value="">All statuses</option>
         <option value="pending">Pending</option>
@@ -60,7 +60,8 @@ export default function AgentCommissionsPage() {
       )}
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-border bg-muted/30">
             <tr className="text-left text-muted-foreground">
               <th className="px-4 py-3 font-medium">Sale from</th>
@@ -106,6 +107,7 @@ export default function AgentCommissionsPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {pagination && (

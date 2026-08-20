@@ -214,7 +214,7 @@ export default function CheckCibilScore() {
                   <div className="text-center py-5 animated fadeIn">
                     <h3 className="mb-4">Your CIBIL Score</h3>
                     <div className="mb-4">
-                      <h1 className={`display-1 fw-bold ${getScoreColorClass(score)}`} style={{ fontSize: "6rem" }}>
+                      <h1 className={`display-1 fw-bold cibil-score ${getScoreColorClass(score)}`}>
                         {score}
                       </h1>
                       <p className="text-muted">out of 900</p>

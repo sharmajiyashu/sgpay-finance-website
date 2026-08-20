@@ -75,7 +75,7 @@ export default function AdminUsersPage() {
             setActiveFilter(e.target.value);
             setPage(1);
           }}
-          className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm"
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
         >
           <option value="">All status</option>
           <option value="true">Active</option>

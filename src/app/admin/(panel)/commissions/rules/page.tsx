@@ -131,6 +131,7 @@ export default function CommissionRulesPage() {
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-muted/30">
             <tr className="text-left text-muted-foreground">
@@ -187,6 +188,7 @@ export default function CommissionRulesPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {canUpdate && (
