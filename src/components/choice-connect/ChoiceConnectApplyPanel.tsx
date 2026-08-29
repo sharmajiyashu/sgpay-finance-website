@@ -44,13 +44,21 @@ export function ChoiceConnectApplyPanel({
 
   useEffect(() => {
     if (!api.createLead || !widgetConfig?.configured) return;
-    const trackKey = `${queryScope}:${productType}`;
+    const resumeUuid =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("uuid")?.trim() ||
+          new URLSearchParams(window.location.search).get("lead_uuid")?.trim() ||
+          ""
+        : "";
+    if (!resumeUuid) return;
+    const trackKey = `${queryScope}:${productType}:${resumeUuid}`;
     if (trackedProductsRef.current.has(trackKey)) return;
 
     trackedProductsRef.current.add(trackKey);
     api
       .createLead({
         productType,
+        uuid: resumeUuid,
       })
       .catch(() => {
         trackedProductsRef.current.delete(trackKey);

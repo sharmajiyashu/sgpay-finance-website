@@ -145,6 +145,8 @@ export interface ChoiceRemoteEnquiry {
   subService?: string;
   agentName?: string;
   agentCode?: string;
+  cbaCode?: string;
+  oprId?: string;
   subAgentName?: string;
   subAgentCode?: string;
   referredByName?: string;

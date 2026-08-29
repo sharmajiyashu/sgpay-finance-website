@@ -59,15 +59,15 @@ export function InsuranceApplyPanel({
   });
 
   useEffect(() => {
-    if (!api.createLead || !widgetConfig?.xApiKey) return;
-    const trackKey = `${queryScope}:motor-insurance:${vehicleType}:${resumeUuid || "new"}`;
+    if (!api.createLead || !widgetConfig?.xApiKey || !resumeUuid) return;
+    const trackKey = `${queryScope}:motor-insurance:${vehicleType}:${resumeUuid}`;
     if (trackedRef.current.has(trackKey)) return;
 
     trackedRef.current.add(trackKey);
     api
       .createLead({
-        uuid: resumeUuid || undefined,
-        metadata: { vehicleType, resumed: Boolean(resumeUuid) },
+        uuid: resumeUuid,
+        metadata: { vehicleType, resumed: true },
       })
       .catch(() => {
         trackedRef.current.delete(trackKey);

@@ -61,8 +61,8 @@ export function WebsiteMotorInsuranceApply() {
   });
 
   useEffect(() => {
-    if (!widgetConfig?.xApiKey) return;
-    const trackKey = `website:motor-insurance:${vehicleType}:${resumeUuid || "new"}`;
+    if (!widgetConfig?.xApiKey || (!refId && !resumeUuid)) return;
+    const trackKey = `website:motor-insurance:${vehicleType}:${resumeUuid || refId}`;
     if (trackedRef.current.has(trackKey)) return;
 
     trackedRef.current.add(trackKey);

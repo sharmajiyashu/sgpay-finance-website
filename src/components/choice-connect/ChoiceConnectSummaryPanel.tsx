@@ -171,7 +171,9 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
             {resolveReferredByName(enquiry) || "—"}
           </div>
           <div className="text-xs text-muted-foreground">
-            {[enquiry.subAgentCode, enquiry.agentCode].filter(Boolean).join(" · ") || "—"}
+            {[enquiry.subAgentCode, enquiry.agentCode, enquiry.cbaCode]
+              .filter((value, index, all) => value && all.indexOf(value) === index)
+              .join(" · ") || "—"}
           </div>
         </td>
         <td className="px-4 py-3 text-xs">{location || "—"}</td>

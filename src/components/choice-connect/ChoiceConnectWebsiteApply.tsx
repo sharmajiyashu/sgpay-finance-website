@@ -52,10 +52,11 @@ export function ChoiceConnectWebsiteApply({
     const trackKey = `website:${productType}`;
     if (trackedProductsRef.current.has(trackKey)) return;
 
+    if (!refId) return;
     trackedProductsRef.current.add(trackKey);
     createWebsiteChoiceLead({
       productType,
-      refId: refId || undefined,
+      refId,
     }).catch(() => {
       trackedProductsRef.current.delete(trackKey);
     });
