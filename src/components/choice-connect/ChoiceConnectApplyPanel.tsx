@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChoiceConnectWidget } from "@/components/choice-connect/ChoiceConnectWidget";
 import { validateWidgetConfig } from "@/lib/choiceConnect/widgetConfig";
@@ -34,36 +34,12 @@ export function ChoiceConnectApplyPanel({
   queryScope = "staff",
 }: ChoiceConnectApplyPanelProps) {
   const [productType, setProductType] = useState<ChoiceProductType>(initialProductType);
-  const trackedProductsRef = useRef<Set<string>>(new Set());
 
   const { data: widgetConfig, isLoading, error } = useQuery({
     queryKey: ["choice-connect-config", queryScope],
     queryFn: () => api.getConfig(),
     staleTime: 5 * 60 * 1000,
   });
-
-  useEffect(() => {
-    if (!api.createLead || !widgetConfig?.configured) return;
-    const resumeUuid =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("uuid")?.trim() ||
-          new URLSearchParams(window.location.search).get("lead_uuid")?.trim() ||
-          ""
-        : "";
-    if (!resumeUuid) return;
-    const trackKey = `${queryScope}:${productType}:${resumeUuid}`;
-    if (trackedProductsRef.current.has(trackKey)) return;
-
-    trackedProductsRef.current.add(trackKey);
-    api
-      .createLead({
-        productType,
-        uuid: resumeUuid,
-      })
-      .catch(() => {
-        trackedProductsRef.current.delete(trackKey);
-      });
-  }, [api, productType, queryScope, widgetConfig?.configured]);
 
   const containerId =
     productType === "credit-card"

@@ -6,11 +6,10 @@ import { useQuery } from "@tanstack/react-query";
 import { IconRefresh } from "@tabler/icons-react";
 import { Pagination } from "@/components/ui/Pagination";
 import type {
-  InsuranceLead,
   InsuranceRemoteEnquiry,
   InsuranceSummaryResponse,
 } from "@/modules/insurance/types";
-import { looksLikeAgentCode } from "@/lib/choiceConnect/types";
+import { resolveReferredByName } from "@/lib/choiceConnect/types";
 
 export interface InsuranceSummaryApiClient {
   getSummary: (params: Record<string, string | number | undefined>) => Promise<InsuranceSummaryResponse>;
@@ -88,9 +87,19 @@ function RemoteRow({
       </td>
       <td className="px-4 py-3">{enquiry.subService || enquiry.serviceType || "—"}</td>
       <td className="px-4 py-3">
-        {[enquiry.referredByName, enquiry.subAgentName, enquiry.agentName].find(
-          (value) => value?.trim() && !looksLikeAgentCode(value)
-        ) || "—"}
+        <div className="font-medium">{resolveReferredByName(enquiry) || "—"}</div>
+        {enquiry.referredByRole ? (
+          <div className="text-xs text-muted-foreground">{enquiry.referredByRole}</div>
+        ) : null}
+        {enquiry.referredBySource ? (
+          <div className="text-xs text-muted-foreground">
+            {enquiry.referredBySource === "admin"
+              ? "Admin Panel"
+              : enquiry.referredBySource === "agent"
+                ? "Agent Panel"
+                : "Website"}
+          </div>
+        ) : null}
       </td>
       <td className="px-4 py-3 capitalize">{enquiry.status ?? "—"}</td>
       <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{uuid || "—"}</td>
@@ -110,58 +119,17 @@ function RemoteRow({
   );
 }
 
-function LocalRow({
-  lead,
-  applyHref,
-}: {
-  lead: InsuranceLead;
-  applyHref: string;
-}) {
-  const uuid = lead.uuid?.trim();
-  const vehicleType =
-    typeof lead.metadata?.vehicleType === "string" ? lead.metadata.vehicleType : undefined;
-  return (
-    <tr className="border-b border-border/60 last:border-0">
-      <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
-      <td className="px-4 py-3">
-        <div className="font-medium">{lead.customerName || "—"}</div>
-        <div className="text-xs text-muted-foreground">
-          {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
-        </div>
-      </td>
-      <td className="px-4 py-3">{lead.sourceLabel || lead.sourceChannel}</td>
-      <td className="px-4 py-3 capitalize">{lead.status ?? "—"}</td>
-      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{uuid || "—"}</td>
-      <td className="px-4 py-3">
-        {uuid ? (
-          <Link
-            href={resumeHref(applyHref, uuid, vehicleType)}
-            className="inline-flex rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/10"
-          >
-            Resume
-          </Link>
-        ) : (
-          <span className="text-xs text-muted-foreground">—</span>
-        )}
-      </td>
-    </tr>
-  );
-}
-
 export function InsuranceSummaryPanel({
   api,
   title = "Motor Insurance Summary",
   queryScope = "insurance-summary",
   applyHref,
-  showSourceFilter = true,
 }: InsuranceSummaryPanelProps) {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [statusFilter, setStatusFilter] = useState("");
-  const [sourceChannel, setSourceChannel] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [activeTab, setActiveTab] = useState<"choice" | "local">("choice");
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: [
@@ -170,7 +138,6 @@ export function InsuranceSummaryPanel({
       page,
       limit,
       statusFilter,
-      sourceChannel,
       fromDate,
       toDate,
     ],
@@ -179,14 +146,11 @@ export function InsuranceSummaryPanel({
         page,
         limit,
         status: statusFilter || undefined,
-        sourceChannel: sourceChannel || undefined,
         fromDate: fromDate || undefined,
         toDate: toDate || undefined,
       }),
   });
 
-  const leads = data?.local.leads ?? [];
-  const localPagination = data?.local.pagination;
   const remote = data?.remote;
   const remoteEnquiries = remote?.enquiries ?? [];
   const remotePagination = remote?.pagination;
@@ -201,7 +165,8 @@ export function InsuranceSummaryPanel({
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Insurance summary-report from Choice Connect. Use Resume to continue an enquiry via UUID.
+            Motor insurance applications from the Choice Connect API. Resume continues
+            the same enquiry. Admin / agent referrer is shown when available.
           </p>
         </div>
         <button
@@ -246,24 +211,6 @@ export function InsuranceSummaryPanel({
             ))}
           </select>
         </div>
-        {showSourceFilter && (
-          <div>
-            <label className="mb-1 block text-xs text-muted-foreground">Source</label>
-            <select
-              value={sourceChannel}
-              onChange={(e) => {
-                setSourceChannel(e.target.value);
-                setPage(1);
-              }}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            >
-              <option value="">All sources</option>
-              <option value="website">Website</option>
-              <option value="admin">Admin</option>
-              <option value="agent">Agent</option>
-            </select>
-          </div>
-        )}
         <div>
           <label className="mb-1 block text-xs text-muted-foreground">From</label>
           <input
@@ -307,31 +254,6 @@ export function InsuranceSummaryPanel({
         </div>
       </div>
 
-      <div className="flex gap-2 border-b border-border">
-        <button
-          type="button"
-          onClick={() => setActiveTab("choice")}
-          className={`px-3 py-2 text-sm font-medium ${
-            activeTab === "choice"
-              ? "border-b-2 border-primary text-primary"
-              : "text-muted-foreground"
-          }`}
-        >
-          Choice Connect ({remoteTotal})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("local")}
-          className={`px-3 py-2 text-sm font-medium ${
-            activeTab === "local"
-              ? "border-b-2 border-primary text-primary"
-              : "text-muted-foreground"
-          }`}
-        >
-          Local leads ({localPagination?.total ?? leads.length})
-        </button>
-      </div>
-
       {isLoading && (
         <div className="h-40 animate-pulse rounded-xl bg-muted" />
       )}
@@ -342,7 +264,7 @@ export function InsuranceSummaryPanel({
         </div>
       )}
 
-      {!isLoading && !error && activeTab === "choice" && (
+      {!isLoading && !error && (
         <div className="overflow-x-auto rounded-xl border border-border">
           <table className="min-w-full text-sm">
             <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
@@ -360,7 +282,7 @@ export function InsuranceSummaryPanel({
               {remoteEnquiries.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    No remote insurance enquiries found.
+                    No Choice Connect insurance enquiries found.
                   </td>
                 </tr>
               ) : (
@@ -379,45 +301,6 @@ export function InsuranceSummaryPanel({
               <Pagination
                 page={page}
                 totalPages={remoteTotalPages}
-                onPageChange={setPage}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {!isLoading && !error && activeTab === "local" && (
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Created</th>
-                <th className="px-4 py-3">Customer</th>
-                <th className="px-4 py-3">Source</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">UUID</th>
-                <th className="px-4 py-3">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                    No local insurance leads yet.
-                  </td>
-                </tr>
-              ) : (
-                leads.map((lead) => (
-                  <LocalRow key={lead._id} lead={lead} applyHref={applyHref} />
-                ))
-              )}
-            </tbody>
-          </table>
-          {(localPagination?.totalPages ?? 1) > 1 && (
-            <div className="border-t border-border p-3">
-              <Pagination
-                page={page}
-                totalPages={localPagination?.totalPages ?? 1}
                 onPageChange={setPage}
               />
             </div>

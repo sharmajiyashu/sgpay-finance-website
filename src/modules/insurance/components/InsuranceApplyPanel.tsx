@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { MotorInsuranceWidget } from "@/modules/insurance/components/MotorInsuranceWidget";
@@ -44,7 +44,6 @@ export function InsuranceApplyPanel({
     "";
   const vehicleType = readVehicleTypeFromSearch(searchParams);
   const [switching, setSwitching] = useState(false);
-  const trackedRef = useRef<Set<string>>(new Set());
 
   const {
     data: widgetConfig,
@@ -57,22 +56,6 @@ export function InsuranceApplyPanel({
     retry: 1,
     refetchOnWindowFocus: false,
   });
-
-  useEffect(() => {
-    if (!api.createLead || !widgetConfig?.xApiKey || !resumeUuid) return;
-    const trackKey = `${queryScope}:motor-insurance:${vehicleType}:${resumeUuid}`;
-    if (trackedRef.current.has(trackKey)) return;
-
-    trackedRef.current.add(trackKey);
-    api
-      .createLead({
-        uuid: resumeUuid,
-        metadata: { vehicleType, resumed: true },
-      })
-      .catch(() => {
-        trackedRef.current.delete(trackKey);
-      });
-  }, [api, vehicleType, queryScope, widgetConfig?.xApiKey, resumeUuid]);
 
   const onSelectVehicle = (next: InsuranceVehicleType) => {
     if (next === vehicleType || switching) return;

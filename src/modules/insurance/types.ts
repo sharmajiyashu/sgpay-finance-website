@@ -61,6 +61,8 @@ export interface InsuranceRemoteEnquiry {
   subAgentName?: string;
   subAgentCode?: string;
   referredByName?: string;
+  referredByRole?: string;
+  referredBySource?: "website" | "admin" | "agent";
   status?: string;
   subStatus?: string;
   createdAt?: string;

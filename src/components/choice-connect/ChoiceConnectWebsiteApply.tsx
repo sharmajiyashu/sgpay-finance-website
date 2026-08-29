@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChoiceConnectWidget } from "@/components/choice-connect/ChoiceConnectWidget";
 import type { ChoiceProductType, ChoiceWidgetConfig } from "@/lib/choiceConnect/types";
-import {
-  createWebsiteChoiceLead,
-  getWebsiteChoiceConnectConfig,
-} from "@/lib/choiceConnect/publicService";
+import { getWebsiteChoiceConnectConfig } from "@/lib/choiceConnect/publicService";
 import { getWebsiteWidgetConfig } from "@/lib/choiceConnect/widgetConfig";
 
 interface ChoiceConnectWebsiteApplyProps {
@@ -31,7 +28,6 @@ export function ChoiceConnectWebsiteApply({
 }: ChoiceConnectWebsiteApplyProps) {
   const [productType, setProductType] = useState<ChoiceProductType>(initialProductType);
   const [remoteConfig, setRemoteConfig] = useState<ChoiceWidgetConfig | null>(null);
-  const trackedProductsRef = useRef<Set<string>>(new Set());
   const refId = useMemo(() => readRefId(), []);
 
   useEffect(() => {
@@ -47,20 +43,6 @@ export function ChoiceConnectWebsiteApply({
 
   const containerId =
     productType === "credit-card" ? "creditCardWidgetContainer" : "loanWidgetContainer";
-
-  useEffect(() => {
-    const trackKey = `website:${productType}`;
-    if (trackedProductsRef.current.has(trackKey)) return;
-
-    if (!refId) return;
-    trackedProductsRef.current.add(trackKey);
-    createWebsiteChoiceLead({
-      productType,
-      refId,
-    }).catch(() => {
-      trackedProductsRef.current.delete(trackKey);
-    });
-  }, [productType, refId]);
 
   return (
     <div>

@@ -6,16 +6,10 @@ import { IconCopy, IconRefresh } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Pagination } from "@/components/ui/Pagination";
 import type {
-  ChoiceLead,
   ChoiceRemoteEnquiry,
   ChoiceSummaryResponse,
 } from "@/lib/choiceConnect/types";
-import {
-  formatProductLabel,
-  formatSourceLabel,
-  resolveLeadStaff,
-  resolveReferredByName,
-} from "@/lib/choiceConnect/types";
+import { resolveReferredByName } from "@/lib/choiceConnect/types";
 import { getChoiceConnectDiagnostics } from "@/sg-admin/lib/services/choiceConnectService";
 
 export interface ChoiceConnectSummaryApiClient {
@@ -34,6 +28,7 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const PRODUCT_FILTER_OPTIONS = [
   { value: "", label: "All products" },
   { value: "credit-card", label: "Credit Card" },
+  { value: "motor-insurance", label: "Motor Insurance" },
   { value: "personal-loan", label: "Personal Loan" },
   { value: "business-loan", label: "Business Loan" },
   { value: "home-loan", label: "Home Loan" },
@@ -170,6 +165,20 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
           <div className="font-medium">
             {resolveReferredByName(enquiry) || "—"}
           </div>
+          {enquiry.referredByRole ? (
+            <div className="text-xs text-muted-foreground">{enquiry.referredByRole}</div>
+          ) : null}
+          {enquiry.referredBySource ? (
+            <span
+              className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${sourceBadgeClass(enquiry.referredBySource)}`}
+            >
+              {enquiry.referredBySource === "admin"
+                ? "Admin Panel"
+                : enquiry.referredBySource === "agent"
+                  ? "Agent Panel"
+                  : "Website"}
+            </span>
+          ) : null}
           <div className="text-xs text-muted-foreground">
             {[enquiry.subAgentCode, enquiry.agentCode, enquiry.cbaCode]
               .filter((value, index, all) => value && all.indexOf(value) === index)
@@ -207,6 +216,17 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
                 ["Service", enquiry.serviceType],
                 ["Sub-service", enquiry.subService],
                 ["Referred by", resolveReferredByName(enquiry)],
+                ["Referrer role", enquiry.referredByRole],
+                [
+                  "Referrer source",
+                  enquiry.referredBySource === "admin"
+                    ? "Admin Panel"
+                    : enquiry.referredBySource === "agent"
+                      ? "Agent Panel"
+                      : enquiry.referredBySource === "website"
+                        ? "Website"
+                        : undefined,
+                ],
                 ["Agent", enquiry.agentName],
                 ["Agent code", enquiry.agentCode],
                 ["Sub-agent", enquiry.subAgentName],
@@ -232,99 +252,17 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
   );
 }
 
-function LocalLeadRow({ lead }: { lead: ChoiceLead }) {
-  const [open, setOpen] = useState(false);
-  const staff = resolveLeadStaff(lead);
-
-  return (
-    <>
-      <tr className="border-b border-border/60 last:border-0">
-        <td className="px-4 py-3 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
-        <td className="px-4 py-3">
-          <div className="font-medium">{lead.customerName || "—"}</div>
-          <div className="text-xs text-muted-foreground">
-            {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
-          </div>
-        </td>
-        <td className="px-4 py-3">{formatProductLabel(lead.productType)}</td>
-        <td className="px-4 py-3">
-          <div className="font-medium">{staff.name || formatSourceLabel(lead)}</div>
-          <div className="text-xs text-muted-foreground">{staff.role || "—"}</div>
-          <div className="text-xs text-muted-foreground">
-            {[staff.mobile, staff.email].filter(Boolean).join(" · ")}
-          </div>
-        </td>
-        <td className="px-4 py-3">
-          <span
-            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${sourceBadgeClass(lead.sourceChannel)}`}
-          >
-            {formatSourceLabel(lead)}
-          </span>
-          <div className="mt-1 text-xs text-muted-foreground">
-            {[lead.agentCode, lead.subAgentCode].filter(Boolean).join(" · ") || "—"}
-          </div>
-        </td>
-        <td className="px-4 py-3 capitalize">{lead.status ?? "initiated"}</td>
-        <td className="px-4 py-3">
-          <div className="font-mono text-xs text-muted-foreground">
-            {lead.uuid || lead._id.slice(-8)}
-          </div>
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="mt-1 text-xs font-medium text-primary hover:underline"
-          >
-            {open ? "Hide details" : "Full details"}
-          </button>
-        </td>
-      </tr>
-      {open && (
-        <tr className="border-b border-border/60 bg-muted/30">
-          <td colSpan={7} className="px-4 py-3">
-            <DetailChips
-              items={[
-                ["Lead ID", lead._id],
-                ["UUID", lead.uuid],
-                ["Product", formatProductLabel(lead.productType)],
-                ["Source", formatSourceLabel(lead)],
-                ["Channel", lead.sourceChannel],
-                ["Staff name", staff.name],
-                ["Staff role", staff.role],
-                ["Staff email", staff.email],
-                ["Staff mobile", staff.mobile],
-                ["Staff Choice code", staff.agentCode],
-                ["Agent code", lead.agentCode],
-                ["Sub-agent code", lead.subAgentCode],
-                ["Customer", lead.customerName],
-                ["Customer phone", lead.customerPhone],
-                ["Customer email", lead.customerEmail],
-                ["Status", lead.status],
-                ["Sub-status", lead.subStatus],
-                ["Created", formatDate(lead.createdAt)],
-                ["Updated", formatDate(lead.updatedAt)],
-              ]}
-            />
-          </td>
-        </tr>
-      )}
-    </>
-  );
-}
-
 export function ChoiceConnectSummaryPanel({
   api,
   title = "Choice Connect Summary",
-  showAllSources = true,
   queryScope = "summary",
 }: ChoiceConnectSummaryPanelProps) {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [productType, setProductType] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [sourceChannel, setSourceChannel] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [activeTab, setActiveTab] = useState<"choice" | "local">("choice");
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: [
@@ -334,7 +272,6 @@ export function ChoiceConnectSummaryPanel({
       limit,
       productType,
       statusFilter,
-      sourceChannel,
       fromDate,
       toDate,
     ],
@@ -344,14 +281,11 @@ export function ChoiceConnectSummaryPanel({
         limit,
         productType: productType || undefined,
         status: statusFilter || undefined,
-        sourceChannel: sourceChannel || undefined,
         fromDate: fromDate || undefined,
         toDate: toDate || undefined,
       }),
   });
 
-  const leads = data?.local.leads ?? [];
-  const localPagination = data?.local.pagination;
   const remote = data?.remote;
   const remoteEnquiries = remote?.enquiries ?? [];
   const remotePagination = remote?.pagination;
@@ -367,7 +301,6 @@ export function ChoiceConnectSummaryPanel({
   const resetFilters = () => {
     setProductType("");
     setStatusFilter("");
-    setSourceChannel("");
     setFromDate("");
     setToDate("");
     setLimit(20);
@@ -398,9 +331,9 @@ export function ChoiceConnectSummaryPanel({
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Choice Connect Report is the official partner API. Local Tracking is only
-            applications started from this portal that have customer details — not
-            empty widget-open sessions.
+            Official Choice Connect applications — credit card, motor insurance, and
+            loans. If the apply was started from admin, agent, or website, the
+            referrer is shown on the same row.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -505,7 +438,10 @@ export function ChoiceConnectSummaryPanel({
             label="Sub-services"
             value={Object.keys(remote.overall.subServiceCounts).length}
           />
-          <SummaryStatCard label="Local tracked" value={localPagination?.total ?? leads.length} />
+          <SummaryStatCard
+            label="With referrer"
+            value={remoteEnquiries.filter((enquiry) => resolveReferredByName(enquiry)).length}
+          />
         </div>
       )}
 
@@ -590,21 +526,6 @@ export function ChoiceConnectSummaryPanel({
               </option>
             ))}
           </select>
-          {showAllSources && (
-            <select
-              value={sourceChannel}
-              onChange={(e) => {
-                setSourceChannel(e.target.value);
-                setPage(1);
-              }}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            >
-              <option value="">All local sources</option>
-              <option value="website">Website</option>
-              <option value="agent">Agent</option>
-              <option value="admin">Admin Panel</option>
-            </select>
-          )}
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             From
             <input
@@ -649,40 +570,9 @@ export function ChoiceConnectSummaryPanel({
         </div>
       </div>
 
-      <div className="flex gap-2 border-b border-border">
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("choice");
-            setPage(1);
-          }}
-          className={`border-b-2 px-4 py-2 text-sm font-medium transition ${
-            activeTab === "choice"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Choice Connect Report ({remoteTotal})
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("local");
-            setPage(1);
-          }}
-          className={`border-b-2 px-4 py-2 text-sm font-medium transition ${
-            activeTab === "local"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Local Tracking ({localPagination?.total ?? leads.length})
-        </button>
-      </div>
       <p className="text-xs text-muted-foreground">
-        {activeTab === "choice"
-          ? "Official Choice Connect applications (credit card / loan) returned by their summary API."
-          : "Portal-side records with a customer name, phone, or email. Opening Apply without submitting is not listed here."}
+        {remoteTotal} applications from Choice Connect
+        {productType ? ` · ${PRODUCT_FILTER_OPTIONS.find((opt) => opt.value === productType)?.label}` : ""}.
       </p>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading summary…</p>}
@@ -692,95 +582,49 @@ export function ChoiceConnectSummaryPanel({
         </p>
       )}
 
-      {activeTab === "choice" && (
-        <div className="space-y-4">
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1100px] text-left text-sm">
-                <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
+      <div className="space-y-4">
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1100px] text-left text-sm">
+              <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Date</th>
+                  <th className="px-4 py-3 font-medium">Customer</th>
+                  <th className="px-4 py-3 font-medium">Product</th>
+                  <th className="px-4 py-3 font-medium">Referred by</th>
+                  <th className="px-4 py-3 font-medium">Location</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Sub-status</th>
+                  <th className="px-4 py-3 font-medium">Ref</th>
+                </tr>
+              </thead>
+              <tbody>
+                {remoteEnquiries.length === 0 && !isLoading ? (
                   <tr>
-                    <th className="px-4 py-3 font-medium">Date</th>
-                    <th className="px-4 py-3 font-medium">Customer</th>
-                    <th className="px-4 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Referred by</th>
-                    <th className="px-4 py-3 font-medium">Location</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Sub-status</th>
-                    <th className="px-4 py-3 font-medium">Ref</th>
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                      No Choice Connect enquiries returned for selected filters.
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {remoteEnquiries.length === 0 && !isLoading ? (
-                    <tr>
-                      <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                        No Choice Connect enquiries returned for selected filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    remoteEnquiries.map((enquiry) => (
-                      <RemoteEnquiryRow
-                        key={enquiry.enquiryId || enquiry.uuid || `${enquiry.customerMobile}-${enquiry.createdAt}`}
-                        enquiry={enquiry}
-                      />
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                ) : (
+                  remoteEnquiries.map((enquiry) => (
+                    <RemoteEnquiryRow
+                      key={enquiry.enquiryId || enquiry.uuid || `${enquiry.customerMobile}-${enquiry.createdAt}`}
+                      enquiry={enquiry}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-          <Pagination
-            page={remotePagination?.page ?? page}
-            totalPages={remoteTotalPages}
-            onPageChange={setPage}
-            total={remoteTotal}
-            limit={remotePagination?.limit ?? limit}
-          />
         </div>
-      )}
-
-      {activeTab === "local" && (
-        <div className="space-y-4">
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] text-left text-sm">
-                <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Date</th>
-                    <th className="px-4 py-3 font-medium">Customer</th>
-                    <th className="px-4 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Referred by</th>
-                    <th className="px-4 py-3 font-medium">Source / Codes</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Ref</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leads.length === 0 && !isLoading ? (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                        No portal applications with customer details yet. Empty widget
-                        opens are not shown here. Submitted applications appear on
-                        Choice Connect Report.
-                      </td>
-                    </tr>
-                  ) : (
-                    leads.map((lead) => <LocalLeadRow key={lead._id} lead={lead} />)
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          {localPagination && (
-            <Pagination
-              page={localPagination.page}
-              totalPages={localPagination.totalPages}
-              onPageChange={setPage}
-              total={localPagination.total}
-              limit={localPagination.limit}
-            />
-          )}
-        </div>
-      )}
+        <Pagination
+          page={remotePagination?.page ?? page}
+          totalPages={remoteTotalPages}
+          onPageChange={setPage}
+          total={remoteTotal}
+          limit={remotePagination?.limit ?? limit}
+        />
+      </div>
     </div>
   );
 }

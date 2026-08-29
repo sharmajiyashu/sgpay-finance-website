@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MotorInsuranceWidget } from "@/modules/insurance/components/MotorInsuranceWidget";
 import type { InsuranceVehicleType } from "@/modules/insurance/types";
 import { INSURANCE_VEHICLE_TYPES } from "@/modules/insurance/types";
-import {
-  createWebsiteInsuranceLead,
-  getWebsiteInsuranceConfig,
-} from "@/modules/insurance/publicService";
+import { getWebsiteInsuranceConfig } from "@/modules/insurance/publicService";
 import {
   navigateWithVehicleType,
   readVehicleTypeFromSearch,
@@ -46,7 +43,6 @@ export function WebsiteMotorInsuranceApply() {
   const [switching, setSwitching] = useState(false);
   const resumeUuid = initial.uuid;
   const refId = initial.refId;
-  const trackedRef = useRef<Set<string>>(new Set());
 
   const {
     data: widgetConfig,
@@ -59,21 +55,6 @@ export function WebsiteMotorInsuranceApply() {
     retry: 1,
     refetchOnWindowFocus: false,
   });
-
-  useEffect(() => {
-    if (!widgetConfig?.xApiKey || (!refId && !resumeUuid)) return;
-    const trackKey = `website:motor-insurance:${vehicleType}:${resumeUuid || refId}`;
-    if (trackedRef.current.has(trackKey)) return;
-
-    trackedRef.current.add(trackKey);
-    createWebsiteInsuranceLead({
-      refId: refId || undefined,
-      uuid: resumeUuid || undefined,
-      metadata: { vehicleType, resumed: Boolean(resumeUuid) },
-    }).catch(() => {
-      trackedRef.current.delete(trackKey);
-    });
-  }, [vehicleType, widgetConfig?.xApiKey, resumeUuid, refId]);
 
   const onSelectVehicle = (next: InsuranceVehicleType) => {
     if (next === vehicleType || switching) return;
