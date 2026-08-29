@@ -193,6 +193,7 @@ export default function CommissionLedgerPage() {
               ) : (
                 groups.flatMap((group) => {
                   const head = group.rows[0];
+                  if (!head) return [];
                   const saleTotal = group.rows.reduce(
                     (sum, row) => sum + (row.commissionAmount || 0),
                     0
