@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { IconEye, IconSearch, IconTrash } from "@tabler/icons-react";
@@ -17,7 +18,6 @@ import { Pagination } from "@/components/ui/Pagination";
 import {
   ENQUIRY_CATEGORIES,
   getCategoryLabel,
-  getEnquiryCatalogStats,
   getEnquiryCategory,
   getServiceLabel,
   getServicesForCategory,
@@ -258,7 +258,28 @@ interface EnquiriesPanelProps {
   queryKeyPrefix?: string;
 }
 
-export function EnquiriesPanel({
+export function EnquiriesPanel(props: EnquiriesPanelProps) {
+  return (
+    <Suspense fallback={<EnquiriesPanelFallback title={props.title} />}>
+      <EnquiriesPanelInner {...props} />
+    </Suspense>
+  );
+}
+
+function EnquiriesPanelFallback({ title }: { title?: string }) {
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-foreground">{title ?? "Enquiries"}</h1>
+      <p className="text-sm text-muted-foreground">Loading filters...</p>
+    </div>
+  );
+}
+
+function readParam(params: URLSearchParams, key: string) {
+  return params.get(key)?.trim() ?? "";
+}
+
+function EnquiriesPanelInner({
   categoryId,
   serviceSlug,
   title: titleOverride,
@@ -268,16 +289,34 @@ export function EnquiriesPanel({
   queryKeyPrefix = "admin-enquiries",
 }: EnquiriesPanelProps) {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const category = categoryId ? getEnquiryCategory(categoryId) : undefined;
   const lockedService = Boolean(serviceSlug);
+  const lockedType = Boolean(categoryId);
   const canUpdateStatus = Boolean(api.updateEnquiryStatus) && !readOnly;
   const canDelete = Boolean(api.deleteEnquiry) && !readOnly;
 
-  const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState(categoryId ?? "");
-  const [serviceFilter, setServiceFilter] = useState(serviceSlug ?? "");
+  const [page, setPage] = useState(() => {
+    const next = Number(readParam(searchParams, "page"));
+    return next > 0 ? next : 1;
+  });
+  const [searchQuery, setSearchQuery] = useState(() => readParam(searchParams, "search"));
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const raw = readParam(searchParams, "status");
+    if (raw === "all") return "";
+    if (raw === "pending" || raw === "in_progress" || raw === "resolved") return raw;
+    return "pending";
+  });
+  const [typeFilter, setTypeFilter] = useState(
+    categoryId ?? readParam(searchParams, "type")
+  );
+  const [serviceFilter, setServiceFilter] = useState(
+    serviceSlug ?? readParam(searchParams, "service")
+  );
+  const [fromDate, setFromDate] = useState(() => readParam(searchParams, "fromDate"));
+  const [toDate, setToDate] = useState(() => readParam(searchParams, "toDate"));
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
 
@@ -286,14 +325,68 @@ export function EnquiriesPanel({
     return ENQUIRY_CATEGORIES.flatMap((c) => c.services);
   }, [typeFilter]);
 
+  const hasActiveFilters = Boolean(
+    searchQuery.trim() ||
+      statusFilter !== "pending" ||
+      fromDate ||
+      toDate ||
+      (!lockedType && typeFilter) ||
+      (!lockedService && serviceFilter)
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const setOrDelete = (key: string, value: string) => {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    };
+
+    setOrDelete("page", page > 1 ? String(page) : "");
+    setOrDelete("search", searchQuery.trim());
+    setOrDelete("status", statusFilter || "all");
+    if (!lockedType) setOrDelete("type", typeFilter);
+    if (!lockedService) setOrDelete("service", serviceFilter);
+    setOrDelete("fromDate", fromDate);
+    setOrDelete("toDate", toDate);
+
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next === current) return;
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [
+    page,
+    searchQuery,
+    statusFilter,
+    typeFilter,
+    serviceFilter,
+    fromDate,
+    toDate,
+    lockedType,
+    lockedService,
+    pathname,
+    router,
+    searchParams,
+  ]);
+
   const url = listUrl(api.listPath, page, searchQuery, 20, {
     status: statusFilter || undefined,
     type: typeFilter || undefined,
     service: serviceFilter || undefined,
+    fromDate: fromDate || undefined,
+    toDate: toDate || undefined,
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [queryKeyPrefix, page, searchQuery, statusFilter, typeFilter, serviceFilter],
+    queryKey: [
+      queryKeyPrefix,
+      page,
+      searchQuery,
+      statusFilter,
+      typeFilter,
+      serviceFilter,
+      fromDate,
+      toDate,
+    ],
     queryFn: () => api.getEnquiries(url),
   });
 
@@ -312,6 +405,7 @@ export function EnquiriesPanel({
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: [queryKeyPrefix] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["sidebar-counts"] });
       setSelectedEnquiry((prev) =>
         prev && prev._id === updated._id ? { ...prev, ...updated } : prev
       );
@@ -332,26 +426,34 @@ export function EnquiriesPanel({
       setSelectedEnquiry(null);
       queryClient.invalidateQueries({ queryKey: [queryKeyPrefix] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["sidebar-counts"] });
       toast.success("Enquiry deleted");
     },
     onError: (err: Error) => toast.error(err.message),
   });
 
-  const stats = getEnquiryCatalogStats();
   const title =
     titleOverride ??
     (lockedService && serviceSlug
       ? getServiceLabel(typeFilter || "finance", serviceSlug)
       : category
         ? `${category.label} Enquiries`
-        : "All Enquiries");
+        : "Enquiries");
   const subtitle =
     subtitleOverride ??
     (lockedService
       ? "Enquiries submitted from the website Roar Credit Card apply form only"
-      : category
-        ? `${category.services.length} service types in ${category.label}`
-        : `${stats.categories} categories · ${stats.servicePages} enquiry sources`);
+      : "Filter website enquiries by category, service, status, or date");
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("pending");
+    setFromDate("");
+    setToDate("");
+    if (!lockedType) setTypeFilter("");
+    if (!lockedService) setServiceFilter("");
+    setPage(1);
+  };
 
   return (
     <div className="space-y-6">
@@ -360,74 +462,126 @@ export function EnquiriesPanel({
         <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
       </div>
 
-      <div
-        className={`grid gap-3 sm:grid-cols-2 ${lockedService ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}
-      >
-        <div className={`relative ${lockedService ? "lg:col-span-2" : "lg:col-span-2"}`}>
-          <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Search name, email, phone..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1);
-            }}
-            className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+      <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold">Filters</h2>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-          className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+        <div
+          className={`grid gap-3 sm:grid-cols-2 ${lockedService ? "lg:grid-cols-4" : "lg:grid-cols-3 xl:grid-cols-6"}`}
         >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.label} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-        {!lockedService && (
-          <>
+          <div className={`relative ${lockedService ? "sm:col-span-2" : "xl:col-span-2"}`}>
+            <label className="mb-1 block text-xs text-muted-foreground">Search</label>
+            <div className="relative">
+              <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                placeholder="Name, email, phone..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted-foreground">Status</label>
             <select
-              value={typeFilter}
-              disabled={!!categoryId}
+              value={statusFilter}
               onChange={(e) => {
-                setTypeFilter(e.target.value);
-                setServiceFilter("");
+                setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm disabled:opacity-70"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
             >
-              <option value="">All categories</option>
-              {ENQUIRY_CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>{c.label} ({c.services.length})</option>
+              {STATUS_OPTIONS.map((opt) => (
+                <option key={opt.label} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-            <select
-              value={serviceFilter}
+          </div>
+          {!lockedService && (
+            <>
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">Category</label>
+                <select
+                  value={typeFilter}
+                  disabled={lockedType}
+                  onChange={(e) => {
+                    setTypeFilter(e.target.value);
+                    setServiceFilter("");
+                    setPage(1);
+                  }}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm disabled:opacity-70"
+                >
+                  <option value="">All categories</option>
+                  {ENQUIRY_CATEGORIES.map((c) => (
+                    <option key={c.id} value={c.id}>{c.label} ({c.services.length})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">Service</label>
+                <select
+                  value={serviceFilter}
+                  onChange={(e) => {
+                    setServiceFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+                >
+                  <option value="">All services</option>
+                  {typeFilter
+                    ? serviceOptions.map((s) => (
+                        <option key={s.slug} value={s.slug}>{s.label}</option>
+                      ))
+                    : ENQUIRY_CATEGORIES.flatMap((c) =>
+                        c.services.map((s) => (
+                          <option key={`${c.id}-${s.slug}`} value={s.slug}>
+                            {c.label} — {s.label}
+                          </option>
+                        ))
+                      )}
+                </select>
+              </div>
+            </>
+          )}
+          <div>
+            <label className="mb-1 block text-xs text-muted-foreground">From</label>
+            <input
+              type="date"
+              value={fromDate}
+              max={toDate || undefined}
               onChange={(e) => {
-                setServiceFilter(e.target.value);
+                setFromDate(e.target.value);
                 setPage(1);
               }}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm lg:col-span-2"
-            >
-              <option value="">All services</option>
-              {typeFilter
-                ? serviceOptions.map((s) => (
-                    <option key={s.slug} value={s.slug}>{s.label}</option>
-                  ))
-                : ENQUIRY_CATEGORIES.flatMap((c) =>
-                    c.services.map((s) => (
-                      <option key={`${c.id}-${s.slug}`} value={s.slug}>
-                        {c.label} — {s.label}
-                      </option>
-                    ))
-                  )}
-            </select>
-          </>
-        )}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted-foreground">To</label>
+            <input
+              type="date"
+              value={toDate}
+              min={fromDate || undefined}
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+            />
+          </div>
+        </div>
       </div>
 
       {error && (

@@ -1,18 +1,23 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { DashboardSidebar } from "@/sg-admin/components/DashboardSidebar";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   IconChevronDown,
+  IconHelp,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
   IconLogout,
   IconMenu2,
+  IconUsersGroup,
   IconX,
 } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import { clearToken, getAuthUser, type AuthUser } from "@/sg-admin/lib/api";
+import { useSidebarCounts } from "@/sg-admin/lib/services/sidebarCountsService";
+import { PendingCountBadge } from "@/components/ui/PendingCountBadge";
 
 function displayName(user: AuthUser | null): string {
   if (!user) return "—";
@@ -26,6 +31,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const mainRef = React.useRef<HTMLElement>(null);
+  const { data: counts } = useSidebarCounts();
 
   useEffect(() => {
     queueMicrotask(() => setAuthUserState(getAuthUser()));
@@ -89,6 +95,26 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             )}
           </button>
           <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-4">
+            {!!counts?.pendingEnquiries && (
+              <Link
+                href="/admin/enquiries"
+                className="hidden items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 sm:inline-flex"
+              >
+                <IconHelp className="h-3.5 w-3.5" />
+                Enquiries
+                <PendingCountBadge count={counts.pendingEnquiries} />
+              </Link>
+            )}
+            {!!counts?.pendingAgents && (
+              <Link
+                href="/admin/agents?status=pending"
+                className="hidden items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 sm:inline-flex"
+              >
+                <IconUsersGroup className="h-3.5 w-3.5" />
+                Agents
+                <PendingCountBadge count={counts.pendingAgents} />
+              </Link>
+            )}
             <DropdownMenu.Root>
               <DropdownMenu.Trigger className="flex min-w-0 cursor-pointer items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium text-card-foreground hover:bg-muted sm:px-3">
                 <span className="max-w-[140px] truncate sm:max-w-[180px]">

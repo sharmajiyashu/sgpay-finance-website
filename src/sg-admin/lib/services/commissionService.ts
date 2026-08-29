@@ -1,4 +1,4 @@
-import { get, patch, put } from "@/sg-admin/lib/api";
+import { get, patch, post, put } from "@/sg-admin/lib/api";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
 
 export interface CommissionRule {
@@ -9,9 +9,18 @@ export interface CommissionRule {
   isActive: boolean;
 }
 
+export interface CommissionLedgerSummary {
+  count: number;
+  totalAmount: number;
+  pendingAmount: number;
+  approvedAmount: number;
+  paidAmount: number;
+}
+
 export interface CommissionLedgerRow {
   _id: string;
   productType: string;
+  source?: "choice-connect" | "roar";
   amountBase: number;
   percent: number;
   commissionAmount: number;
@@ -31,9 +40,17 @@ export interface CommissionLedgerRow {
     agentType?: string;
   };
   leadId?: {
+    _id?: string;
     productType?: string;
     status?: string;
     customerName?: string;
+    createdAt?: string;
+  };
+  enquiryId?: {
+    _id?: string;
+    name?: string;
+    status?: string;
+    service?: string;
     createdAt?: string;
   };
   createdAt?: string;
@@ -58,6 +75,7 @@ export async function saveCommissionRules(
 export async function getCommissionLedger(url: string) {
   return get<{
     ledger: CommissionLedgerRow[];
+    summary?: CommissionLedgerSummary;
     pagination: { page: number; limit: number; total: number; totalPages: number };
   }>(url);
 }
@@ -67,4 +85,88 @@ export async function updateLedgerStatus(
   status: "pending" | "approved" | "paid"
 ) {
   return patch<CommissionLedgerRow>(ADMIN_API_PATHS.commissionLedgerStatus(id), { status });
+}
+
+export interface CommissionWallet {
+  pendingApproval: number;
+  available: number;
+  reserved: number;
+  withdrawn: number;
+  totalEarned: number;
+  openWithdrawal: boolean;
+  bank?: {
+    accountHolderName?: string;
+    bankName?: string;
+    accountNumber?: string;
+    ifsc?: string;
+  };
+}
+
+export interface CommissionTransaction {
+  _id: string;
+  type: "credit" | "debit";
+  status: "pending" | "completed" | "reversed";
+  amount: number;
+  description: string;
+  createdAt: string;
+}
+
+export interface CommissionWithdrawal {
+  _id: string;
+  amount: number;
+  status: "pending" | "approved" | "rejected" | "paid";
+  accountHolderName: string;
+  bankName: string;
+  accountNumber: string;
+  ifsc: string;
+  adminNote?: string;
+  createdAt: string;
+  processedAt?: string;
+  userId?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    mobile?: string;
+  };
+}
+
+export interface WithdrawalRequestInput {
+  amount: number;
+  accountHolderName: string;
+  bankName: string;
+  accountNumber: string;
+  ifsc: string;
+}
+
+export async function getCommissionWallet() {
+  return get<CommissionWallet>(ADMIN_API_PATHS.commissionWallet);
+}
+
+export async function getCommissionTransactions(url: string) {
+  return get<{
+    transactions: CommissionTransaction[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(url);
+}
+
+export async function getCommissionWithdrawals(url: string) {
+  return get<{
+    withdrawals: CommissionWithdrawal[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(url);
+}
+
+export async function requestCommissionWithdrawal(input: WithdrawalRequestInput) {
+  return post<CommissionWithdrawal>(ADMIN_API_PATHS.commissionWithdrawals, input);
+}
+
+export async function updateWithdrawalStatus(
+  id: string,
+  status: "approved" | "rejected" | "paid",
+  adminNote?: string
+) {
+  return patch<CommissionWithdrawal>(ADMIN_API_PATHS.commissionWithdrawalStatus(id), {
+    status,
+    adminNote,
+  });
 }

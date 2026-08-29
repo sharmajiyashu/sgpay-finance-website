@@ -9,15 +9,21 @@ import {
   IconCoin,
   IconHierarchy,
 } from "@tabler/icons-react";
-import { ENQUIRY_CATEGORIES } from "@/lib/enquiryCatalog";
 import { hasAnyPermission, hasPermission } from "@/sg-admin/lib/permissions";
 import type { AuthUser } from "@/sg-admin/lib/api";
+
+export type SidebarBadgeKey =
+  | "pendingEnquiries"
+  | "pendingAgents"
+  | "roarPending"
+  | "pendingWithdrawals";
 
 export interface SidebarNavItem {
   title: string;
   href: string;
   icon?: React.ElementType;
   permission?: string | string[];
+  badgeKey?: SidebarBadgeKey;
 }
 
 export interface SidebarNavSection {
@@ -26,6 +32,7 @@ export interface SidebarNavSection {
   icon: React.ElementType;
   items: SidebarNavItem[];
   permission?: string | string[];
+  badgeKey?: SidebarBadgeKey;
 }
 
 export type SidebarNavEntry = SidebarNavItem | SidebarNavSection;
@@ -52,12 +59,7 @@ export const sidebarNav: SidebarNavEntry[] = [
     href: "/admin/agents",
     icon: IconUsersGroup,
     permission: "admin:agent:get",
-    items: [
-      { title: "All Agents", href: "/admin/agents", permission: "admin:agent:get" },
-      { title: "Pending", href: "/admin/agents/pending", permission: "admin:agent:get" },
-      { title: "Approved", href: "/admin/agents/approved", permission: "admin:agent:get" },
-      { title: "Rejected", href: "/admin/agents/rejected", permission: "admin:agent:get" },
-    ],
+    badgeKey: "pendingAgents",
   },
   {
     title: "Roles",
@@ -73,6 +75,13 @@ export const sidebarNav: SidebarNavEntry[] = [
     items: [
       { title: "Rules", href: "/admin/commissions/rules", permission: "admin:commission:get" },
       { title: "Ledger", href: "/admin/commissions/ledger", permission: "admin:commission:get" },
+      { title: "My Wallet", href: "/admin/commissions/wallet", permission: "admin:commission:get" },
+      {
+        title: "Withdrawals",
+        href: "/admin/commissions/withdrawals",
+        permission: "admin:commission:get",
+        badgeKey: "pendingWithdrawals",
+      },
     ],
   },
   {
@@ -80,13 +89,7 @@ export const sidebarNav: SidebarNavEntry[] = [
     href: "/admin/enquiries",
     icon: IconHelp,
     permission: "admin:enquiry:get",
-    items: [
-      { title: "All Enquiries", href: "/admin/enquiries" },
-      ...ENQUIRY_CATEGORIES.map((category) => ({
-        title: category.label,
-        href: category.href,
-      })),
-    ],
+    badgeKey: "pendingEnquiries",
   },
   {
     title: "Credit Card",
@@ -103,11 +106,7 @@ export const sidebarNav: SidebarNavEntry[] = [
         title: "Roar Bank Enquiry",
         href: "/admin/choice-connect/roar-bank-enquiry",
         permission: "admin:enquiry:get",
-      },
-      {
-        title: "Roar Referral Link",
-        href: "/admin/choice-connect/roar-referral-link",
-        permission: "admin:enquiry:get",
+        badgeKey: "roarPending",
       },
       {
         title: "Roar Referral Tree",
@@ -117,11 +116,6 @@ export const sidebarNav: SidebarNavEntry[] = [
       {
         title: "Summary",
         href: "/admin/choice-connect/summary",
-        permission: "admin:choice-connect:get",
-      },
-      {
-        title: "Loans",
-        href: "/admin/choice-connect/loans",
         permission: "admin:choice-connect:get",
       },
       {

@@ -109,12 +109,6 @@ export function AgentDashboardContent({ title, showEdit = false }: AgentDashboar
             >
               View my Roar enquiries
             </Link>
-            <Link
-              href="/agent/choice-connect/roar-referral-link"
-              className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
-            >
-              Full referral page
-            </Link>
           </div>
         </div>
       )}

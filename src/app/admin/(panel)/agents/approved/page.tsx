@@ -1,7 +1,5 @@
-"use client";
-
-import { AdminAgentsPanel } from "@/sg-admin/components/AdminAgentsPanel";
+import { redirect } from "next/navigation";
 
 export default function AdminAgentsApprovedPage() {
-  return <AdminAgentsPanel statusFilter="approved" />;
+  redirect("/admin/agents?status=approved");
 }

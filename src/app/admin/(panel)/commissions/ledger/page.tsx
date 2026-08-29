@@ -1,18 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { twMerge } from "tailwind-merge";
 import { listUrl, unwrapList } from "@/sg-admin/lib/paginated-list";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
 import {
   getCommissionLedger,
   updateLedgerStatus,
   type CommissionLedgerRow,
+  type CommissionLedgerSummary,
 } from "@/sg-admin/lib/services/commissionService";
 import { COMMISSION_LEVEL_LABELS } from "@/sg-admin/lib/types/hierarchy";
 import { Pagination } from "@/components/ui/Pagination";
 import { hasPermission } from "@/sg-admin/lib/permissions";
+
+const CASCADE_ORDER = [
+  "retailer",
+  "distributor",
+  "super_distributor",
+  "rm",
+  "asm",
+  "state_head",
+];
 
 function personName(person?: {
   firstName?: string;
@@ -25,6 +36,39 @@ function personName(person?: {
     person.email ||
     "—"
   );
+}
+
+function money(value: number) {
+  return `₹${Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function saleKey(row: CommissionLedgerRow) {
+  return row.leadId?._id
+    ? `lead:${row.leadId._id}`
+    : row.enquiryId?._id
+      ? `enquiry:${row.enquiryId._id}`
+      : row._id;
+}
+
+function saleLabel(row: CommissionLedgerRow) {
+  if (row.enquiryId) {
+    return row.enquiryId.name || "Roar enquiry";
+  }
+  return row.leadId?.customerName || "Choice Connect sale";
+}
+
+function sourceLabel(row: CommissionLedgerRow) {
+  if (row.source === "roar" || row.enquiryId) return "Roar Credit Card";
+  return "Choice Connect";
+}
+
+function statusClass(status: string) {
+  if (status === "paid") return "bg-emerald-500/10 text-emerald-700";
+  if (status === "approved") return "bg-sky-500/10 text-sky-700";
+  return "bg-amber-500/10 text-amber-800";
 }
 
 export default function CommissionLedgerPage() {
@@ -47,6 +91,24 @@ export default function CommissionLedgerPage() {
     data as Record<string, unknown> | undefined,
     "ledger"
   );
+  const summary = (data as { summary?: CommissionLedgerSummary } | undefined)?.summary;
+
+  const groups = useMemo(() => {
+    const map = new Map<string, CommissionLedgerRow[]>();
+    for (const row of ledger) {
+      const key = saleKey(row);
+      const list = map.get(key) ?? [];
+      list.push(row);
+      map.set(key, list);
+    }
+    return Array.from(map.entries()).map(([key, rows]) => ({
+      key,
+      rows: [...rows].sort(
+        (a, b) =>
+          CASCADE_ORDER.indexOf(a.level || "") - CASCADE_ORDER.indexOf(b.level || "")
+      ),
+    }));
+  }, [ledger]);
 
   const statusMutation = useMutation({
     mutationFn: ({
@@ -68,8 +130,15 @@ export default function CommissionLedgerPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Commission Ledger</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Credit-card commission cascade entries
+          Credit-card cascade: each upline role earns its own % of the same base
         </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <SummaryCard label="Entries" value={String(summary?.count ?? pagination?.total ?? 0)} />
+        <SummaryCard label="Total commission" value={money(summary?.totalAmount ?? 0)} />
+        <SummaryCard label="Pending" value={money(summary?.pendingAmount ?? 0)} />
+        <SummaryCard label="Paid" value={money(summary?.paidAmount ?? 0)} />
       </div>
 
       <select
@@ -97,69 +166,104 @@ export default function CommissionLedgerPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr className="text-left text-muted-foreground">
+                <th className="px-4 py-3 font-medium">Sale / cascade</th>
                 <th className="px-4 py-3 font-medium">Beneficiary</th>
-                <th className="px-4 py-3 font-medium">From sale</th>
                 <th className="px-4 py-3 font-medium">Level</th>
                 <th className="px-4 py-3 font-medium">Base</th>
                 <th className="px-4 py-3 font-medium">%</th>
                 <th className="px-4 py-3 font-medium">Amount</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Date</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                     Loading...
                   </td>
                 </tr>
-              ) : ledger.length === 0 ? (
+              ) : groups.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    No commission entries yet
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                    No commission entries yet. Entries appear when a credit-card sale
+                    is issued/approved, or a Roar enquiry is marked resolved.
                   </td>
                 </tr>
               ) : (
-                ledger.map((row) => (
-                  <tr key={row._id} className="border-b border-border/50 align-top">
-                    <td className="px-4 py-3">{personName(row.beneficiaryUserId)}</td>
-                    <td className="px-4 py-3">
-                      <div>{personName(row.fromUserId)}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {row.leadId?.customerName || row.leadId?.status || "—"}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {row.level
-                        ? COMMISSION_LEVEL_LABELS[row.level] || row.level
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3">₹{row.amountBase}</td>
-                    <td className="px-4 py-3">{row.percent}%</td>
-                    <td className="px-4 py-3 font-medium">₹{row.commissionAmount}</td>
-                    <td className="px-4 py-3">
-                      {canUpdate ? (
-                        <select
-                          value={row.status}
-                          disabled={statusMutation.isPending}
-                          onChange={(e) =>
-                            statusMutation.mutate({
-                              id: row._id,
-                              status: e.target.value as "pending" | "approved" | "paid",
-                            })
-                          }
-                          className="rounded-lg border border-border bg-background px-2 py-1 text-xs capitalize"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="approved">Approved</option>
-                          <option value="paid">Paid</option>
-                        </select>
-                      ) : (
-                        <span className="capitalize">{row.status}</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                groups.flatMap((group) => {
+                  const head = group.rows[0];
+                  const saleTotal = group.rows.reduce(
+                    (sum, row) => sum + (row.commissionAmount || 0),
+                    0
+                  );
+                  return [
+                    <tr key={`${group.key}-head`} className="border-b border-border/40 bg-muted/20">
+                      <td colSpan={8} className="px-4 py-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <span className="font-semibold text-foreground">{saleLabel(head)}</span>
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              {sourceLabel(head)} · from {personName(head.fromUserId)}
+                            </span>
+                          </div>
+                          <span className="text-xs font-medium text-muted-foreground">
+                            Cascade total {money(saleTotal)}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>,
+                    ...group.rows.map((row) => (
+                      <tr key={row._id} className="border-b border-border/50 align-top">
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {personName(row.fromUserId)}
+                        </td>
+                        <td className="px-4 py-3">{personName(row.beneficiaryUserId)}</td>
+                        <td className="px-4 py-3">
+                          {row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}
+                        </td>
+                        <td className="px-4 py-3">{money(row.amountBase)}</td>
+                        <td className="px-4 py-3">{row.percent}%</td>
+                        <td className="px-4 py-3 font-medium">{money(row.commissionAmount)}</td>
+                        <td className="px-4 py-3">
+                          {canUpdate ? (
+                            <select
+                              value={row.status}
+                              disabled={statusMutation.isPending}
+                              onChange={(e) => {
+                                const next = e.target.value as "pending" | "approved" | "paid";
+                                if (next === row.status) return;
+                                statusMutation.mutate({ id: row._id, status: next });
+                              }}
+                              className={twMerge(
+                                "rounded-lg border px-2 py-1 text-xs capitalize",
+                                statusClass(row.status)
+                              )}
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="approved">Approved</option>
+                              <option value="paid">Paid</option>
+                            </select>
+                          ) : (
+                            <span
+                              className={twMerge(
+                                "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
+                                statusClass(row.status)
+                              )}
+                            >
+                              {row.status}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {row.createdAt
+                            ? new Date(row.createdAt).toLocaleDateString()
+                            : "—"}
+                        </td>
+                      </tr>
+                    )),
+                  ];
+                })
               )}
             </tbody>
           </table>
@@ -175,6 +279,15 @@ export default function CommissionLedgerPage() {
           onPageChange={setPage}
         />
       )}
+    </div>
+  );
+}
+
+function SummaryCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 text-xl font-bold text-foreground">{value}</p>
     </div>
   );
 }

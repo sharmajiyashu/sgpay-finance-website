@@ -13,8 +13,19 @@ import { IconChevronDown, IconLogout } from "@tabler/icons-react";
 import { twMerge } from "tailwind-merge";
 import { clearToken } from "@/sg-agent/lib/api";
 import { SITE_CONFIG } from "@/lib/config/env";
+import { useQuery } from "@tanstack/react-query";
+import { getRoarReferralStats } from "@/sg-agent/lib/services/roarReferralService";
+import { PendingCountBadge } from "@/components/ui/PendingCountBadge";
 
-function NavLink({ item, pathname }: { item: AgentSidebarNavItem; pathname: string }) {
+function NavLink({
+  item,
+  pathname,
+  badgeCount,
+}: {
+  item: AgentSidebarNavItem;
+  pathname: string;
+  badgeCount?: number;
+}) {
   const Icon = item.icon;
   const isActive =
     pathname === item.href ||
@@ -33,7 +44,8 @@ function NavLink({ item, pathname }: { item: AgentSidebarNavItem; pathname: stri
       )}
     >
       {Icon && <Icon className="h-4 w-4 shrink-0" />}
-      <span>{item.title}</span>
+      <span className="flex-1 truncate">{item.title}</span>
+      <PendingCountBadge count={badgeCount} />
     </Link>
   );
 }
@@ -42,6 +54,13 @@ export function AgentSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const { data: roarStats } = useQuery({
+    queryKey: ["agent-roar-stats"],
+    queryFn: getRoarReferralStats,
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+  });
+  const roarPending = roarStats?.pending ?? 0;
 
   useEffect(() => {
     if (pathname.startsWith("/agent/choice-connect")) {
@@ -68,7 +87,7 @@ export function AgentSidebar() {
           <Image src="/img/logo.png" alt={SITE_CONFIG.name} width={170} height={44} className="h-11 w-auto max-w-[170px] object-contain" priority />
         </Link>
       </div>
-      <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-5">
+      <nav className="sg-sidebar-scroll flex-1 space-y-1.5 px-3 py-5">
         {agentSidebarNav.map((entry) => {
           if (isAgentSidebarNavSection(entry)) {
             const SectionIcon = entry.icon;
@@ -86,7 +105,14 @@ export function AgentSidebar() {
                   )}
                 >
                   <SectionIcon className="h-5 w-5 shrink-0" />
-                  <span className="flex-1 text-left">{entry.title}</span>
+                  <span className="flex-1 truncate text-left">{entry.title}</span>
+                  <PendingCountBadge
+                    count={
+                      entry.items.some((item) => item.badgeKey === "roarPending")
+                        ? roarPending
+                        : 0
+                    }
+                  />
                   <IconChevronDown
                     className={twMerge(
                       "h-4 w-4 shrink-0 transition-transform duration-200",
@@ -97,7 +123,12 @@ export function AgentSidebar() {
                 {isOpen && (
                   <div className="ml-3 space-y-0.5 border-l border-white/15 pl-2">
                     {entry.items.map((item) => (
-                      <NavLink key={item.href} item={item} pathname={pathname} />
+                      <NavLink
+                        key={item.href}
+                        item={item}
+                        pathname={pathname}
+                        badgeCount={item.badgeKey === "roarPending" ? roarPending : 0}
+                      />
                     ))}
                   </div>
                 )}

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IconEye, IconEyeOff, IconRefresh, IconSearch, IconUserPlus } from "@tabler/icons-react";
 import { toast } from "sonner";
+import { twMerge } from "tailwind-merge";
 import { listUrl, unwrapList } from "@/sg-admin/lib/paginated-list";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
 import {
@@ -40,26 +42,43 @@ function creatableAgentTypes(): Array<"super_distributor" | "distributor" | "ret
   return [];
 }
 
-const STATUS_TITLES: Record<string, string> = {
-  "": "All Agents",
-  pending: "Pending Agents",
-  approved: "Approved Agents",
-  rejected: "Rejected Agents",
-};
+const STATUS_OPTIONS: { value: AgentStatusFilter; label: string }[] = [
+  { value: "", label: "All statuses" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+];
 
-interface AdminAgentsPanelProps {
-  /** Empty string = show all statuses (default). */
-  statusFilter?: AgentStatusFilter;
+export function AdminAgentsPanel() {
+  return (
+    <Suspense fallback={<p className="text-sm text-muted-foreground">Loading agents...</p>}>
+      <AdminAgentsPanelInner />
+    </Suspense>
+  );
 }
 
-export function AdminAgentsPanel({ statusFilter = "" }: AdminAgentsPanelProps) {
+function readParam(params: URLSearchParams, key: string) {
+  return params.get(key)?.trim() ?? "";
+}
+
+function AdminAgentsPanelInner() {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const canCreate = hasPermission("admin:agent:create");
   const allowedTypes = creatableAgentTypes();
-  const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  // Channel hierarchy: by default show all Super Distributor / Distributor / Retailer.
-  const [typeFilter, setTypeFilter] = useState("");
+  const [page, setPage] = useState(() => {
+    const next = Number(readParam(searchParams, "page"));
+    return next > 0 ? next : 1;
+  });
+  const [searchQuery, setSearchQuery] = useState(() => readParam(searchParams, "search"));
+  const [statusFilter, setStatusFilter] = useState<AgentStatusFilter>(() => {
+    const raw = readParam(searchParams, "status");
+    if (raw === "pending" || raw === "approved" || raw === "rejected") return raw;
+    return "";
+  });
+  const [typeFilter, setTypeFilter] = useState(() => readParam(searchParams, "agentType"));
   const [showCreate, setShowCreate] = useState(false);
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({
@@ -76,6 +95,22 @@ export function AdminAgentsPanel({ statusFilter = "" }: AdminAgentsPanelProps) {
       | "retailer",
     commissionPercent: "",
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const setOrDelete = (key: string, value: string) => {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    };
+    setOrDelete("page", page > 1 ? String(page) : "");
+    setOrDelete("search", searchQuery.trim());
+    setOrDelete("status", statusFilter);
+    setOrDelete("agentType", typeFilter);
+    const next = params.toString();
+    const current = searchParams.toString();
+    if (next === current) return;
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [page, searchQuery, statusFilter, typeFilter, pathname, router, searchParams]);
 
   const url = listUrl(ADMIN_API_PATHS.agents, page, searchQuery, 20, {
     status: statusFilter || undefined,
@@ -122,6 +157,7 @@ export function AdminAgentsPanel({ statusFilter = "" }: AdminAgentsPanelProps) {
       });
       queryClient.invalidateQueries({ queryKey: ["admin-agents"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["sidebar-counts"] });
       toast.success("Agent created and credentials emailed");
     },
     onError: (err: Error) => toast.error(err.message),
@@ -133,6 +169,7 @@ export function AdminAgentsPanel({ statusFilter = "" }: AdminAgentsPanelProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-agents"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["sidebar-counts"] });
       toast.success("Agent status updated");
     },
     onError: (err: Error) => toast.error(err.message),
@@ -151,11 +188,9 @@ export function AdminAgentsPanel({ statusFilter = "" }: AdminAgentsPanelProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {STATUS_TITLES[statusFilter] || "Agents"}
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground">Agents</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Channel agents: Super Distributor → Distributor → Retailer
+            All statuses by default. Pending approvals are highlighted.
           </p>
         </div>
         {canCreate && allowedTypes.length > 0 && (
@@ -184,6 +219,20 @@ export function AdminAgentsPanel({ statusFilter = "" }: AdminAgentsPanelProps) {
             className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-4 text-sm"
           />
         </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value as AgentStatusFilter);
+            setPage(1);
+          }}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
+        >
+          {STATUS_OPTIONS.map((opt) => (
+            <option key={opt.label} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
         <select
           value={typeFilter}
           onChange={(e) => {
@@ -307,9 +356,23 @@ export function AdminAgentsPanel({ statusFilter = "" }: AdminAgentsPanelProps) {
                 </tr>
               ) : (
                 agents.map((agent) => (
-                  <tr key={agent._id} className="border-b border-border/50 align-top">
+                  <tr
+                    key={agent._id}
+                    className={twMerge(
+                      "border-b border-border/50 align-top",
+                      (agent.status ?? "pending") === "pending" &&
+                        "bg-amber-50/90 ring-1 ring-inset ring-amber-200/80"
+                    )}
+                  >
                     <td className="px-4 py-3">
-                      <div className="font-medium">{agentFullName(agent)}</div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium">{agentFullName(agent)}</span>
+                        {(agent.status ?? "pending") === "pending" && (
+                          <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">
+                            Pending
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">{agent.city || "—"}</div>
                     </td>
                     <td className="px-4 py-3">
@@ -369,7 +432,12 @@ export function AdminAgentsPanel({ statusFilter = "" }: AdminAgentsPanelProps) {
                             status: e.target.value as "pending" | "approved" | "rejected",
                           })
                         }
-                        className="rounded-lg border border-border bg-background px-2 py-1 text-xs capitalize"
+                        className={twMerge(
+                          "rounded-lg border px-2 py-1 text-xs capitalize",
+                          (agent.status ?? "pending") === "pending"
+                            ? "border-amber-300 bg-amber-100 font-semibold text-amber-900"
+                            : "border-border bg-background"
+                        )}
                       >
                         <option value="pending">Pending</option>
                         <option value="approved">Approved</option>

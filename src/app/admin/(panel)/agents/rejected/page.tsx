@@ -1,7 +1,5 @@
-"use client";
-
-import { AdminAgentsPanel } from "@/sg-admin/components/AdminAgentsPanel";
+import { redirect } from "next/navigation";
 
 export default function AdminAgentsRejectedPage() {
-  return <AdminAgentsPanel statusFilter="rejected" />;
+  redirect("/admin/agents?status=rejected");
 }

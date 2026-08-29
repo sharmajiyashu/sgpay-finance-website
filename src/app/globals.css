@@ -397,6 +397,41 @@
   );
 }
 
+/* Thin overlay scrollbar for admin/agent sidebar nav */
+.sg-sidebar-scroll {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.sg-sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sg-sidebar-scroll::-webkit-scrollbar-track {
+  margin: 10px 0;
+  background: transparent;
+}
+
+.sg-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.sg-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.42);
+  background-clip: padding-box;
+}
+
+.sg-sidebar-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 #main-content {
   overflow-wrap: anywhere;
 }

@@ -13,7 +13,6 @@ export interface EnquiryServiceOption {
 export interface EnquiryCategory {
   id: string;
   label: string;
-  href: string;
   services: EnquiryServiceOption[];
 }
 
@@ -26,13 +25,11 @@ export const ENQUIRY_CATEGORIES: EnquiryCategory[] = [
   {
     id: "loans",
     label: "Loans",
-    href: "/admin/enquiries/loans",
     services: mapServices(LOAN_PRODUCTS),
   },
   {
     id: "finance",
     label: "Finance",
-    href: "/admin/enquiries/finance",
     services: [
       ...mapServices(FINANCE_SERVICES),
       { slug: "roar-credit-card", label: "Roar Credit Card" },
@@ -41,19 +38,16 @@ export const ENQUIRY_CATEGORIES: EnquiryCategory[] = [
   {
     id: "insurance",
     label: "Insurance",
-    href: "/admin/enquiries/insurance",
     services: mapServices(INSURANCE_SERVICES),
   },
   {
     id: "accounts",
     label: "Accounts",
-    href: "/admin/enquiries/accounts",
     services: mapServices(ACCOUNT_SERVICES),
   },
   {
     id: "contact",
     label: "Contact",
-    href: "/admin/enquiries/contact",
     services: [
       { slug: "contact", label: "Contact Page" },
       { slug: "homepage", label: "Homepage" },
@@ -62,13 +56,11 @@ export const ENQUIRY_CATEGORIES: EnquiryCategory[] = [
   {
     id: "cibil",
     label: "CIBIL Check",
-    href: "/admin/enquiries/cibil",
     services: [{ slug: "check-cibil", label: "Check CIBIL Score" }],
   },
   {
     id: "bill-payment",
     label: "Bill Payments",
-    href: "/admin/enquiries/bill-payment",
     services: [
       { slug: "electricity", label: "Electricity Bill" },
       { slug: "mobile", label: "Mobile Recharge" },
@@ -82,7 +74,6 @@ export const ENQUIRY_CATEGORIES: EnquiryCategory[] = [
   {
     id: "projects",
     label: "Projects",
-    href: "/admin/enquiries/projects",
     services: [{ slug: "project-enquiry", label: "Real Estate Projects" }],
   },
 ];

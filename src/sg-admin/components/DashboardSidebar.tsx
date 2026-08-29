@@ -7,26 +7,28 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   getFilteredSidebarNav,
   isSidebarNavSection,
+  type SidebarBadgeKey,
   type SidebarNavItem,
 } from "@/sg-admin/lib/sidebar-nav";
 import { IconChevronDown, IconLogout } from "@tabler/icons-react";
 import { twMerge } from "tailwind-merge";
 import { clearToken, getAuthUser } from "@/sg-admin/lib/api";
 import { SITE_CONFIG } from "@/lib/config/env";
+import { readSidebarBadge, useSidebarCounts } from "@/sg-admin/lib/services/sidebarCountsService";
+import { PendingCountBadge } from "@/components/ui/PendingCountBadge";
 
 function NavLink({
   item,
   pathname,
+  badgeCount,
 }: {
   item: SidebarNavItem;
   pathname: string;
+  badgeCount?: number;
 }) {
   const Icon = item.icon;
-  // Exact match for list roots so /admin/agents does not stay active on /admin/agents/pending.
-  const exactOnlyRoots = new Set(["/admin/enquiries", "/admin/agents"]);
   const isActive =
-    pathname === item.href ||
-    (!exactOnlyRoots.has(item.href) && pathname.startsWith(`${item.href}/`));
+    pathname === item.href || pathname.startsWith(`${item.href}/`);
 
   return (
     <Link
@@ -53,7 +55,8 @@ function NavLink({
           )}
         />
       )}
-      <span>{item.title}</span>
+      <span className="flex-1 truncate">{item.title}</span>
+      <PendingCountBadge count={badgeCount} />
     </Link>
   );
 }
@@ -62,14 +65,9 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const { data: counts } = useSidebarCounts();
 
   useEffect(() => {
-    if (pathname.startsWith("/admin/enquiries")) {
-      setOpenSections((prev) => ({ ...prev, Enquiries: true }));
-    }
-    if (pathname.startsWith("/admin/agents")) {
-      setOpenSections((prev) => ({ ...prev, Agents: true }));
-    }
     if (pathname.startsWith("/admin/choice-connect")) {
       setOpenSections((prev) => ({ ...prev, "Credit Card": true }));
     }
@@ -90,6 +88,7 @@ export function DashboardSidebar() {
     setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
   };
 
+  const badgeFor = (key?: SidebarBadgeKey) => readSidebarBadge(counts, key);
   const navEntries = getFilteredSidebarNav(getAuthUser());
 
   return (
@@ -110,12 +109,16 @@ export function DashboardSidebar() {
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-5">
+      <nav className="sg-sidebar-scroll flex-1 space-y-1.5 px-3 py-5">
         {navEntries.map((entry) => {
           if (isSidebarNavSection(entry)) {
             const SectionIcon = entry.icon;
             const isSectionActive = pathname.startsWith(entry.href);
             const isOpen = openSections[entry.title] ?? isSectionActive;
+            const sectionBadge = entry.items.reduce(
+              (sum, item) => sum + badgeFor(item.badgeKey),
+              badgeFor(entry.badgeKey)
+            );
 
             return (
               <div key={entry.title} className="space-y-1">
@@ -130,7 +133,8 @@ export function DashboardSidebar() {
                   )}
                 >
                   <SectionIcon className="h-5 w-5 shrink-0" />
-                  <span className="flex-1 text-left">{entry.title}</span>
+                  <span className="flex-1 truncate text-left">{entry.title}</span>
+                  <PendingCountBadge count={sectionBadge} />
                   <IconChevronDown
                     className={twMerge(
                       "h-4 w-4 shrink-0 transition-transform duration-200",
@@ -141,7 +145,12 @@ export function DashboardSidebar() {
                 {isOpen && (
                   <div className="ml-3 space-y-0.5 border-l border-white/15 pl-2">
                     {entry.items.map((item) => (
-                      <NavLink key={item.href} item={item} pathname={pathname} />
+                      <NavLink
+                        key={item.href}
+                        item={item}
+                        pathname={pathname}
+                        badgeCount={badgeFor(item.badgeKey)}
+                      />
                     ))}
                   </div>
                 )}
@@ -149,7 +158,14 @@ export function DashboardSidebar() {
             );
           }
 
-          return <NavLink key={entry.href} item={entry} pathname={pathname} />;
+          return (
+            <NavLink
+              key={entry.href}
+              item={entry}
+              pathname={pathname}
+              badgeCount={badgeFor(entry.badgeKey)}
+            />
+          );
         })}
       </nav>
 

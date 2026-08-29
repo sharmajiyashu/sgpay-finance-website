@@ -1,20 +1,16 @@
-"use client";
-
-import { use } from "react";
-import { notFound } from "next/navigation";
-import { EnquiriesPanel } from "@/sg-admin/components/EnquiriesPanel";
+import { notFound, redirect } from "next/navigation";
 import { isEnquiryCategoryId } from "@/lib/enquiryCatalog";
 
-export default function CategoryEnquiriesPage({
+export default async function CategoryEnquiriesPage({
   params,
 }: {
   params: Promise<{ category: string }>;
 }) {
-  const { category } = use(params);
+  const { category } = await params;
 
   if (!isEnquiryCategoryId(category)) {
     notFound();
   }
 
-  return <EnquiriesPanel categoryId={category} />;
+  redirect(`/admin/enquiries?type=${encodeURIComponent(category)}`);
 }

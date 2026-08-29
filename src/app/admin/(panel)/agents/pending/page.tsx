@@ -1,7 +1,5 @@
-"use client";
-
-import { AdminAgentsPanel } from "@/sg-admin/components/AdminAgentsPanel";
+import { redirect } from "next/navigation";
 
 export default function AdminAgentsPendingPage() {
-  return <AdminAgentsPanel statusFilter="pending" />;
+  redirect("/admin/agents?status=pending");
 }
