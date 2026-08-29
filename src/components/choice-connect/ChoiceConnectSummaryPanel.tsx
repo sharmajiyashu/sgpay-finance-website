@@ -396,7 +396,9 @@ export function ChoiceConnectSummaryPanel({
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Choice Connect Partner API summary with filters and pagination, plus local tracking records.
+            Choice Connect Report is the official partner API. Local Tracking is only
+            applications started from this portal that have customer details — not
+            empty widget-open sessions.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -675,6 +677,11 @@ export function ChoiceConnectSummaryPanel({
           Local Tracking ({localPagination?.total ?? leads.length})
         </button>
       </div>
+      <p className="text-xs text-muted-foreground">
+        {activeTab === "choice"
+          ? "Official Choice Connect applications (credit card / loan) returned by their summary API."
+          : "Portal-side records with a customer name, phone, or email. Opening Apply without submitting is not listed here."}
+      </p>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading summary…</p>}
       {error && (
@@ -749,7 +756,9 @@ export function ChoiceConnectSummaryPanel({
                   {leads.length === 0 && !isLoading ? (
                     <tr>
                       <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                        No local records found.
+                        No portal applications with customer details yet. Empty widget
+                        opens are not shown here. Submitted applications appear on
+                        Choice Connect Report.
                       </td>
                     </tr>
                   ) : (
