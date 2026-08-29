@@ -10,6 +10,7 @@ import type {
   InsuranceRemoteEnquiry,
   InsuranceSummaryResponse,
 } from "@/modules/insurance/types";
+import { looksLikeAgentCode } from "@/lib/choiceConnect/types";
 
 export interface InsuranceSummaryApiClient {
   getSummary: (params: Record<string, string | number | undefined>) => Promise<InsuranceSummaryResponse>;
@@ -87,7 +88,9 @@ function RemoteRow({
       </td>
       <td className="px-4 py-3">{enquiry.subService || enquiry.serviceType || "—"}</td>
       <td className="px-4 py-3">
-        {enquiry.referredByName || enquiry.subAgentName || enquiry.agentName || enquiry.agentCode || "—"}
+        {[enquiry.referredByName, enquiry.subAgentName, enquiry.agentName].find(
+          (value) => value?.trim() && !looksLikeAgentCode(value)
+        ) || "—"}
       </td>
       <td className="px-4 py-3 capitalize">{enquiry.status ?? "—"}</td>
       <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{uuid || "—"}</td>

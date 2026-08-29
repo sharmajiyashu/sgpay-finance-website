@@ -246,13 +246,22 @@ export function isLoanProductType(productType?: string | null): boolean {
   );
 }
 
+export function looksLikeAgentCode(value?: string | null): boolean {
+  const v = value?.trim() || "";
+  if (!v) return false;
+  if (/^C\d{5,}$/i.test(v)) return true;
+  if (/^SG[A-Z0-9]{4,}$/i.test(v)) return true;
+  if (/^[0-9a-f]{24}$/i.test(v)) return true;
+  return false;
+}
+
 export function resolveReferredByName(enquiry: ChoiceRemoteEnquiry): string {
-  return (
-    enquiry.referredByName ||
-    enquiry.subAgentName ||
-    enquiry.agentName ||
-    ""
-  );
+  const candidates = [enquiry.referredByName, enquiry.subAgentName, enquiry.agentName];
+  for (const value of candidates) {
+    const name = value?.trim();
+    if (name && !looksLikeAgentCode(name)) return name;
+  }
+  return "";
 }
 
 export const CHOICE_VEHICLE_TYPES: { value: ChoiceVehicleType; label: string }[] = [
