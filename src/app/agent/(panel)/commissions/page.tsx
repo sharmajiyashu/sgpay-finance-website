@@ -19,6 +19,13 @@ import {
 } from "@/lib/choiceConnect/types";
 import { Pagination } from "@/components/ui/Pagination";
 import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
+import {
   CommissionWalletPanel,
   money,
   payoutStatusClass,
@@ -55,7 +62,7 @@ export default function AgentCommissionsPage() {
         </p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <TabButton active={tab === "wallet"} onClick={() => setTab("wallet")}>
           Wallet & history
         </TabButton>
@@ -113,9 +120,13 @@ export default function AgentCommissionsPage() {
             </p>
           )}
 
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-sm">
+          <ResponsiveRecordList
+            isLoading={isLoading}
+            isEmpty={!isLoading && ledger.length === 0}
+            loadingMessage="Loading..."
+            emptyMessage="No commissions yet"
+            table={
+              <table className="w-full text-sm">
                 <thead className="border-b border-border bg-muted/30">
                   <tr className="text-left text-muted-foreground">
                     <th className="px-4 py-3 font-medium">Sale from</th>
@@ -128,62 +139,93 @@ export default function AgentCommissionsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                        Loading...
+                  {ledger.map((row) => (
+                    <tr key={row._id} className="border-b border-border/50">
+                      <td className="px-4 py-3">
+                        {[row.fromUserId?.firstName, row.fromUserId?.lastName]
+                          .filter(Boolean)
+                          .join(" ") ||
+                          row.fromUserId?.email ||
+                          "—"}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {formatProductLabel(row.productType || row.leadId?.productType || "credit-card")}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {row.source === "roar" || row.enquiryId
+                          ? "Roar"
+                          : isLoanProductType(row.productType)
+                            ? "Choice Loan"
+                            : "Choice Credit Card"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}
+                      </td>
+                      <td className="px-4 py-3 font-medium">{money(row.commissionAmount)}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={twMerge(
+                            "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
+                            payoutStatusClass(row.status)
+                          )}
+                        >
+                          {row.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "—"}
                       </td>
                     </tr>
-                  ) : ledger.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                        No commissions yet
-                      </td>
-                    </tr>
-                  ) : (
-                    ledger.map((row) => (
-                      <tr key={row._id} className="border-b border-border/50">
-                        <td className="px-4 py-3">
-                          {[row.fromUserId?.firstName, row.fromUserId?.lastName]
-                            .filter(Boolean)
-                            .join(" ") ||
-                            row.fromUserId?.email ||
-                            "—"}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {formatProductLabel(row.productType || row.leadId?.productType || "credit-card")}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {row.source === "roar" || row.enquiryId
-                            ? "Roar"
-                            : isLoanProductType(row.productType)
-                              ? "Choice Loan"
-                              : "Choice Credit Card"}
-                        </td>
-                        <td className="px-4 py-3">
-                          {row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}
-                        </td>
-                        <td className="px-4 py-3 font-medium">{money(row.commissionAmount)}</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={twMerge(
-                              "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
-                              payoutStatusClass(row.status)
-                            )}
-                          >
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "—"}
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  ))}
                 </tbody>
               </table>
-            </div>
-          </div>
+            }
+            cards={ledger.map((row) => (
+              <RecordCard key={row._id}>
+                <RecordCardHeader
+                  title={
+                    [row.fromUserId?.firstName, row.fromUserId?.lastName]
+                      .filter(Boolean)
+                      .join(" ") ||
+                    row.fromUserId?.email ||
+                    "—"
+                  }
+                  subtitle={formatProductLabel(row.productType || row.leadId?.productType || "credit-card")}
+                  badge={
+                    <span
+                      className={twMerge(
+                        "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
+                        payoutStatusClass(row.status)
+                      )}
+                    >
+                      {row.status}
+                    </span>
+                  }
+                />
+                <RecordCardFields>
+                  <RecordCardField
+                    label="Source"
+                    value={
+                      row.source === "roar" || row.enquiryId
+                        ? "Roar"
+                        : isLoanProductType(row.productType)
+                          ? "Choice Loan"
+                          : "Choice Credit Card"
+                    }
+                  />
+                  <RecordCardField
+                    label="Level"
+                    value={row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}
+                  />
+                  <RecordCardField label="Amount" value={money(row.commissionAmount)} />
+                  <RecordCardField
+                    label="Date"
+                    value={row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "—"}
+                  />
+                </RecordCardFields>
+              </RecordCard>
+            ))}
+          />
 
           {pagination && (
             <Pagination

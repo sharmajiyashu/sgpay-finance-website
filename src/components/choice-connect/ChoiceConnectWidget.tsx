@@ -123,10 +123,11 @@ export function ChoiceConnectWidget({
   }
 
   return (
-    <div className={`choice-widget-wrapper rounded-xl border bg-white p-2 shadow-sm ${className}`}>
+    <div className={`choice-widget-wrapper w-full max-w-full overflow-x-auto rounded-xl border bg-white p-2 shadow-sm ${className}`}>
       <div
         id={resolvedContainerId}
         ref={containerRef}
+        className="min-w-0"
         style={{
           minHeight: productType === "credit-card" ? "400px" : "450px",
         }}

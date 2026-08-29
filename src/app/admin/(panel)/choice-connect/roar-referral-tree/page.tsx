@@ -8,18 +8,18 @@ function TreeNode({ node, depth = 0 }: { node: RoarReferralTreeNode; depth?: num
     <li className="mt-2">
       <div
         className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2"
-        style={{ marginLeft: depth * 16 }}
+        style={{ marginLeft: Math.min(depth * 12, 48) }}
       >
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground">{node.name}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="break-all text-xs text-muted-foreground">
             {node.roleLabel}
             {typeof node.commissionPercent === "number" ? ` · ${node.commissionPercent}%` : ""}
             {node.commissionSource === "override" ? " (override)" : ""}
             {node.email ? ` · ${node.email}` : ""}
           </p>
         </div>
-        <div className="flex gap-3 text-xs">
+        <div className="flex flex-wrap gap-2 text-xs">
           {typeof node.commissionPercent === "number" && (
             <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 font-medium text-emerald-700 dark:text-emerald-400">
               {node.commissionPercent}%
@@ -80,11 +80,13 @@ export default function AdminRoarReferralTreePage() {
           {data.tree.length === 0 ? (
             <p className="text-sm text-muted-foreground">No staff nodes found.</p>
           ) : (
-            <ul className="space-y-1">
-              {data.tree.map((node) => (
-                <TreeNode key={node.id} node={node} />
-              ))}
-            </ul>
+            <div className="overflow-x-auto">
+              <ul className="min-w-0 space-y-1">
+                {data.tree.map((node) => (
+                  <TreeNode key={node.id} node={node} />
+                ))}
+              </ul>
+            </div>
           )}
         </>
       )}

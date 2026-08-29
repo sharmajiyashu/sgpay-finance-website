@@ -40,6 +40,12 @@ h6,
 }
 
 
+/*** Keep template .wow sections visible — WOW.js used to hide them after scripts loaded ***/
+.wow {
+    visibility: visible !important;
+    animation-name: none !important;
+}
+
 /*** Spinner ***/
 #spinner {
     opacity: 0;
@@ -525,6 +531,23 @@ h6,
     line-height: 1.1;
 }
 
+.public-template .project-detail-hero {
+    height: 450px;
+    object-fit: cover;
+}
+
+.public-template .project-gallery-tile {
+    height: 150px;
+}
+
+.public-template .project-plan-tile {
+    height: 250px;
+}
+
+.public-template .project-map-embed {
+    height: 400px;
+}
+
 @media (max-width: 991.98px) {
     .public-template .fixed-top {
         background: #fff;
@@ -738,12 +761,55 @@ h6,
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
+
+    .public-template .tab-content .col-md-6 {
+        min-height: 200px !important;
+    }
+
+    .public-template .cibil-cta-btn {
+        display: block;
+        width: 100%;
+    }
+
+    .public-template .project-detail-hero {
+        height: 220px !important;
+        object-fit: cover;
+    }
+
+    .public-template .project-gallery-tile {
+        height: 140px;
+    }
+
+    .public-template .project-plan-tile {
+        height: 180px;
+    }
+
+    .public-template .project-map-embed {
+        height: 240px;
+    }
+
+    .public-template .project-lightbox-nav {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+    }
 }
 
 @media (max-width: 575.98px) {
+    .public-template .navbar {
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+
+    .public-template .navbar-brand {
+        min-width: 0;
+        max-width: calc(100% - 56px);
+        margin-left: 0.25rem;
+    }
+
     .site-logo {
-        height: 44px;
-        max-width: 120px;
+        height: 40px;
+        max-width: 100%;
     }
 
     .public-template .carousel-caption .display-1,

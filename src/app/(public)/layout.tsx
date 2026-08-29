@@ -22,11 +22,6 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.title = `${siteSettings.siteName} - Loans, Insurance & Financial Solutions`;
 
-    const spinner = document.getElementById("spinner");
-    if (spinner) {
-      spinner.classList.remove("show");
-    }
-
     const handleScroll = () => {
       setScrolled(window.scrollY > 45);
     };
@@ -45,27 +40,6 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
     if (!collapse || !bootstrap || !collapse.classList.contains("show")) return;
     bootstrap.Collapse.getInstance(collapse)?.hide();
   }, [pathname]);
-
-  useEffect(() => {
-    const win = window as unknown as { WOW?: new () => { init: () => void }; __sgWowReady?: boolean };
-    let attempts = 0;
-    const timer = window.setInterval(() => {
-      attempts += 1;
-      if (win.__sgWowReady || attempts > 40) {
-        window.clearInterval(timer);
-        return;
-      }
-      if (!win.WOW) return;
-      try {
-        new win.WOW().init();
-        win.__sgWowReady = true;
-      } catch (e) {
-        console.error("WOW initialization failed:", e);
-      }
-      window.clearInterval(timer);
-    }, 100);
-    return () => window.clearInterval(timer);
-  }, []);
 
   return (
     <div className="public-template">
@@ -275,9 +249,7 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
 
           <Script src="https://code.jquery.com/jquery-3.4.1.min.js" strategy="afterInteractive" />
           <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
-          <Script src="/lib/wow/wow.min.js" strategy="afterInteractive" />
           <Script src="/lib/easing/easing.min.js" strategy="afterInteractive" />
-          <Script src="/lib/waypoints/waypoints.min.js" strategy="afterInteractive" />
           <Script src="/lib/owlcarousel/owl.carousel.min.js" strategy="afterInteractive" />
           <Script src="/js/main.js" strategy="afterInteractive" />
         </>

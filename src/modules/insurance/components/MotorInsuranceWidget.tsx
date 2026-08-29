@@ -208,13 +208,14 @@ export function MotorInsuranceWidget({
   }
 
   return (
-    <div className={`motor-insurance-widget-wrapper rounded-xl border bg-white p-2 shadow-sm ${className}`}>
+    <div className={`motor-insurance-widget-wrapper w-full max-w-full overflow-x-auto rounded-xl border bg-white p-2 shadow-sm ${className}`}>
       {isBooting && (
         <div className="px-3 py-2 text-xs text-muted-foreground">Loading motor insurance widget…</div>
       )}
       <div
         id={containerId}
         ref={containerRef}
+        className="min-w-0"
         style={{ minHeight: "480px" }}
         data-product="motor-insurance"
         data-vehicle-type={vehicleType}

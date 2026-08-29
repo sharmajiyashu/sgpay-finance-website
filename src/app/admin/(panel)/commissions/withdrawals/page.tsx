@@ -12,6 +12,14 @@ import {
   type CommissionWithdrawal,
 } from "@/sg-admin/lib/services/commissionService";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardActions,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 import { money, payoutStatusClass } from "@/components/commissions/CommissionWalletPanel";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 
@@ -86,8 +94,12 @@ export default function AdminWithdrawalsPage() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
+      <ResponsiveRecordList
+        isLoading={isLoading}
+        isEmpty={!isLoading && withdrawals.length === 0}
+        loadingMessage="Loading..."
+        emptyMessage="No withdrawal requests"
+        table={
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30 text-left text-muted-foreground">
               <tr>
@@ -100,98 +112,153 @@ export default function AdminWithdrawalsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                    Loading...
+              {withdrawals.map((row) => (
+                <tr key={row._id} className="border-b border-border/50 align-top">
+                  <td className="px-4 py-3">
+                    <div className="font-medium">{personName(row.userId)}</div>
+                    <div className="text-xs text-muted-foreground">{row.userId?.email}</div>
                   </td>
-                </tr>
-              ) : withdrawals.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                    No withdrawal requests
+                  <td className="px-4 py-3 font-semibold">{money(row.amount)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    <div>{row.accountHolderName}</div>
+                    <div className="text-xs">
+                      {row.bankName} · {row.accountNumber} · {row.ifsc}
+                    </div>
                   </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={twMerge(
+                        "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
+                        payoutStatusClass(row.status)
+                      )}
+                    >
+                      {row.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {new Date(row.createdAt).toLocaleString()}
+                  </td>
+                  {canUpdate && (
+                    <td className="px-4 py-3">
+                      {row.status === "pending" && (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                            onClick={() =>
+                              statusMutation.mutate({ id: row._id, status: "approved" })
+                            }
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-lg border border-border px-3 py-1.5 text-xs"
+                            onClick={() =>
+                              statusMutation.mutate({ id: row._id, status: "rejected" })
+                            }
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                      {row.status === "approved" && (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white"
+                            onClick={() => statusMutation.mutate({ id: row._id, status: "paid" })}
+                          >
+                            Mark paid
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-lg border border-border px-3 py-1.5 text-xs"
+                            onClick={() =>
+                              statusMutation.mutate({ id: row._id, status: "rejected" })
+                            }
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  )}
                 </tr>
-              ) : (
-                withdrawals.map((row) => (
-                  <tr key={row._id} className="border-b border-border/50 align-top">
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{personName(row.userId)}</div>
-                      <div className="text-xs text-muted-foreground">{row.userId?.email}</div>
-                    </td>
-                    <td className="px-4 py-3 font-semibold">{money(row.amount)}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      <div>{row.accountHolderName}</div>
-                      <div className="text-xs">
-                        {row.bankName} · {row.accountNumber} · {row.ifsc}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={twMerge(
-                          "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
-                          payoutStatusClass(row.status)
-                        )}
-                      >
-                        {row.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {new Date(row.createdAt).toLocaleString()}
-                    </td>
-                    {canUpdate && (
-                      <td className="px-4 py-3">
-                        {row.status === "pending" && (
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
-                              onClick={() =>
-                                statusMutation.mutate({ id: row._id, status: "approved" })
-                              }
-                            >
-                              Approve
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded-lg border border-border px-3 py-1.5 text-xs"
-                              onClick={() =>
-                                statusMutation.mutate({ id: row._id, status: "rejected" })
-                              }
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-                        {row.status === "approved" && (
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white"
-                              onClick={() => statusMutation.mutate({ id: row._id, status: "paid" })}
-                            >
-                              Mark paid
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded-lg border border-border px-3 py-1.5 text-xs"
-                              onClick={() =>
-                                statusMutation.mutate({ id: row._id, status: "rejected" })
-                              }
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
-        </div>
-      </div>
+        }
+        cards={withdrawals.map((row) => (
+          <RecordCard key={row._id}>
+            <RecordCardHeader
+              title={personName(row.userId)}
+              subtitle={row.userId?.email}
+              badge={
+                <span
+                  className={twMerge(
+                    "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
+                    payoutStatusClass(row.status)
+                  )}
+                >
+                  {row.status}
+                </span>
+              }
+            />
+            <RecordCardFields>
+              <RecordCardField label="Amount" value={money(row.amount)} />
+              <RecordCardField
+                label="Bank"
+                value={`${row.accountHolderName} · ${row.bankName} · ${row.accountNumber} · ${row.ifsc}`}
+              />
+              <RecordCardField
+                label="Requested"
+                value={new Date(row.createdAt).toLocaleString()}
+              />
+            </RecordCardFields>
+            {canUpdate && (row.status === "pending" || row.status === "approved") ? (
+              <RecordCardActions>
+                {row.status === "pending" && (
+                  <>
+                    <button
+                      type="button"
+                      className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+                      onClick={() => statusMutation.mutate({ id: row._id, status: "approved" })}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                      onClick={() => statusMutation.mutate({ id: row._id, status: "rejected" })}
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+                {row.status === "approved" && (
+                  <>
+                    <button
+                      type="button"
+                      className="w-full rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white"
+                      onClick={() => statusMutation.mutate({ id: row._id, status: "paid" })}
+                    >
+                      Mark paid
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                      onClick={() => statusMutation.mutate({ id: row._id, status: "rejected" })}
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+              </RecordCardActions>
+            ) : null}
+          </RecordCard>
+        ))}
+      />
 
       {pagination && (
         <Pagination

@@ -83,7 +83,7 @@ function ProjectsContent() {
 
           <div className="row mb-5 wow fadeInUp align-items-center" data-wow-delay="0.1s" style={{ position: 'relative', zIndex: 10 }}>
             <div className="col-md-9 text-center text-md-start mb-3 mb-md-0">
-              <ul className="list-inline mb-0" id="portfolio-flters">
+              <ul className="list-inline mb-0 d-flex flex-wrap justify-content-center justify-content-md-start" id="portfolio-flters">
                 <li className={`btn btn-outline-primary mx-1 mb-2 ${filter === "All" ? "active" : ""}`} onClick={() => setFilter("All")}>All</li>
                 <li className={`btn btn-outline-primary mx-1 mb-2 ${filter === "Residential" ? "active" : ""}`} onClick={() => setFilter("Residential")}>Residential</li>
                 <li className={`btn btn-outline-primary mx-1 mb-2 ${filter === "Commercial" ? "active" : ""}`} onClick={() => setFilter("Commercial")}>Commercial</li>

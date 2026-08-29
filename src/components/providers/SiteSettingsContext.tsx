@@ -44,7 +44,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
         const data = await res.json();
         if (data && data.success && data.data && isMounted) {
           const s = data.data;
-          setSettings({
+          const next: SiteSettings = {
             siteName: s.siteName || defaultSettings.siteName,
             address: s.address || defaultSettings.address,
             phone: s.phone || defaultSettings.phone,
@@ -55,7 +55,10 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
             twitterUrl: s.twitterUrl || defaultSettings.twitterUrl,
             linkedinUrl: s.linkedinUrl || defaultSettings.linkedinUrl,
             youtubeUrl: s.youtubeUrl || defaultSettings.youtubeUrl,
-          });
+          };
+          setSettings((prev) =>
+            JSON.stringify(prev) === JSON.stringify(next) ? prev : next
+          );
         }
       } catch {
         // Fallback to default .env settings

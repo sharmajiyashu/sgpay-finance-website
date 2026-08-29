@@ -20,6 +20,13 @@ import {
   type TeamTreeNode,
 } from "@/sg-admin/lib/types/hierarchy";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 import { ChoiceConnectStatusBadge } from "@/components/choice-connect/ChoiceConnectStatusBadge";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 import { getAuthUser } from "@/sg-admin/lib/api";
@@ -43,7 +50,7 @@ function creatableDesignations(): Array<"state_head" | "asm" | "rm"> {
 function TreeNodes({ nodes, depth = 0 }: { nodes: TeamTreeNode[]; depth?: number }) {
   if (!nodes?.length) return null;
   return (
-    <ul className={depth === 0 ? "space-y-2" : "mt-2 space-y-2 border-l border-border pl-4"}>
+    <ul className={depth === 0 ? "space-y-2" : `mt-2 space-y-2 border-l border-border ${depth < 4 ? "pl-3" : "pl-2"}`}>
       {nodes.map((node) => (
         <li key={node._id || node.id}>
           <div className="rounded-xl border border-border/70 bg-background px-3 py-2 text-sm">
@@ -178,7 +185,9 @@ export default function AdminTeamsPage() {
       {treeData?.tree && treeData.tree.length > 0 && (
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <h2 className="mb-3 text-lg font-semibold">Organization tree</h2>
-          <TreeNodes nodes={treeData.tree} />
+          <div className="overflow-x-auto">
+            <TreeNodes nodes={treeData.tree} />
+          </div>
         </div>
       )}
 
@@ -267,8 +276,12 @@ export default function AdminTeamsPage() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
+      <ResponsiveRecordList
+        isLoading={isLoading}
+        isEmpty={!isLoading && teams.length === 0}
+        loadingMessage="Loading teams..."
+        emptyMessage="No team members found"
+        table={
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr className="text-left text-muted-foreground">
@@ -282,102 +295,169 @@ export default function AdminTeamsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    Loading teams...
+              {teams.map((member) => (
+                <tr key={member._id} className="border-b border-border/50 align-top">
+                  <td className="px-4 py-3">
+                    <div className="font-medium">{teamFullName(member)}</div>
+                    <div className="text-xs text-muted-foreground">{member.email}</div>
+                    <div className="text-xs text-muted-foreground">{member.mobile}</div>
                   </td>
-                </tr>
-              ) : teams.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    No team members found
+                  <td className="px-4 py-3">
+                    {member.designation
+                      ? TEAM_DESIGNATION_LABELS[
+                          member.designation as keyof typeof TEAM_DESIGNATION_LABELS
+                        ] || member.designation
+                      : "—"}
                   </td>
-                </tr>
-              ) : (
-                teams.map((member) => (
-                  <tr key={member._id} className="border-b border-border/50 align-top">
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{teamFullName(member)}</div>
-                      <div className="text-xs text-muted-foreground">{member.email}</div>
-                      <div className="text-xs text-muted-foreground">{member.mobile}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {member.designation
-                        ? TEAM_DESIGNATION_LABELS[
-                            member.designation as keyof typeof TEAM_DESIGNATION_LABELS
-                          ] || member.designation
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div>{member.stateCode || "—"}</div>
-                      <div className="text-xs text-muted-foreground">{member.territory || member.city || "—"}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <ChoiceConnectStatusBadge
-                        onboarded={member.choiceConnectProfile?.onboarded}
-                        agentCode={member.choiceConnectProfile?.agentCode}
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <code className="rounded bg-muted px-2 py-1 text-xs">
-                          {visiblePasswords[member._id]
-                            ? member.generatedPassword || "—"
-                            : "••••••••"}
-                        </code>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setVisiblePasswords((p) => ({
-                              ...p,
-                              [member._id]: !p[member._id],
-                            }))
-                          }
-                          className="text-muted-foreground hover:text-foreground"
-                        >
-                          {visiblePasswords[member._id] ? (
-                            <IconEyeOff className="h-4 w-4" />
-                          ) : (
-                            <IconEye className="h-4 w-4" />
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => passwordMutation.mutate(member._id)}
-                          className="text-muted-foreground hover:text-foreground"
-                          title="Regenerate password"
-                        >
-                          <IconRefresh className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={member.isActive === false ? "false" : "true"}
-                        disabled={statusMutation.isPending}
-                        onChange={(e) =>
-                          statusMutation.mutate({
-                            id: member._id,
-                            isActive: e.target.value === "true",
-                          })
+                  <td className="px-4 py-3">
+                    <div>{member.stateCode || "—"}</div>
+                    <div className="text-xs text-muted-foreground">{member.territory || member.city || "—"}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <ChoiceConnectStatusBadge
+                      onboarded={member.choiceConnectProfile?.onboarded}
+                      agentCode={member.choiceConnectProfile?.agentCode}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <code className="rounded bg-muted px-2 py-1 text-xs">
+                        {visiblePasswords[member._id]
+                          ? member.generatedPassword || "—"
+                          : "••••••••"}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setVisiblePasswords((p) => ({
+                            ...p,
+                            [member._id]: !p[member._id],
+                          }))
                         }
-                        className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+                        className="text-muted-foreground hover:text-foreground"
                       >
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {member.createdAt ? new Date(member.createdAt).toLocaleDateString() : "—"}
-                    </td>
-                  </tr>
-                ))
-              )}
+                        {visiblePasswords[member._id] ? (
+                          <IconEyeOff className="h-4 w-4" />
+                        ) : (
+                          <IconEye className="h-4 w-4" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => passwordMutation.mutate(member._id)}
+                        className="text-muted-foreground hover:text-foreground"
+                        title="Regenerate password"
+                      >
+                        <IconRefresh className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <select
+                      value={member.isActive === false ? "false" : "true"}
+                      disabled={statusMutation.isPending}
+                      onChange={(e) =>
+                        statusMutation.mutate({
+                          id: member._id,
+                          isActive: e.target.value === "true",
+                        })
+                      }
+                      className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+                    >
+                      <option value="true">Active</option>
+                      <option value="false">Inactive</option>
+                    </select>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
+                    {member.createdAt ? new Date(member.createdAt).toLocaleDateString() : "—"}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-        </div>
-      </div>
+        }
+        cards={teams.map((member) => (
+          <RecordCard key={member._id}>
+            <RecordCardHeader
+              title={teamFullName(member)}
+              subtitle={`${member.email} · ${member.mobile}`}
+            />
+            <RecordCardFields>
+              <RecordCardField
+                label="Designation"
+                value={
+                  member.designation
+                    ? TEAM_DESIGNATION_LABELS[
+                        member.designation as keyof typeof TEAM_DESIGNATION_LABELS
+                      ] || member.designation
+                    : "—"
+                }
+              />
+              <RecordCardField
+                label="Territory"
+                value={`${member.stateCode || "—"} · ${member.territory || member.city || "—"}`}
+              />
+              <RecordCardField
+                label="Choice Connect"
+                value={
+                  <ChoiceConnectStatusBadge
+                    onboarded={member.choiceConnectProfile?.onboarded}
+                    agentCode={member.choiceConnectProfile?.agentCode}
+                  />
+                }
+              />
+              <RecordCardField
+                label="Password"
+                value={
+                  <span className="inline-flex items-center gap-2">
+                    <code className="rounded bg-muted px-2 py-1 text-xs">
+                      {visiblePasswords[member._id]
+                        ? member.generatedPassword || "—"
+                        : "••••••••"}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setVisiblePasswords((p) => ({
+                          ...p,
+                          [member._id]: !p[member._id],
+                        }))
+                      }
+                    >
+                      {visiblePasswords[member._id] ? (
+                        <IconEyeOff className="h-4 w-4" />
+                      ) : (
+                        <IconEye className="h-4 w-4" />
+                      )}
+                    </button>
+                    <button type="button" onClick={() => passwordMutation.mutate(member._id)}>
+                      <IconRefresh className="h-4 w-4" />
+                    </button>
+                  </span>
+                }
+              />
+              <RecordCardField
+                label="Joined"
+                value={member.createdAt ? new Date(member.createdAt).toLocaleDateString() : "—"}
+              />
+            </RecordCardFields>
+            <select
+              value={member.isActive === false ? "false" : "true"}
+              disabled={statusMutation.isPending}
+              onChange={(e) =>
+                statusMutation.mutate({
+                  id: member._id,
+                  isActive: e.target.value === "true",
+                })
+              }
+              className="mt-3 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            >
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </RecordCard>
+        ))}
+      />
 
       {pagination && (
         <Pagination

@@ -64,7 +64,7 @@ export function WebsiteMotorInsuranceApply() {
   };
 
   return (
-    <div>
+    <div className="w-full max-w-full">
       <div className="mx-auto mb-3 d-flex gap-2 justify-content-center flex-wrap">
         {INSURANCE_VEHICLE_TYPES.map((opt) => (
           <button
@@ -85,7 +85,7 @@ export function WebsiteMotorInsuranceApply() {
 
       {resumeUuid && (
         <p className="text-center text-muted small mb-3">
-          Continuing enquiry UUID: <code>{resumeUuid}</code>
+          Continuing enquiry UUID: <code className="break-all">{resumeUuid}</code>
         </p>
       )}
 

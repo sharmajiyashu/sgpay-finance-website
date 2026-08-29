@@ -5,6 +5,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 import type {
   CommissionTransaction,
   CommissionWallet,
@@ -192,30 +199,24 @@ export function CommissionWalletPanel({
         </form>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card shadow-sm">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="font-semibold">Transaction history</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/30 text-left text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Details</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(txnData?.transactions || []).length === 0 ? (
+      <div className="space-y-3">
+        <h2 className="px-1 font-semibold">Transaction history</h2>
+        <ResponsiveRecordList
+          isEmpty={txnData !== undefined && (txnData.transactions || []).length === 0}
+          emptyMessage="No transactions yet"
+          table={
+            <table className="w-full text-sm">
+              <thead className="border-b border-border bg-muted/30 text-left text-muted-foreground">
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                    No transactions yet
-                  </td>
+                  <th className="px-4 py-3 font-medium">Type</th>
+                  <th className="px-4 py-3 font-medium">Details</th>
+                  <th className="px-4 py-3 font-medium">Amount</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Date</th>
                 </tr>
-              ) : (
-                txnData?.transactions.map((row) => (
+              </thead>
+              <tbody>
+                {txnData?.transactions.map((row) => (
                   <tr key={row._id} className="border-b border-border/50">
                     <td className="px-4 py-3 capitalize">{row.type}</td>
                     <td className="px-4 py-3">{row.description}</td>
@@ -242,47 +243,69 @@ export function CommissionWalletPanel({
                       {new Date(row.createdAt).toLocaleString()}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          }
+          cards={(txnData?.transactions || []).map((row) => (
+            <RecordCard key={row._id}>
+              <RecordCardHeader
+                title={row.description}
+                subtitle={row.type}
+                badge={
+                  <span
+                    className={twMerge(
+                      "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
+                      payoutStatusClass(row.status)
+                    )}
+                  >
+                    {row.status}
+                  </span>
+                }
+              />
+              <RecordCardFields>
+                <RecordCardField
+                  label="Amount"
+                  value={
+                    <span className={row.type === "credit" ? "text-emerald-700" : "text-rose-700"}>
+                      {row.type === "credit" ? "+" : "-"}
+                      {money(row.amount)}
+                    </span>
+                  }
+                />
+                <RecordCardField label="Date" value={new Date(row.createdAt).toLocaleString()} />
+              </RecordCardFields>
+            </RecordCard>
+          ))}
+        />
         {txnData?.pagination && (
-          <div className="px-4 py-3">
-            <Pagination
-              page={txnData.pagination.page}
-              totalPages={txnData.pagination.totalPages}
-              total={txnData.pagination.total}
-              limit={txnData.pagination.limit}
-              onPageChange={setTxnPage}
-            />
-          </div>
+          <Pagination
+            page={txnData.pagination.page}
+            totalPages={txnData.pagination.totalPages}
+            total={txnData.pagination.total}
+            limit={txnData.pagination.limit}
+            onPageChange={setTxnPage}
+          />
         )}
       </div>
 
-      <div className="rounded-2xl border border-border bg-card shadow-sm">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="font-semibold">My withdrawal requests</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/30 text-left text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Bank</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Requested</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(wdData?.withdrawals || []).length === 0 ? (
+      <div className="space-y-3">
+        <h2 className="px-1 font-semibold">My withdrawal requests</h2>
+        <ResponsiveRecordList
+          isEmpty={wdData !== undefined && (wdData.withdrawals || []).length === 0}
+          emptyMessage="No withdrawal requests"
+          table={
+            <table className="w-full text-sm">
+              <thead className="border-b border-border bg-muted/30 text-left text-muted-foreground">
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                    No withdrawal requests
-                  </td>
+                  <th className="px-4 py-3 font-medium">Amount</th>
+                  <th className="px-4 py-3 font-medium">Bank</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Requested</th>
                 </tr>
-              ) : (
-                wdData?.withdrawals.map((row) => (
+              </thead>
+              <tbody>
+                {wdData?.withdrawals.map((row) => (
                   <tr key={row._id} className="border-b border-border/50">
                     <td className="px-4 py-3 font-medium">{money(row.amount)}</td>
                     <td className="px-4 py-3 text-muted-foreground">
@@ -302,21 +325,43 @@ export function CommissionWalletPanel({
                       {new Date(row.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          }
+          cards={(wdData?.withdrawals || []).map((row) => (
+            <RecordCard key={row._id}>
+              <RecordCardHeader
+                title={money(row.amount)}
+                subtitle={`${row.bankName} · ${row.accountNumber} · ${row.ifsc}`}
+                badge={
+                  <span
+                    className={twMerge(
+                      "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
+                      payoutStatusClass(row.status)
+                    )}
+                  >
+                    {row.status}
+                  </span>
+                }
+              />
+              <RecordCardFields>
+                <RecordCardField
+                  label="Requested"
+                  value={new Date(row.createdAt).toLocaleDateString()}
+                />
+              </RecordCardFields>
+            </RecordCard>
+          ))}
+        />
         {wdData?.pagination && (
-          <div className="px-4 py-3">
-            <Pagination
-              page={wdData.pagination.page}
-              totalPages={wdData.pagination.totalPages}
-              total={wdData.pagination.total}
-              limit={wdData.pagination.limit}
-              onPageChange={setWdPage}
-            />
-          </div>
+          <Pagination
+            page={wdData.pagination.page}
+            totalPages={wdData.pagination.totalPages}
+            total={wdData.pagination.total}
+            limit={wdData.pagination.limit}
+            onPageChange={setWdPage}
+          />
         )}
       </div>
     </div>

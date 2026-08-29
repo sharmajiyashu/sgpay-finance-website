@@ -5,6 +5,14 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { IconRefresh } from "@tabler/icons-react";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardActions,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 import type {
   InsuranceRemoteEnquiry,
   InsuranceSummaryResponse,
@@ -68,6 +76,13 @@ function pickResumeUuid(enquiry: InsuranceRemoteEnquiry): string {
   return (enquiry.uuid || enquiry.enquiryId || "").trim();
 }
 
+function referredSourceLabel(source?: string) {
+  if (source === "admin") return "Admin Panel";
+  if (source === "agent") return "Agent Panel";
+  if (source === "website") return "Website";
+  return undefined;
+}
+
 function RemoteRow({
   enquiry,
   applyHref,
@@ -93,11 +108,7 @@ function RemoteRow({
         ) : null}
         {enquiry.referredBySource ? (
           <div className="text-xs text-muted-foreground">
-            {enquiry.referredBySource === "admin"
-              ? "Admin Panel"
-              : enquiry.referredBySource === "agent"
-                ? "Agent Panel"
-                : "Website"}
+            {referredSourceLabel(enquiry.referredBySource)}
           </div>
         ) : null}
       </td>
@@ -116,6 +127,55 @@ function RemoteRow({
         )}
       </td>
     </tr>
+  );
+}
+
+function RemoteCard({
+  enquiry,
+  applyHref,
+}: {
+  enquiry: InsuranceRemoteEnquiry;
+  applyHref: string;
+}) {
+  const uuid = pickResumeUuid(enquiry);
+  return (
+    <RecordCard>
+      <RecordCardHeader
+        title={enquiry.customerName || "—"}
+        subtitle={[enquiry.customerMobile, enquiry.customerEmail].filter(Boolean).join(" · ") || "—"}
+        badge={
+          <span className="inline-flex rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold capitalize">
+            {enquiry.status ?? "—"}
+          </span>
+        }
+      />
+      <RecordCardFields>
+        <RecordCardField label="Created" value={formatDate(enquiry.createdAt)} />
+        <RecordCardField label="Service" value={enquiry.subService || enquiry.serviceType || "—"} />
+        <RecordCardField
+          label="Referred by"
+          value={
+            <span>
+              {resolveReferredByName(enquiry) || "—"}
+              {enquiry.referredBySource
+                ? ` · ${referredSourceLabel(enquiry.referredBySource)}`
+                : ""}
+            </span>
+          }
+        />
+        <RecordCardField label="UUID" value={uuid || "—"} />
+      </RecordCardFields>
+      {uuid ? (
+        <RecordCardActions>
+          <Link
+            href={resumeHref(applyHref, uuid)}
+            className="inline-flex w-full items-center justify-center rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm font-medium text-primary"
+          >
+            Resume
+          </Link>
+        </RecordCardActions>
+      ) : null}
+    </RecordCard>
   );
 }
 
@@ -193,7 +253,7 @@ export function InsuranceSummaryPanel({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 rounded-xl border border-border bg-card p-4">
+      <div className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="mb-1 block text-xs text-muted-foreground">Status</label>
           <select
@@ -202,7 +262,7 @@ export function InsuranceSummaryPanel({
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           >
             {STATUS_FILTER_OPTIONS.map((opt) => (
               <option key={opt.value || "all"} value={opt.value}>
@@ -220,7 +280,7 @@ export function InsuranceSummaryPanel({
               setFromDate(e.target.value);
               setPage(1);
             }}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -232,7 +292,7 @@ export function InsuranceSummaryPanel({
               setToDate(e.target.value);
               setPage(1);
             }}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -243,7 +303,7 @@ export function InsuranceSummaryPanel({
               setLimit(Number(e.target.value));
               setPage(1);
             }}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           >
             {PAGE_SIZE_OPTIONS.map((n) => (
               <option key={n} value={n}>
@@ -254,56 +314,57 @@ export function InsuranceSummaryPanel({
         </div>
       </div>
 
-      {isLoading && (
-        <div className="h-40 animate-pulse rounded-xl bg-muted" />
-      )}
-
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           {error instanceof Error ? error.message : "Failed to load insurance summary"}
         </div>
       )}
 
-      {!isLoading && !error && (
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Created</th>
-                <th className="px-4 py-3">Customer</th>
-                <th className="px-4 py-3">Service</th>
-                <th className="px-4 py-3">Referred by</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">UUID</th>
-                <th className="px-4 py-3">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {remoteEnquiries.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    No Choice Connect insurance enquiries found.
-                  </td>
-                </tr>
-              ) : (
-                remoteEnquiries.map((enquiry, i) => (
-                  <RemoteRow
-                    key={`${enquiry.uuid || enquiry.enquiryId || i}`}
-                    enquiry={enquiry}
-                    applyHref={applyHref}
-                  />
-                ))
-              )}
-            </tbody>
-          </table>
-          {remoteTotalPages > 1 && (
-            <div className="border-t border-border p-3">
-              <Pagination
-                page={page}
-                totalPages={remoteTotalPages}
-                onPageChange={setPage}
+      {!error && (
+        <div className="space-y-4">
+          <ResponsiveRecordList
+            isLoading={isLoading}
+            isEmpty={!isLoading && remoteEnquiries.length === 0}
+            loadingMessage="Loading insurance summary…"
+            emptyMessage="No Choice Connect insurance enquiries found."
+            table={
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3">Created</th>
+                    <th className="px-4 py-3">Customer</th>
+                    <th className="px-4 py-3">Service</th>
+                    <th className="px-4 py-3">Referred by</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">UUID</th>
+                    <th className="px-4 py-3">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {remoteEnquiries.map((enquiry, i) => (
+                    <RemoteRow
+                      key={`${enquiry.uuid || enquiry.enquiryId || i}`}
+                      enquiry={enquiry}
+                      applyHref={applyHref}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            }
+            cards={remoteEnquiries.map((enquiry, i) => (
+              <RemoteCard
+                key={`${enquiry.uuid || enquiry.enquiryId || i}`}
+                enquiry={enquiry}
+                applyHref={applyHref}
               />
-            </div>
+            ))}
+          />
+          {remoteTotalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={remoteTotalPages}
+              onPageChange={setPage}
+            />
           )}
         </div>
       )}

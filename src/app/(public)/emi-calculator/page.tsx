@@ -74,7 +74,7 @@ export default function EMICalculator() {
   return (
     <>
       {/* Hero Header Start */}
-      <div className="container-fluid page-header mb-5 wow fadeIn" data-wow-delay="0.1s" style={{ background: "linear-gradient(rgba(0, 41, 102, 0.08), rgba(0, 41, 102, 0.03))", padding: "100px 0" }}>
+      <div className="container-fluid page-header mb-5 wow fadeIn" data-wow-delay="0.1s" style={{ background: "linear-gradient(rgba(0, 41, 102, 0.08), rgba(0, 41, 102, 0.03))" }}>
         <div className="container text-center py-5">
           <span className="d-inline-block border border-primary text-primary px-3 py-1 rounded-pill mb-3 fw-bold">Smart Financial Planning</span>
           <h1 className="display-4 mb-3 fw-bold text-dark">Interactive EMI Calculator</h1>

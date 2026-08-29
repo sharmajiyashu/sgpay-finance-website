@@ -5,6 +5,14 @@ import { useQuery } from "@tanstack/react-query";
 import { IconCopy, IconRefresh } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardActions,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 import type {
   ChoiceRemoteEnquiry,
   ChoiceSummaryResponse,
@@ -107,11 +115,14 @@ function extraRawFields(raw?: Record<string, unknown>, skip: string[] = []): Arr
   return rows.slice(0, 24);
 }
 
-function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
-  const [open, setOpen] = useState(false);
-  const location = [enquiry.city, enquiry.district, enquiry.state, enquiry.pincode]
-    .filter(Boolean)
-    .join(", ");
+function referredBySourceLabel(source?: string) {
+  if (source === "admin") return "Admin Panel";
+  if (source === "agent") return "Agent Panel";
+  if (source === "website") return "Website";
+  return undefined;
+}
+
+function enquiryDetailItems(enquiry: ChoiceRemoteEnquiry): Array<[string, string | undefined]> {
   const extra = extraRawFields(enquiry.raw, [
     "enquiry_id",
     "enquiryId",
@@ -143,6 +154,42 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
     "updatedAt",
   ]);
 
+  return [
+    ["Enquiry ID", enquiry.enquiryId],
+    ["UUID", enquiry.uuid],
+    ["Customer", enquiry.customerName],
+    ["Mobile", enquiry.customerMobile],
+    ["Email", enquiry.customerEmail],
+    ["Service", enquiry.serviceType],
+    ["Sub-service", enquiry.subService],
+    ["Referred by", resolveReferredByName(enquiry)],
+    ["Referrer role", enquiry.referredByRole],
+    ["Referrer source", referredBySourceLabel(enquiry.referredBySource)],
+    ["Agent", enquiry.agentName],
+    ["Agent code", enquiry.agentCode],
+    ["Sub-agent", enquiry.subAgentName],
+    ["Sub-agent code", enquiry.subAgentCode],
+    ["Status", enquiry.status],
+    ["Sub-status", enquiry.subStatus],
+    ["State", enquiry.state],
+    ["District", enquiry.district],
+    ["City", enquiry.city],
+    ["Pincode", enquiry.pincode],
+    ["Bank", enquiry.bankName],
+    ["Card", enquiry.cardType],
+    ["Remarks", enquiry.remarks],
+    ["Created", formatDate(enquiry.createdAt)],
+    ["Updated", formatDate(enquiry.updatedAt)],
+    ...extra,
+  ];
+}
+
+function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
+  const [open, setOpen] = useState(false);
+  const location = [enquiry.city, enquiry.district, enquiry.state, enquiry.pincode]
+    .filter(Boolean)
+    .join(", ");
+
   return (
     <>
       <tr className="border-b border-border/60 last:border-0">
@@ -172,11 +219,7 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
             <span
               className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${sourceBadgeClass(enquiry.referredBySource)}`}
             >
-              {enquiry.referredBySource === "admin"
-                ? "Admin Panel"
-                : enquiry.referredBySource === "agent"
-                  ? "Agent Panel"
-                  : "Website"}
+              {referredBySourceLabel(enquiry.referredBySource)}
             </span>
           ) : null}
           <div className="text-xs text-muted-foreground">
@@ -206,49 +249,70 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
       {open && (
         <tr className="border-b border-border/60 bg-muted/30">
           <td colSpan={8} className="px-4 py-3">
-            <DetailChips
-              items={[
-                ["Enquiry ID", enquiry.enquiryId],
-                ["UUID", enquiry.uuid],
-                ["Customer", enquiry.customerName],
-                ["Mobile", enquiry.customerMobile],
-                ["Email", enquiry.customerEmail],
-                ["Service", enquiry.serviceType],
-                ["Sub-service", enquiry.subService],
-                ["Referred by", resolveReferredByName(enquiry)],
-                ["Referrer role", enquiry.referredByRole],
-                [
-                  "Referrer source",
-                  enquiry.referredBySource === "admin"
-                    ? "Admin Panel"
-                    : enquiry.referredBySource === "agent"
-                      ? "Agent Panel"
-                      : enquiry.referredBySource === "website"
-                        ? "Website"
-                        : undefined,
-                ],
-                ["Agent", enquiry.agentName],
-                ["Agent code", enquiry.agentCode],
-                ["Sub-agent", enquiry.subAgentName],
-                ["Sub-agent code", enquiry.subAgentCode],
-                ["Status", enquiry.status],
-                ["Sub-status", enquiry.subStatus],
-                ["State", enquiry.state],
-                ["District", enquiry.district],
-                ["City", enquiry.city],
-                ["Pincode", enquiry.pincode],
-                ["Bank", enquiry.bankName],
-                ["Card", enquiry.cardType],
-                ["Remarks", enquiry.remarks],
-                ["Created", formatDate(enquiry.createdAt)],
-                ["Updated", formatDate(enquiry.updatedAt)],
-                ...extra,
-              ]}
-            />
+            <DetailChips items={enquiryDetailItems(enquiry)} />
           </td>
         </tr>
       )}
     </>
+  );
+}
+
+function RemoteEnquiryCard({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
+  const [open, setOpen] = useState(false);
+  const location = [enquiry.city, enquiry.district, enquiry.state, enquiry.pincode]
+    .filter(Boolean)
+    .join(", ");
+
+  return (
+    <RecordCard>
+      <RecordCardHeader
+        title={enquiry.customerName || "—"}
+        subtitle={[enquiry.customerMobile, enquiry.customerEmail].filter(Boolean).join(" · ") || "—"}
+        badge={
+          <span className="inline-flex rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold capitalize">
+            {enquiry.status ?? "—"}
+          </span>
+        }
+      />
+      <RecordCardFields>
+        <RecordCardField label="Date" value={formatDate(enquiry.createdAt)} />
+        <RecordCardField
+          label="Product"
+          value={
+            <span>
+              {enquiry.subService || enquiry.serviceType || "—"}
+              {enquiry.cardType || enquiry.bankName
+                ? ` · ${[enquiry.bankName, enquiry.cardType].filter(Boolean).join(" · ")}`
+                : ""}
+            </span>
+          }
+        />
+        <RecordCardField
+          label="Referred by"
+          value={
+            <span>
+              {resolveReferredByName(enquiry) || "—"}
+              {enquiry.referredBySource
+                ? ` · ${referredBySourceLabel(enquiry.referredBySource)}`
+                : ""}
+            </span>
+          }
+        />
+        <RecordCardField label="Location" value={location || "—"} />
+        <RecordCardField label="Sub-status" value={enquiry.subStatus ?? "—"} />
+        <RecordCardField label="Ref" value={enquiry.uuid || enquiry.enquiryId || "—"} />
+      </RecordCardFields>
+      <RecordCardActions>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm font-medium text-primary"
+        >
+          {open ? "Hide details" : "Full details"}
+        </button>
+      </RecordCardActions>
+      {open ? <DetailChips items={enquiryDetailItems(enquiry)} /> : null}
+    </RecordCard>
   );
 }
 
@@ -497,14 +561,14 @@ export function ChoiceConnectSummaryPanel({
             Clear filters
           </button>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <select
             value={productType}
             onChange={(e) => {
               setProductType(e.target.value);
               setPage(1);
             }}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           >
             {PRODUCT_FILTER_OPTIONS.map((opt) => (
               <option key={opt.value || "all"} value={opt.value}>
@@ -518,7 +582,7 @@ export function ChoiceConnectSummaryPanel({
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
           >
             {STATUS_FILTER_OPTIONS.map((opt) => (
               <option key={opt.value || "all-status"} value={opt.value}>
@@ -526,7 +590,7 @@ export function ChoiceConnectSummaryPanel({
               </option>
             ))}
           </select>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <label className="flex w-full flex-col gap-1 text-sm text-muted-foreground">
             From
             <input
               type="date"
@@ -535,10 +599,10 @@ export function ChoiceConnectSummaryPanel({
                 setFromDate(e.target.value);
                 setPage(1);
               }}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
             />
           </label>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <label className="flex w-full flex-col gap-1 text-sm text-muted-foreground">
             To
             <input
               type="date"
@@ -547,10 +611,10 @@ export function ChoiceConnectSummaryPanel({
                 setToDate(e.target.value);
                 setPage(1);
               }}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
             />
           </label>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <label className="flex w-full flex-col gap-1 text-sm text-muted-foreground">
             Page size
             <select
               value={limit}
@@ -558,7 +622,7 @@ export function ChoiceConnectSummaryPanel({
                 setLimit(Number(e.target.value));
                 setPage(1);
               }}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
             >
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <option key={size} value={size}>
@@ -575,7 +639,6 @@ export function ChoiceConnectSummaryPanel({
         {productType ? ` · ${PRODUCT_FILTER_OPTIONS.find((opt) => opt.value === productType)?.label}` : ""}.
       </p>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Loading summary…</p>}
       {error && (
         <p className="text-sm text-destructive">
           {error instanceof Error ? error.message : "Failed to load summary"}
@@ -583,9 +646,13 @@ export function ChoiceConnectSummaryPanel({
       )}
 
       <div className="space-y-4">
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1100px] text-left text-sm">
+        <ResponsiveRecordList
+          isLoading={isLoading}
+          isEmpty={!isLoading && remoteEnquiries.length === 0}
+          loadingMessage="Loading summary…"
+          emptyMessage="No Choice Connect enquiries returned for selected filters."
+          table={
+            <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted/50 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Date</th>
@@ -599,24 +666,22 @@ export function ChoiceConnectSummaryPanel({
                 </tr>
               </thead>
               <tbody>
-                {remoteEnquiries.length === 0 && !isLoading ? (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                      No Choice Connect enquiries returned for selected filters.
-                    </td>
-                  </tr>
-                ) : (
-                  remoteEnquiries.map((enquiry) => (
-                    <RemoteEnquiryRow
-                      key={enquiry.enquiryId || enquiry.uuid || `${enquiry.customerMobile}-${enquiry.createdAt}`}
-                      enquiry={enquiry}
-                    />
-                  ))
-                )}
+                {remoteEnquiries.map((enquiry) => (
+                  <RemoteEnquiryRow
+                    key={enquiry.enquiryId || enquiry.uuid || `${enquiry.customerMobile}-${enquiry.createdAt}`}
+                    enquiry={enquiry}
+                  />
+                ))}
               </tbody>
             </table>
-          </div>
-        </div>
+          }
+          cards={remoteEnquiries.map((enquiry) => (
+            <RemoteEnquiryCard
+              key={enquiry.enquiryId || enquiry.uuid || `${enquiry.customerMobile}-${enquiry.createdAt}`}
+              enquiry={enquiry}
+            />
+          ))}
+        />
         <Pagination
           page={remotePagination?.page ?? page}
           totalPages={remoteTotalPages}

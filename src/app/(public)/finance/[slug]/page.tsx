@@ -171,7 +171,7 @@ export default function FinanceDetailPage({ params }: { params: Promise<{ slug: 
 
             {/* Right Application Form Sidebar */}
             {slug !== "credit-card" && (
-              <div className="col-lg-5 wow fadeInUp" data-wow-delay="0.3s">
+              <div className="col-lg-5 order-first order-lg-last wow fadeInUp" data-wow-delay="0.3s">
                 <div className="position-sticky bg-light p-4 rounded border" style={{ top: "100px" }}>
                   <h4 className="mb-3 text-center">Inquire / Consult</h4>
                   <p className="text-muted text-center small mb-4">Request a consultation with our financial advisory team regarding {service.title}.</p>

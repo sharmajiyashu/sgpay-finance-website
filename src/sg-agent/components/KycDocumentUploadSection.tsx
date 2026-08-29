@@ -50,7 +50,7 @@ export function KycDocumentUploadSection({
 
   return (
     <div className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
-      <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+      <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-foreground">KYC Documents Verification</h2>
           <p className="text-xs text-muted-foreground">

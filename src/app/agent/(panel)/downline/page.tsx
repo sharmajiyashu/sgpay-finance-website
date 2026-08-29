@@ -10,6 +10,13 @@ import {
   getDownline,
 } from "@/sg-agent/lib/services/downlineService";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 
 const AGENT_TYPE_LABELS: Record<string, string> = {
   super_distributor: "Super Distributor",
@@ -177,32 +184,23 @@ export default function AgentDownlinePage() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead className="border-b border-border bg-muted/30">
-            <tr className="text-left text-muted-foreground">
-              <th className="px-4 py-3 font-medium">Agent</th>
-              <th className="px-4 py-3 font-medium">Type</th>
-              <th className="px-4 py-3 font-medium">Contact</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                  Loading...
-                </td>
+      <ResponsiveRecordList
+        isLoading={isLoading}
+        isEmpty={!isLoading && agents.length === 0}
+        loadingMessage="Loading..."
+        emptyMessage="No downline agents yet"
+        table={
+          <table className="w-full text-sm">
+            <thead className="border-b border-border bg-muted/30">
+              <tr className="text-left text-muted-foreground">
+                <th className="px-4 py-3 font-medium">Agent</th>
+                <th className="px-4 py-3 font-medium">Type</th>
+                <th className="px-4 py-3 font-medium">Contact</th>
+                <th className="px-4 py-3 font-medium">Status</th>
               </tr>
-            ) : agents.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                  No downline agents yet
-                </td>
-              </tr>
-            ) : (
-              agents.map((agent) => (
+            </thead>
+            <tbody>
+              {agents.map((agent) => (
                 <tr key={agent._id} className="border-b border-border/50">
                   <td className="px-4 py-3 font-medium">
                     {[agent.firstName, agent.lastName].filter(Boolean).join(" ") ||
@@ -219,12 +217,36 @@ export default function AgentDownlinePage() {
                   </td>
                   <td className="px-4 py-3 capitalize">{agent.status || "—"}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        </div>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        }
+        cards={agents.map((agent) => (
+          <RecordCard key={agent._id}>
+            <RecordCardHeader
+              title={
+                [agent.firstName, agent.lastName].filter(Boolean).join(" ") || agent.email
+              }
+              subtitle={`${agent.email} · ${agent.mobile}`}
+              badge={
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs capitalize">
+                  {agent.status || "—"}
+                </span>
+              }
+            />
+            <RecordCardFields>
+              <RecordCardField
+                label="Type"
+                value={
+                  agent.agentType
+                    ? AGENT_TYPE_LABELS[agent.agentType] || agent.agentType
+                    : "—"
+                }
+              />
+            </RecordCardFields>
+          </RecordCard>
+        ))}
+      />
 
       {pagination && (
         <Pagination

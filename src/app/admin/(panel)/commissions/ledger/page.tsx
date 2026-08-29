@@ -20,6 +20,13 @@ import {
   isLoanProductType,
 } from "@/lib/choiceConnect/types";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 
 const CASCADE_ORDER = [
@@ -213,8 +220,12 @@ export default function CommissionLedgerPage() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
+      <ResponsiveRecordList
+        isLoading={isLoading}
+        isEmpty={!isLoading && groups.length === 0}
+        loadingMessage="Loading..."
+        emptyMessage="No commission entries yet. Entries appear when a credit-card sale is issued/approved, a Choice loan is disbursed/done, or a Roar enquiry is marked resolved."
+        table={
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr className="text-left text-muted-foreground">
@@ -229,22 +240,7 @@ export default function CommissionLedgerPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                    Loading...
-                  </td>
-                </tr>
-              ) : groups.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                    No commission entries yet. Entries appear when a credit-card sale
-                    is issued/approved, a Choice loan is disbursed/done, or a Roar
-                    enquiry is marked resolved.
-                  </td>
-                </tr>
-              ) : (
-                groups.flatMap((group) => {
+              {groups.flatMap((group) => {
                   const head = group.rows[0];
                   if (!head) return [];
                   const saleTotal = group.rows.reduce(
@@ -320,12 +316,77 @@ export default function CommissionLedgerPage() {
                       </tr>
                     )),
                   ];
-                })
-              )}
+                })}
             </tbody>
           </table>
-        </div>
-      </div>
+        }
+        cards={groups.map((group) => {
+          const head = group.rows[0];
+          if (!head) return null;
+          const saleTotal = group.rows.reduce(
+            (sum, row) => sum + (row.commissionAmount || 0),
+            0
+          );
+          return (
+            <RecordCard key={group.key}>
+              <RecordCardHeader
+                title={saleLabel(head)}
+                subtitle={`${sourceLabel(head)}${head.productType ? ` · ${formatProductLabel(head.productType)}` : ""} · referred by ${personName(head.fromUserId)}`}
+                badge={<span className="text-xs font-medium">{money(saleTotal)}</span>}
+              />
+              <div className="mt-3 space-y-3">
+                {group.rows.map((row) => (
+                  <div key={row._id} className="rounded-lg border border-border/70 bg-muted/20 p-3">
+                    <RecordCardFields className="mt-0 border-0 pt-0">
+                      <RecordCardField label="From" value={personName(row.fromUserId)} />
+                      <RecordCardField label="Beneficiary" value={personName(row.beneficiaryUserId)} />
+                      <RecordCardField
+                        label="Level"
+                        value={row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}
+                      />
+                      <RecordCardField label="Base" value={money(row.amountBase)} />
+                      <RecordCardField label="%" value={`${row.percent}%`} />
+                      <RecordCardField label="Amount" value={money(row.commissionAmount)} />
+                      <RecordCardField
+                        label="Date"
+                        value={row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "—"}
+                      />
+                    </RecordCardFields>
+                    {canUpdate ? (
+                      <select
+                        value={row.status}
+                        disabled={statusMutation.isPending}
+                        onChange={(e) => {
+                          const next = e.target.value as "pending" | "approved" | "paid";
+                          if (next === row.status) return;
+                          statusMutation.mutate({ id: row._id, status: next });
+                        }}
+                        className={twMerge(
+                          "mt-2 w-full rounded-lg border px-3 py-2 text-sm capitalize",
+                          statusClass(row.status)
+                        )}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="paid">Paid</option>
+                      </select>
+                    ) : (
+                      <span
+                        className={twMerge(
+                          "mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
+                          statusClass(row.status)
+                        )}
+                      >
+                        {row.status}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </RecordCard>
+          );
+        })}
+      />
 
       {pagination && (
         <Pagination

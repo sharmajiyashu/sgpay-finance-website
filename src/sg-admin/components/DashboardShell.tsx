@@ -98,20 +98,20 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             {!!counts?.pendingEnquiries && (
               <Link
                 href="/admin/enquiries"
-                className="hidden items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 sm:inline-flex"
+                className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 sm:px-2.5"
               >
                 <IconHelp className="h-3.5 w-3.5" />
-                Enquiries
+                <span className="hidden sm:inline">Enquiries</span>
                 <PendingCountBadge count={counts.pendingEnquiries} />
               </Link>
             )}
             {!!counts?.pendingAgents && (
               <Link
                 href="/admin/agents?status=pending"
-                className="hidden items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 sm:inline-flex"
+                className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 sm:px-2.5"
               >
                 <IconUsersGroup className="h-3.5 w-3.5" />
-                Agents
+                <span className="hidden sm:inline">Agents</span>
                 <PendingCountBadge count={counts.pendingAgents} />
               </Link>
             )}

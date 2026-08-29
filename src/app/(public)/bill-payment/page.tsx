@@ -168,7 +168,7 @@ export default function BillPayment() {
             </div>
 
             {/* Right Payment Form Sidebar */}
-            <div className="col-lg-5 wow fadeInUp" data-wow-delay="0.3s">
+            <div className="col-lg-5 order-first order-lg-last wow fadeInUp" data-wow-delay="0.3s">
               <div className="bg-light p-4 rounded border position-sticky" style={{ top: "100px" }}>
                 <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                   <div className="btn-square rounded bg-primary text-white me-3">

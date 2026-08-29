@@ -44,7 +44,7 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
         
         <div className="absolute bottom-4 left-4 right-4 text-white">
-          <h3 className="text-2xl font-bold mb-1 text-white">{project.name}</h3>
+          <h3 className="mb-1 text-lg font-bold text-white sm:text-2xl">{project.name}</h3>
           <p className="text-sm flex items-center gap-2">
             <i className="fa fa-map-marker-alt text-primary"></i> {project.location}, {project.city}
           </p>
@@ -64,14 +64,14 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
           </div>
         </div>
 
-        <div className="flex gap-4 mb-5 text-sm text-gray-600">
-          <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+        <div className="flex flex-wrap gap-2 mb-5 text-sm text-gray-600">
+          <div className="flex min-w-0 items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
             <i className="fa fa-bed text-primary"></i>
-            <span>{project.configurations.join(", ")}</span>
+            <span className="truncate">{project.configurations.join(", ")}</span>
           </div>
-          <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+          <div className="flex min-w-0 items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
             <i className="fa fa-ruler-combined text-primary"></i>
-            <span>{project.areaRange}</span>
+            <span className="truncate">{project.areaRange}</span>
           </div>
         </div>
 

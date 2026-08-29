@@ -16,6 +16,14 @@ import {
 import type { Enquiry, EnquiryStatus } from "@/sg-admin/lib/types/enquiry";
 import { Pagination } from "@/components/ui/Pagination";
 import {
+  RecordCard,
+  RecordCardActions,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
+import {
   ENQUIRY_CATEGORIES,
   getCategoryLabel,
   getEnquiryCategory,
@@ -590,8 +598,12 @@ function EnquiriesPanelInner({
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
+      <ResponsiveRecordList
+        isLoading={isLoading}
+        isEmpty={!isLoading && enquiries.length === 0}
+        loadingMessage="Loading enquiries..."
+        emptyMessage="No enquiries found"
+        table={
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr className="text-left text-muted-foreground">
@@ -606,129 +618,205 @@ function EnquiriesPanelInner({
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                    Loading enquiries...
-                  </td>
-                </tr>
-              ) : enquiries.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                    No enquiries found
-                  </td>
-                </tr>
-              ) : (
-                enquiries.map((enquiry) => {
-                  const partnerName =
-                    typeof enquiry.metadata?.partnerName === "string"
-                      ? enquiry.metadata.partnerName
-                      : null;
-                  const referredByName =
-                    typeof enquiry.metadata?.referredByName === "string"
-                      ? enquiry.metadata.referredByName
-                      : null;
-                  const referredByRole =
-                    typeof enquiry.metadata?.referredByRole === "string"
-                      ? enquiry.metadata.referredByRole
-                      : null;
+              {enquiries.map((enquiry) => {
+                const partnerName =
+                  typeof enquiry.metadata?.partnerName === "string"
+                    ? enquiry.metadata.partnerName
+                    : null;
+                const referredByName =
+                  typeof enquiry.metadata?.referredByName === "string"
+                    ? enquiry.metadata.referredByName
+                    : null;
+                const referredByRole =
+                  typeof enquiry.metadata?.referredByRole === "string"
+                    ? enquiry.metadata.referredByRole
+                    : null;
 
-                  return (
-                    <tr key={enquiry._id} className="border-b border-border/50 align-top">
-                      <td className="px-4 py-3">
-                        <div className="font-medium">{enquiry.name}</div>
-                        <div className="text-muted-foreground">{enquiry.email}</div>
-                        {enquiry.phone && (
-                          <div className="text-xs text-muted-foreground">{enquiry.phone}</div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                          {getCategoryLabel(enquiry.type)}
+                return (
+                  <tr key={enquiry._id} className="border-b border-border/50 align-top">
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{enquiry.name}</div>
+                      <div className="text-muted-foreground">{enquiry.email}</div>
+                      {enquiry.phone && (
+                        <div className="text-xs text-muted-foreground">{enquiry.phone}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                        {getCategoryLabel(enquiry.type)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      <div>{getServiceLabel(enquiry.type, enquiry.service)}</div>
+                      {partnerName && (
+                        <div className="mt-1 text-xs text-primary">{partnerName}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {referredByName ? (
+                        <>
+                          <div className="font-medium text-foreground">{referredByName}</div>
+                          {referredByRole && (
+                            <div className="mt-0.5 text-xs text-muted-foreground">
+                              {referredByRole}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="max-w-xs px-4 py-3">
+                      <p className="line-clamp-3 text-muted-foreground">{enquiry.message}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {canUpdateStatus ? (
+                        <select
+                          value={enquiry.status}
+                          disabled={statusMutation.isPending}
+                          onChange={(e) =>
+                            statusMutation.mutate({
+                              id: enquiry._id,
+                              status: e.target.value as EnquiryStatus,
+                            })
+                          }
+                          className="rounded-lg border border-border bg-background px-2 py-1 text-xs capitalize"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="resolved">Resolved</option>
+                        </select>
+                      ) : (
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusBadgeClass(enquiry.status)}`}
+                        >
+                          {enquiry.status.replace("_", " ")}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        <div>{getServiceLabel(enquiry.type, enquiry.service)}</div>
-                        {partnerName && (
-                          <div className="mt-1 text-xs text-primary">{partnerName}</div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {referredByName ? (
-                          <>
-                            <div className="font-medium text-foreground">{referredByName}</div>
-                            {referredByRole && (
-                              <div className="mt-0.5 text-xs text-muted-foreground">
-                                {referredByRole}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="max-w-xs px-4 py-3">
-                        <p className="line-clamp-3 text-muted-foreground">{enquiry.message}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        {canUpdateStatus ? (
-                          <select
-                            value={enquiry.status}
-                            disabled={statusMutation.isPending}
-                            onChange={(e) =>
-                              statusMutation.mutate({
-                                id: enquiry._id,
-                                status: e.target.value as EnquiryStatus,
-                              })
-                            }
-                            className="rounded-lg border border-border bg-background px-2 py-1 text-xs capitalize"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="resolved">Resolved</option>
-                          </select>
-                        ) : (
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusBadgeClass(enquiry.status)}`}
-                          >
-                            {enquiry.status.replace("_", " ")}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {new Date(enquiry.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {new Date(enquiry.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedEnquiry(enquiry)}
+                          className="rounded-lg p-2 text-foreground hover:bg-muted"
+                          aria-label="View enquiry"
+                          title="View details"
+                        >
+                          <IconEye className="h-4 w-4" />
+                        </button>
+                        {canDelete && (
                           <button
                             type="button"
-                            onClick={() => setSelectedEnquiry(enquiry)}
-                            className="rounded-lg p-2 text-foreground hover:bg-muted"
-                            aria-label="View enquiry"
-                            title="View details"
+                            onClick={() => setDeleteId(enquiry._id)}
+                            className="rounded-lg p-2 text-destructive hover:bg-destructive/10"
+                            aria-label="Delete enquiry"
                           >
-                            <IconEye className="h-4 w-4" />
+                            <IconTrash className="h-4 w-4" />
                           </button>
-                          {canDelete && (
-                            <button
-                              type="button"
-                              onClick={() => setDeleteId(enquiry._id)}
-                              className="rounded-lg p-2 text-destructive hover:bg-destructive/10"
-                              aria-label="Delete enquiry"
-                            >
-                              <IconTrash className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-        </div>
-      </div>
+        }
+        cards={enquiries.map((enquiry) => {
+          const partnerName =
+            typeof enquiry.metadata?.partnerName === "string"
+              ? enquiry.metadata.partnerName
+              : null;
+          const referredByName =
+            typeof enquiry.metadata?.referredByName === "string"
+              ? enquiry.metadata.referredByName
+              : null;
+          const referredByRole =
+            typeof enquiry.metadata?.referredByRole === "string"
+              ? enquiry.metadata.referredByRole
+              : null;
+
+          return (
+            <RecordCard key={enquiry._id}>
+              <RecordCardHeader
+                title={enquiry.name}
+                subtitle={[enquiry.email, enquiry.phone].filter(Boolean).join(" · ")}
+                badge={
+                  <span
+                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusBadgeClass(enquiry.status)}`}
+                  >
+                    {enquiry.status.replace("_", " ")}
+                  </span>
+                }
+              />
+              <RecordCardFields>
+                <RecordCardField label="Category" value={getCategoryLabel(enquiry.type)} />
+                <RecordCardField
+                  label="Service"
+                  value={
+                    <span>
+                      {getServiceLabel(enquiry.type, enquiry.service)}
+                      {partnerName ? ` · ${partnerName}` : ""}
+                    </span>
+                  }
+                />
+                <RecordCardField
+                  label="Referred by"
+                  value={referredByName ? `${referredByName}${referredByRole ? ` · ${referredByRole}` : ""}` : "—"}
+                />
+                <RecordCardField label="Date" value={new Date(enquiry.createdAt).toLocaleDateString()} />
+                <RecordCardField
+                  label="Message"
+                  value={<span className="line-clamp-3 font-normal">{enquiry.message}</span>}
+                />
+              </RecordCardFields>
+              {canUpdateStatus ? (
+                <div className="mt-3">
+                  <select
+                    value={enquiry.status}
+                    disabled={statusMutation.isPending}
+                    onChange={(e) =>
+                      statusMutation.mutate({
+                        id: enquiry._id,
+                        status: e.target.value as EnquiryStatus,
+                      })
+                    }
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm capitalize"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                  </select>
+                </div>
+              ) : null}
+              <RecordCardActions>
+                <button
+                  type="button"
+                  onClick={() => setSelectedEnquiry(enquiry)}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium"
+                >
+                  <IconEye className="h-4 w-4" />
+                  View
+                </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={() => setDeleteId(enquiry._id)}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-destructive/30 px-3 py-2 text-sm font-medium text-destructive"
+                  >
+                    <IconTrash className="h-4 w-4" />
+                    Delete
+                  </button>
+                )}
+              </RecordCardActions>
+            </RecordCard>
+          );
+        })}
+      />
 
       {pagination && (
         <Pagination
@@ -753,7 +841,7 @@ function EnquiriesPanelInner({
         <AlertDialog.Root open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialog.Portal>
             <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
-            <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-background p-6 shadow-xl">
+            <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-background p-6 shadow-xl">
               <AlertDialog.Title className="text-lg font-semibold">Delete enquiry?</AlertDialog.Title>
               <AlertDialog.Description className="mt-2 text-sm text-muted-foreground">
                 This action cannot be undone.

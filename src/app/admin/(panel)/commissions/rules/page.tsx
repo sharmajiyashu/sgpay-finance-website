@@ -10,6 +10,13 @@ import {
 import { COMMISSION_LEVEL_LABELS } from "@/sg-admin/lib/types/hierarchy";
 import { COMMISSION_PRODUCT_TYPES } from "@/lib/choiceConnect/types";
 import { hasPermission } from "@/sg-admin/lib/permissions";
+import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 
 const ALL_LEVELS = [
   "state_head",
@@ -153,25 +160,20 @@ export default function CommissionRulesPage() {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border bg-muted/30">
-            <tr className="text-left text-muted-foreground">
-              <th className="px-4 py-3 font-medium">Level</th>
-              <th className="px-4 py-3 font-medium">Percent (%)</th>
-              <th className="px-4 py-3 font-medium">Active</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">
-                  Loading...
-                </td>
+      <ResponsiveRecordList
+        isLoading={isLoading}
+        loadingMessage="Loading..."
+        table={
+          <table className="w-full text-sm">
+            <thead className="border-b border-border bg-muted/30">
+              <tr className="text-left text-muted-foreground">
+                <th className="px-4 py-3 font-medium">Level</th>
+                <th className="px-4 py-3 font-medium">Percent (%)</th>
+                <th className="px-4 py-3 font-medium">Active</th>
               </tr>
-            ) : (
-              rows.map((row, index) => (
+            </thead>
+            <tbody>
+              {rows.map((row, index) => (
                 <tr key={row.level} className="border-b border-border/50">
                   <td className="px-4 py-3 font-medium">
                     {COMMISSION_LEVEL_LABELS[row.level] || row.level}
@@ -207,19 +209,61 @@ export default function CommissionRulesPage() {
                     />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        </div>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        }
+        cards={rows.map((row, index) => (
+          <RecordCard key={row.level}>
+            <RecordCardHeader title={COMMISSION_LEVEL_LABELS[row.level] || row.level} />
+            <RecordCardFields>
+              <RecordCardField
+                label="Percent (%)"
+                value={
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    disabled={!canUpdate}
+                    value={row.percent}
+                    onChange={(e) => {
+                      const percent = Number(e.target.value);
+                      setRows((prev) =>
+                        prev.map((r, i) => (i === index ? { ...r, percent } : r))
+                      );
+                    }}
+                    className="w-24 rounded-lg border border-border bg-background px-3 py-2 text-right"
+                  />
+                }
+              />
+              <RecordCardField
+                label="Active"
+                value={
+                  <input
+                    type="checkbox"
+                    disabled={!canUpdate}
+                    checked={row.isActive}
+                    onChange={(e) => {
+                      const isActive = e.target.checked;
+                      setRows((prev) =>
+                        prev.map((r, i) => (i === index ? { ...r, isActive } : r))
+                      );
+                    }}
+                  />
+                }
+              />
+            </RecordCardFields>
+          </RecordCard>
+        ))}
+      />
 
       {canUpdate && (
         <button
           type="button"
           disabled={saveMutation.isPending || isLoading}
           onClick={() => saveMutation.mutate()}
-          className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+          className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground sm:w-auto"
         >
           {saveMutation.isPending ? "Saving..." : "Save Rules"}
         </button>

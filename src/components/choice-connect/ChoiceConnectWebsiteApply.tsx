@@ -45,7 +45,7 @@ export function ChoiceConnectWebsiteApply({
     productType === "credit-card" ? "creditCardWidgetContainer" : "loanWidgetContainer";
 
   return (
-    <div>
+    <div className="w-full max-w-full overflow-x-auto">
       {allowLoanProductSelect && (
         <div className="mx-auto mb-3 max-w-md">
           <select

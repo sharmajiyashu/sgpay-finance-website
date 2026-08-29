@@ -167,8 +167,8 @@ export default function HomePage() {
                   Get your detailed credit report securely in just 2 minutes. No impact on your score. A good CIBIL score helps you get better loan approvals and lower interest rates.
                 </p>
               </div>
-              <div className="col-lg-4 text-lg-end">
-                <Link href="/check-cibil" className="btn btn-light rounded-pill py-3 px-5 fw-bold text-primary" style={{ fontSize: "1.1rem" }}>
+              <div className="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <Link href="/check-cibil" className="btn btn-light rounded-pill py-3 px-5 fw-bold text-primary cibil-cta-btn" style={{ fontSize: "1.1rem" }}>
                   Check Score Now <i className="fa fa-arrow-right ms-2"></i>
                 </Link>
               </div>

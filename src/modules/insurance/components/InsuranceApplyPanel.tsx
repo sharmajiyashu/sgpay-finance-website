@@ -154,7 +154,7 @@ export function InsuranceApplyPanel({
         <p className="text-xs text-muted-foreground">
           Resuming enquiry with widget <code className="rounded bg-muted px-1">UUID</code> from
           summary-report. Link:{" "}
-          <code className="rounded bg-muted px-1">
+          <code className="break-all rounded bg-muted px-1">
             {applyBasePath}?uuid={resumeUuid}&lead_uuid={resumeUuid}&vehicleType={vehicleType}
           </code>
         </p>

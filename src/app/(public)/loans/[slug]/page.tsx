@@ -199,7 +199,7 @@ export default function LoanDetailPage({ params }: { params: Promise<{ slug: str
             </div>
 
             {/* Right Application Form Sidebar */}
-            <div className="col-lg-5 wow fadeInUp" data-wow-delay="0.3s">
+            <div className="col-lg-5 order-first order-lg-last wow fadeInUp" data-wow-delay="0.3s">
               <div className="position-sticky bg-light p-4 rounded border" style={{ top: "100px" }}>
                 <h4 className="mb-3 text-center">Apply for {loan.title}</h4>
                 <p className="text-muted text-center small mb-4">Submit your basic details, and our loans expert will contact you within 24 hours.</p>

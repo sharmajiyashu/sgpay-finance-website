@@ -183,7 +183,7 @@ export default function AccountDetailPage({ params }: { params: Promise<{ slug: 
             </div>
 
             {/* Right Application Form Sidebar */}
-            <div className="col-lg-5 wow fadeInUp" data-wow-delay="0.3s">
+            <div className="col-lg-5 order-first order-lg-last wow fadeInUp" data-wow-delay="0.3s">
               <div className="position-sticky bg-light p-4 rounded border" style={{ top: "100px" }}>
                 <h4 className="mb-3 text-center">Open Account Online</h4>
                 <p className="text-muted text-center small mb-4">Complete your paperless Video KYC registration form to open your account instantly.</p>

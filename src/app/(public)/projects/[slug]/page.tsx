@@ -72,7 +72,7 @@ export default function ProjectDetailPage() {
           <div className="row g-5">
             <div className="col-lg-8 wow fadeInUp" data-wow-delay="0.1s">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-2xl overflow-hidden mb-5 shadow-lg w-100">
-                <img src="/img/premium-hero-light.png" alt={project.name} className="w-100 object-cover" style={{ height: "450px" }} />
+                <img src="/img/premium-hero-light.png" alt={project.name} className="w-100 object-cover project-detail-hero" />
               </motion.div>
 
               <div className="d-flex align-items-center mb-4">
@@ -194,9 +194,9 @@ export default function ProjectDetailPage() {
                   <div className="row g-3 mb-5">
                     {project.images.map((img, idx) => (
                       <div key={idx} className="col-md-4">
-                        <div 
-                          className="rounded overflow-hidden shadow-sm position-relative" 
-                          style={{ height: "150px", cursor: "pointer" }}
+                        <div
+                          className="rounded overflow-hidden shadow-sm position-relative project-gallery-tile"
+                          style={{ cursor: "pointer" }}
                           onClick={() => setLightboxIndex(idx)}
                         >
                           <img src={img} alt={`${project.name} Gallery ${idx + 1}`} className="w-100 h-100 object-cover" />
@@ -230,14 +230,14 @@ export default function ProjectDetailPage() {
                   <div className="row g-3 mb-5">
                     {project.floorPlans.map((plan, idx) => (
                       <div key={idx} className="col-md-6">
-                        <div className="rounded overflow-hidden shadow-sm" style={{ height: "250px" }}>
+                        <div className="rounded overflow-hidden shadow-sm project-plan-tile">
                           <img src={plan} alt="Floor Plan" className="w-100 h-100 object-cover" />
                         </div>
                       </div>
                     ))}
                     {project.masterPlan && (
                       <div className="col-md-6">
-                        <div className="rounded overflow-hidden shadow-sm" style={{ height: "250px" }}>
+                        <div className="rounded overflow-hidden shadow-sm project-plan-tile">
                           <img src={project.masterPlan} alt="Master Plan" className="w-100 h-100 object-cover" />
                         </div>
                       </div>
@@ -248,7 +248,7 @@ export default function ProjectDetailPage() {
 
               {/* Location Section */}
               <h3 className="mb-4">Location Map</h3>
-              <div className="rounded overflow-hidden mb-5 shadow-sm" style={{ height: "400px" }}>
+              <div className="rounded overflow-hidden mb-5 shadow-sm project-map-embed">
                 <iframe 
                   src={`https://maps.google.com/maps?q=${project.latitude},${project.longitude}&hl=en&z=14&output=embed`} 
                   width="100%" 
@@ -264,7 +264,7 @@ export default function ProjectDetailPage() {
             </div>
 
             {/* Sidebar Sticky Enq Form */}
-            <div className="col-lg-4 wow fadeInUp" data-wow-delay="0.3s">
+            <div className="col-lg-4 order-first order-lg-last wow fadeInUp" data-wow-delay="0.3s">
               <div className="position-sticky" style={{ top: "100px" }}>
                 
                 {/* Pricing Widget */}
@@ -374,7 +374,7 @@ export default function ProjectDetailPage() {
           </button>
           
           <button 
-            className="position-absolute start-0 ms-4 btn btn-outline-light rounded-circle"
+            className="position-absolute start-0 ms-2 ms-md-4 btn btn-outline-light rounded-circle project-lightbox-nav"
             onClick={() => setLightboxIndex(prev => (prev === null || prev === 0) ? project.images.length - 1 : prev - 1)}
           >
             <i className="fa fa-chevron-left fa-lg"></i>
@@ -383,12 +383,12 @@ export default function ProjectDetailPage() {
           <img 
             src={project.images[lightboxIndex]} 
             alt="Gallery Fullscreen" 
-            style={{ maxHeight: '90vh', maxWidth: '80vw', objectFit: 'contain' }} 
+            style={{ maxHeight: '80vh', maxWidth: '90vw', objectFit: 'contain' }} 
             className="shadow-lg rounded"
           />
 
           <button 
-            className="position-absolute end-0 me-4 btn btn-outline-light rounded-circle"
+            className="position-absolute end-0 me-2 me-md-4 btn btn-outline-light rounded-circle project-lightbox-nav"
             onClick={() => setLightboxIndex(prev => (prev === null || prev === project.images.length - 1) ? 0 : prev + 1)}
           >
             <i className="fa fa-chevron-right fa-lg"></i>

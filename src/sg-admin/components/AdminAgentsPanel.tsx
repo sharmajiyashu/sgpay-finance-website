@@ -18,6 +18,13 @@ import type { Agent } from "@/sg-admin/lib/types/agent";
 import { agentFullName } from "@/sg-admin/lib/types/agent";
 import { AGENT_TYPE_LABELS } from "@/sg-admin/lib/types/hierarchy";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 import { ChoiceConnectStatusBadge } from "@/components/choice-connect/ChoiceConnectStatusBadge";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 import { getAuthUser } from "@/sg-admin/lib/api";
@@ -329,8 +336,12 @@ function AdminAgentsPanelInner() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
+      <ResponsiveRecordList
+        isLoading={isLoading}
+        isEmpty={!isLoading && agents.length === 0}
+        loadingMessage="Loading agents..."
+        emptyMessage="No agents found"
+        table={
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr className="text-left text-muted-foreground">
@@ -344,82 +355,69 @@ function AdminAgentsPanelInner() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    Loading agents...
+              {agents.map((agent) => (
+                <tr
+                  key={agent._id}
+                  className={twMerge(
+                    "border-b border-border/50 align-top",
+                    (agent.status ?? "pending") === "pending" &&
+                      "bg-amber-50/90 ring-1 ring-inset ring-amber-200/80"
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">{agentFullName(agent)}</span>
+                      {(agent.status ?? "pending") === "pending" && (
+                        <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{agent.city || "—"}</div>
                   </td>
-                </tr>
-              ) : agents.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                    No agents found
+                  <td className="px-4 py-3">
+                    {agent.agentType
+                      ? AGENT_TYPE_LABELS[agent.agentType] || agent.agentType
+                      : "—"}
                   </td>
-                </tr>
-              ) : (
-                agents.map((agent) => (
-                  <tr
-                    key={agent._id}
-                    className={twMerge(
-                      "border-b border-border/50 align-top",
-                      (agent.status ?? "pending") === "pending" &&
-                        "bg-amber-50/90 ring-1 ring-inset ring-amber-200/80"
-                    )}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">{agentFullName(agent)}</span>
-                        {(agent.status ?? "pending") === "pending" && (
-                          <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">
-                            Pending
-                          </span>
+                  <td className="px-4 py-3">
+                    <div>{agent.email}</div>
+                    <div className="text-muted-foreground">{agent.mobile}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {typeof agent.commissionPercent === "number"
+                      ? `${agent.commissionPercent}%`
+                      : "Default"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <ChoiceConnectStatusBadge
+                      onboarded={agent.choiceConnectProfile?.onboarded}
+                      agentCode={agent.choiceConnectProfile?.agentCode}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <code className="rounded bg-muted px-2 py-1 text-xs">
+                        {visiblePasswords[agent._id]
+                          ? agent.generatedPassword || "—"
+                          : "••••••••"}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setVisiblePasswords((p) => ({
+                            ...p,
+                            [agent._id]: !p[agent._id],
+                          }))
+                        }
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        {visiblePasswords[agent._id] ? (
+                          <IconEyeOff className="h-4 w-4" />
+                        ) : (
+                          <IconEye className="h-4 w-4" />
                         )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{agent.city || "—"}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {agent.agentType
-                        ? AGENT_TYPE_LABELS[agent.agentType] || agent.agentType
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div>{agent.email}</div>
-                      <div className="text-muted-foreground">{agent.mobile}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {typeof agent.commissionPercent === "number"
-                        ? `${agent.commissionPercent}%`
-                        : "Default"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <ChoiceConnectStatusBadge
-                        onboarded={agent.choiceConnectProfile?.onboarded}
-                        agentCode={agent.choiceConnectProfile?.agentCode}
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <code className="rounded bg-muted px-2 py-1 text-xs">
-                          {visiblePasswords[agent._id]
-                            ? agent.generatedPassword || "—"
-                            : "••••••••"}
-                        </code>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setVisiblePasswords((p) => ({
-                              ...p,
-                              [agent._id]: !p[agent._id],
-                            }))
-                          }
-                          className="text-muted-foreground hover:text-foreground"
-                        >
-                          {visiblePasswords[agent._id] ? (
-                            <IconEyeOff className="h-4 w-4" />
-                          ) : (
-                            <IconEye className="h-4 w-4" />
-                          )}
-                        </button>
+                      </button>
                         <button
                           type="button"
                           onClick={() => passwordMutation.mutate(agent._id)}
@@ -453,12 +451,105 @@ function AdminAgentsPanelInner() {
                       </select>
                     </td>
                   </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
-        </div>
-      </div>
+        }
+        cards={agents.map((agent) => (
+          <RecordCard
+            key={agent._id}
+            className={
+              (agent.status ?? "pending") === "pending"
+                ? "bg-amber-50/90 ring-1 ring-amber-200/80"
+                : undefined
+            }
+          >
+            <RecordCardHeader
+              title={agentFullName(agent)}
+              subtitle={`${agent.email} · ${agent.mobile}`}
+              badge={
+                (agent.status ?? "pending") === "pending" ? (
+                  <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">
+                    Pending
+                  </span>
+                ) : undefined
+              }
+            />
+            <RecordCardFields>
+              <RecordCardField
+                label="Type"
+                value={agent.agentType ? AGENT_TYPE_LABELS[agent.agentType] || agent.agentType : "—"}
+              />
+              <RecordCardField label="City" value={agent.city || "—"} />
+              <RecordCardField
+                label="Commission"
+                value={
+                  typeof agent.commissionPercent === "number"
+                    ? `${agent.commissionPercent}%`
+                    : "Default"
+                }
+              />
+              <RecordCardField
+                label="Choice Connect"
+                value={
+                  <ChoiceConnectStatusBadge
+                    onboarded={agent.choiceConnectProfile?.onboarded}
+                    agentCode={agent.choiceConnectProfile?.agentCode}
+                  />
+                }
+              />
+              <RecordCardField
+                label="Password"
+                value={
+                  <span className="inline-flex items-center gap-2">
+                    <code className="rounded bg-muted px-2 py-1 text-xs">
+                      {visiblePasswords[agent._id] ? agent.generatedPassword || "—" : "••••••••"}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setVisiblePasswords((p) => ({
+                          ...p,
+                          [agent._id]: !p[agent._id],
+                        }))
+                      }
+                    >
+                      {visiblePasswords[agent._id] ? (
+                        <IconEyeOff className="h-4 w-4" />
+                      ) : (
+                        <IconEye className="h-4 w-4" />
+                      )}
+                    </button>
+                    <button type="button" onClick={() => passwordMutation.mutate(agent._id)}>
+                      <IconRefresh className="h-4 w-4" />
+                    </button>
+                  </span>
+                }
+              />
+            </RecordCardFields>
+            <select
+              value={agent.status ?? "pending"}
+              disabled={statusMutation.isPending}
+              onChange={(e) =>
+                statusMutation.mutate({
+                  id: agent._id,
+                  status: e.target.value as "pending" | "approved" | "rejected",
+                })
+              }
+              className={twMerge(
+                "mt-3 w-full rounded-lg border px-3 py-2 text-sm capitalize",
+                (agent.status ?? "pending") === "pending"
+                  ? "border-amber-300 bg-amber-100 font-semibold text-amber-900"
+                  : "border-border bg-background"
+              )}
+            >
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </RecordCard>
+        ))}
+      />
 
       {pagination && (
         <Pagination

@@ -16,6 +16,13 @@ import { getDashboardStats } from "@/sg-admin/lib/services/dashboardService";
 import { RoarReferralCopyCard } from "@/components/roar/RoarReferralCopyCard";
 import { getRoarReferralLink } from "@/sg-admin/lib/services/roarReferralService";
 import { twMerge } from "tailwind-merge";
+import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 
 function StatCard({
   label,
@@ -150,37 +157,54 @@ export default function AdminDashboardPage() {
               View all
             </Link>
           </div>
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-muted-foreground">
-                  <th className="pb-2 pr-4 font-medium">Name</th>
-                  <th className="pb-2 pr-4 font-medium">Email</th>
-                  <th className="pb-2 pr-4 font-medium">Status</th>
-                  <th className="pb-2 font-medium">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.recentEnquiries.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="py-6 text-center text-muted-foreground">
-                      No enquiries yet
-                    </td>
-                  </tr>
-                ) : (
-                  stats.recentEnquiries.map((e) => (
-                    <tr key={e._id} className="border-b border-border/50">
-                      <td className="py-3 pr-4 font-medium">{e.name}</td>
-                      <td className="py-3 pr-4 text-muted-foreground">{e.email}</td>
-                      <td className="py-3 pr-4 capitalize">{e.status.replace("_", " ")}</td>
-                      <td className="py-3 text-muted-foreground">
-                        {new Date(e.createdAt).toLocaleDateString()}
-                      </td>
+          <div className="mt-4">
+            <ResponsiveRecordList
+              isEmpty={stats.recentEnquiries.length === 0}
+              emptyMessage="No enquiries yet"
+              table={
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left text-muted-foreground">
+                      <th className="px-4 pb-2 pr-4 font-medium">Name</th>
+                      <th className="px-4 pb-2 pr-4 font-medium">Email</th>
+                      <th className="px-4 pb-2 pr-4 font-medium">Status</th>
+                      <th className="px-4 pb-2 font-medium">Date</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {stats.recentEnquiries.map((e) => (
+                      <tr key={e._id} className="border-b border-border/50">
+                        <td className="px-4 py-3 pr-4 font-medium">{e.name}</td>
+                        <td className="px-4 py-3 pr-4 text-muted-foreground">{e.email}</td>
+                        <td className="px-4 py-3 pr-4 capitalize">{e.status.replace("_", " ")}</td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {new Date(e.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              }
+              cards={stats.recentEnquiries.map((e) => (
+                <RecordCard key={e._id}>
+                  <RecordCardHeader
+                    title={e.name}
+                    subtitle={e.email}
+                    badge={
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs capitalize">
+                        {e.status.replace("_", " ")}
+                      </span>
+                    }
+                  />
+                  <RecordCardFields>
+                    <RecordCardField
+                      label="Date"
+                      value={new Date(e.createdAt).toLocaleDateString()}
+                    />
+                  </RecordCardFields>
+                </RecordCard>
+              ))}
+            />
           </div>
         </div>
       </div>

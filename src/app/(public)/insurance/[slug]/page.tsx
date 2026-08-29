@@ -188,7 +188,7 @@ export default function InsuranceDetailPage({ params }: { params: Promise<{ slug
             </div>
 
             {/* Right Form Column */}
-            <div className="col-lg-5 wow fadeInUp" data-wow-delay="0.3s">
+            <div className="col-lg-5 order-first order-lg-last wow fadeInUp" data-wow-delay="0.3s">
               <div className="bg-light p-5 rounded shadow-sm border position-sticky" style={{ top: "100px" }}>
                 <h3 className="mb-4 text-dark text-center">Get a Quick Quote</h3>
                 {submitted ? (

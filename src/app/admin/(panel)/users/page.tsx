@@ -10,6 +10,13 @@ import { ADMIN_API_PATHS } from "@/lib/config/env";
 import { getUsers, updateUserActive } from "@/sg-admin/lib/services/userService";
 import type { AppUser } from "@/sg-admin/lib/types/user";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  RecordCard,
+  RecordCardField,
+  RecordCardFields,
+  RecordCardHeader,
+  ResponsiveRecordList,
+} from "@/components/ui/ResponsiveRecordList";
 
 function userLabel(user: AppUser): string {
   const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
@@ -89,8 +96,12 @@ export default function AdminUsersPage() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="overflow-x-auto">
+      <ResponsiveRecordList
+        isLoading={isLoading}
+        isEmpty={!isLoading && users.length === 0}
+        loadingMessage="Loading users..."
+        emptyMessage="No users found"
+        table={
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr className="text-left text-muted-foreground">
@@ -103,70 +114,104 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                    Loading users...
+              {users.map((user) => (
+                <tr key={user._id} className="border-b border-border/50">
+                  <td className="px-4 py-3 font-medium">{userLabel(user)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {user.mobile ? `+${user.extension ?? ""}${user.mobile}` : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={twMerge(
+                        "rounded-full px-2 py-0.5 text-xs font-medium",
+                        user.isVerified
+                          ? "bg-green-100 text-green-700"
+                          : "bg-amber-100 text-amber-700"
+                      )}
+                    >
+                      {user.isVerified ? "Yes" : "No"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      disabled={toggleMutation.isPending}
+                      onClick={() =>
+                        toggleMutation.mutate({
+                          id: user._id,
+                          isActive: !user.isActive,
+                        })
+                      }
+                      className={twMerge(
+                        "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                        user.isActive !== false
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-red-100 text-red-700 hover:bg-red-200"
+                      )}
+                    >
+                      {user.isActive !== false ? "Active" : "Inactive"}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {user.createdAt
+                      ? new Date(user.createdAt).toLocaleDateString()
+                      : "—"}
                   </td>
                 </tr>
-              ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                    No users found
-                  </td>
-                </tr>
-              ) : (
-                users.map((user) => (
-                  <tr key={user._id} className="border-b border-border/50">
-                    <td className="px-4 py-3 font-medium">{userLabel(user)}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{user.email ?? "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {user.mobile ? `+${user.extension ?? ""}${user.mobile}` : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={twMerge(
-                          "rounded-full px-2 py-0.5 text-xs font-medium",
-                          user.isVerified
-                            ? "bg-green-100 text-green-700"
-                            : "bg-amber-100 text-amber-700"
-                        )}
-                      >
-                        {user.isVerified ? "Yes" : "No"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        disabled={toggleMutation.isPending}
-                        onClick={() =>
-                          toggleMutation.mutate({
-                            id: user._id,
-                            isActive: !user.isActive,
-                          })
-                        }
-                        className={twMerge(
-                          "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
-                          user.isActive !== false
-                            ? "bg-green-100 text-green-700 hover:bg-green-200"
-                            : "bg-red-100 text-red-700 hover:bg-red-200"
-                        )}
-                      >
-                        {user.isActive !== false ? "Active" : "Inactive"}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {user.createdAt
-                        ? new Date(user.createdAt).toLocaleDateString()
-                        : "—"}
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
-        </div>
-      </div>
+        }
+        cards={users.map((user) => (
+          <RecordCard key={user._id}>
+            <RecordCardHeader
+              title={userLabel(user)}
+              subtitle={user.email ?? "—"}
+              badge={
+                <span
+                  className={twMerge(
+                    "rounded-full px-2 py-0.5 text-xs font-medium",
+                    user.isVerified
+                      ? "bg-green-100 text-green-700"
+                      : "bg-amber-100 text-amber-700"
+                  )}
+                >
+                  {user.isVerified ? "Verified" : "Unverified"}
+                </span>
+              }
+            />
+            <RecordCardFields>
+              <RecordCardField
+                label="Mobile"
+                value={user.mobile ? `+${user.extension ?? ""}${user.mobile}` : "—"}
+              />
+              <RecordCardField
+                label="Joined"
+                value={user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
+              />
+            </RecordCardFields>
+            <button
+              type="button"
+              disabled={toggleMutation.isPending}
+              onClick={() =>
+                toggleMutation.mutate({
+                  id: user._id,
+                  isActive: !user.isActive,
+                })
+              }
+              className={twMerge(
+                "mt-3 w-full rounded-lg px-3 py-2 text-sm font-semibold",
+                user.isActive !== false
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              )}
+            >
+              {user.isActive !== false ? "Active" : "Inactive"}
+            </button>
+          </RecordCard>
+        ))}
+      />
 
       {pagination && (
         <Pagination
