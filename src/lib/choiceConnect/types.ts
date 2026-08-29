@@ -255,11 +255,19 @@ export function looksLikeAgentCode(value?: string | null): boolean {
   return false;
 }
 
+function namesLookSame(left?: string | null, right?: string | null): boolean {
+  const a = (left || "").toLowerCase().replace(/[^a-z]/g, "");
+  const b = (right || "").toLowerCase().replace(/[^a-z]/g, "");
+  return Boolean(a && b && (a === b || a.includes(b) || b.includes(a)));
+}
+
 export function resolveReferredByName(enquiry: ChoiceRemoteEnquiry): string {
   const candidates = [enquiry.referredByName, enquiry.subAgentName, enquiry.agentName];
   for (const value of candidates) {
     const name = value?.trim();
-    if (name && !looksLikeAgentCode(name)) return name;
+    if (!name || looksLikeAgentCode(name)) continue;
+    if (namesLookSame(name, enquiry.customerName)) continue;
+    return name;
   }
   return "";
 }
