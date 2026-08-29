@@ -8,11 +8,17 @@ import { listUrl, unwrapList } from "@/sg-admin/lib/paginated-list";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
 import {
   getCommissionLedger,
+  syncChoiceLoanCommissions,
   updateLedgerStatus,
   type CommissionLedgerRow,
   type CommissionLedgerSummary,
 } from "@/sg-admin/lib/services/commissionService";
 import { COMMISSION_LEVEL_LABELS } from "@/sg-admin/lib/types/hierarchy";
+import {
+  COMMISSION_PRODUCT_TYPES,
+  formatProductLabel,
+  isLoanProductType,
+} from "@/lib/choiceConnect/types";
 import { Pagination } from "@/components/ui/Pagination";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 
@@ -62,7 +68,10 @@ function saleLabel(row: CommissionLedgerRow) {
 
 function sourceLabel(row: CommissionLedgerRow) {
   if (row.source === "roar" || row.enquiryId) return "Roar Credit Card";
-  return "Choice Connect";
+  if (isLoanProductType(row.productType) || isLoanProductType(row.leadId?.productType)) {
+    return "Choice Loan";
+  }
+  return "Choice Credit Card";
 }
 
 function statusClass(status: string) {
@@ -76,14 +85,15 @@ export default function CommissionLedgerPage() {
   const canUpdate = hasPermission("admin:commission:update");
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
+  const [productFilter, setProductFilter] = useState("");
 
   const url = listUrl(ADMIN_API_PATHS.commissionLedger, page, "", 20, {
     status: statusFilter || undefined,
-    productType: "credit-card",
+    productType: productFilter || undefined,
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["commission-ledger", page, statusFilter],
+    queryKey: ["commission-ledger", page, statusFilter, productFilter],
     queryFn: () => getCommissionLedger(url),
   });
 
@@ -110,6 +120,18 @@ export default function CommissionLedgerPage() {
     }));
   }, [ledger]);
 
+  const syncMutation = useMutation({
+    mutationFn: syncChoiceLoanCommissions,
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["commission-ledger"] });
+      toast.success(
+        result.message ||
+          `Synced Choice loans (${result.created ?? 0} created, ${result.skipped ?? 0} skipped)`
+      );
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const statusMutation = useMutation({
     mutationFn: ({
       id,
@@ -127,11 +149,24 @@ export default function CommissionLedgerPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Commission Ledger</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Credit-card cascade: each upline role earns its own % of the same base
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Commission Ledger</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Cascade entries for Choice credit cards, Choice loans, and Roar. Each upline
+            role earns its own % of the same base.
+          </p>
+        </div>
+        {canUpdate && (
+          <button
+            type="button"
+            disabled={syncMutation.isPending}
+            onClick={() => syncMutation.mutate()}
+            className="rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-muted disabled:opacity-60"
+          >
+            {syncMutation.isPending ? "Syncing…" : "Sync Choice loans"}
+          </button>
+        )}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -141,19 +176,36 @@ export default function CommissionLedgerPage() {
         <SummaryCard label="Paid" value={money(summary?.paidAmount ?? 0)} />
       </div>
 
-      <select
-        value={statusFilter}
-        onChange={(e) => {
-          setStatusFilter(e.target.value);
-          setPage(1);
-        }}
-        className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
-      >
-        <option value="">All statuses</option>
-        <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
-        <option value="paid">Paid</option>
-      </select>
+      <div className="flex flex-wrap gap-3">
+        <select
+          value={productFilter}
+          onChange={(e) => {
+            setProductFilter(e.target.value);
+            setPage(1);
+          }}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
+        >
+          <option value="">All products</option>
+          {COMMISSION_PRODUCT_TYPES.map((product) => (
+            <option key={product.value} value={product.value}>
+              {product.label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
+        >
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
 
       {error && (
         <p className="text-sm text-destructive">
@@ -187,7 +239,8 @@ export default function CommissionLedgerPage() {
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                     No commission entries yet. Entries appear when a credit-card sale
-                    is issued/approved, or a Roar enquiry is marked resolved.
+                    is issued/approved, a Choice loan is disbursed/done, or a Roar
+                    enquiry is marked resolved.
                   </td>
                 </tr>
               ) : (
@@ -205,7 +258,10 @@ export default function CommissionLedgerPage() {
                           <div>
                             <span className="font-semibold text-foreground">{saleLabel(head)}</span>
                             <span className="ml-2 text-xs text-muted-foreground">
-                              {sourceLabel(head)} · from {personName(head.fromUserId)}
+                              {sourceLabel(head)}
+                              {head.productType ? ` · ${formatProductLabel(head.productType)}` : ""}
+                              {" · referred by "}
+                              {personName(head.fromUserId)}
                             </span>
                           </div>
                           <span className="text-xs font-medium text-muted-foreground">

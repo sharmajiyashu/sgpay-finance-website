@@ -8,6 +8,7 @@ import {
   saveCommissionRules,
 } from "@/sg-admin/lib/services/commissionService";
 import { COMMISSION_LEVEL_LABELS } from "@/sg-admin/lib/types/hierarchy";
+import { COMMISSION_PRODUCT_TYPES } from "@/lib/choiceConnect/types";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 
 const ALL_LEVELS = [
@@ -49,11 +50,12 @@ function mergeRows(incoming: Array<{ level: string; percent: number; isActive?: 
 export default function CommissionRulesPage() {
   const queryClient = useQueryClient();
   const canUpdate = hasPermission("admin:commission:update");
+  const [productType, setProductType] = useState("credit-card");
   const [rows, setRows] = useState<RuleRow[]>(emptyRows);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["commission-rules", "credit-card"],
-    queryFn: () => getCommissionRules("credit-card"),
+    queryKey: ["commission-rules", productType],
+    queryFn: () => getCommissionRules(productType),
   });
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function CommissionRulesPage() {
   }, [data]);
 
   const saveMutation = useMutation({
-    mutationFn: () => saveCommissionRules(rows, "credit-card"),
+    mutationFn: () => saveCommissionRules(rows, productType),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["commission-rules"] });
       toast.success("Commission rules saved");
@@ -91,9 +93,30 @@ export default function CommissionRulesPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Commission Rules</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Default credit-card commission % by hierarchy level. Each role in the sale upline
-          earns its own % of the same base amount.
+          Default commission % by hierarchy level for each product. Each role in the sale
+          upline earns its own % of the same base amount. Loan rules apply when a Choice
+          Connect loan is disbursed or marked done.
         </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {COMMISSION_PRODUCT_TYPES.map((product) => (
+          <button
+            key={product.value}
+            type="button"
+            onClick={() => {
+              setProductType(product.value);
+              setRows(emptyRows());
+            }}
+            className={`rounded-full px-3 py-1.5 text-sm font-medium ${
+              productType === product.value
+                ? "bg-primary text-primary-foreground"
+                : "border border-border bg-card hover:bg-muted"
+            }`}
+          >
+            {product.label}
+          </button>
+        ))}
       </div>
 
       {error && (

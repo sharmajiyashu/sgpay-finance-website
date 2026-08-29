@@ -120,6 +120,7 @@ export const ADMIN_API_PATHS = {
   commissionLedger: "/commissions/ledger",
   commissionLedgerStatus: (id: string) => `/commissions/ledger/${id}/status`,
   commissionGenerate: (leadId: string) => `/commissions/generate/${leadId}`,
+  commissionSyncChoiceLoans: "/commissions/sync-choice-loans",
   commissionWallet: "/commissions/wallet",
   commissionTransactions: "/commissions/transactions",
   commissionWithdrawals: "/commissions/withdrawals",

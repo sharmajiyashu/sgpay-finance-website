@@ -25,7 +25,7 @@ export interface AgentCommissionRow {
   level?: string;
   status: string;
   fromUserId?: { firstName?: string; lastName?: string; email?: string };
-  leadId?: { _id?: string; customerName?: string; status?: string; createdAt?: string };
+  leadId?: { _id?: string; customerName?: string; status?: string; createdAt?: string; productType?: string };
   enquiryId?: { _id?: string; name?: string; status?: string; createdAt?: string };
   createdAt?: string;
 }

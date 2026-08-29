@@ -17,9 +17,10 @@ import {
 function readResumeFromLocation(): {
   uuid: string;
   vehicleType: InsuranceVehicleType;
+  refId: string;
 } {
   if (typeof window === "undefined") {
-    return { uuid: "", vehicleType: "bike" };
+    return { uuid: "", vehicleType: "bike", refId: "" };
   }
   const searchParams = new URLSearchParams(window.location.search);
   const uuid =
@@ -27,9 +28,15 @@ function readResumeFromLocation(): {
     searchParams.get("lead_uuid")?.trim() ||
     searchParams.get("UUID")?.trim() ||
     "";
+  const refId =
+    searchParams.get("refId")?.trim() ||
+    searchParams.get("agentId")?.trim() ||
+    searchParams.get("agentCode")?.trim() ||
+    "";
   return {
     uuid,
     vehicleType: readVehicleTypeFromSearch(searchParams),
+    refId,
   };
 }
 
@@ -38,6 +45,7 @@ export function WebsiteMotorInsuranceApply() {
   const [vehicleType] = useState<InsuranceVehicleType>(initial.vehicleType);
   const [switching, setSwitching] = useState(false);
   const resumeUuid = initial.uuid;
+  const refId = initial.refId;
   const trackedRef = useRef<Set<string>>(new Set());
 
   const {
@@ -45,8 +53,8 @@ export function WebsiteMotorInsuranceApply() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["website-insurance-widget-config", vehicleType],
-    queryFn: getWebsiteInsuranceConfig,
+    queryKey: ["website-insurance-widget-config", vehicleType, refId],
+    queryFn: () => getWebsiteInsuranceConfig(refId || undefined),
     staleTime: 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
@@ -57,22 +65,15 @@ export function WebsiteMotorInsuranceApply() {
     const trackKey = `website:motor-insurance:${vehicleType}:${resumeUuid || "new"}`;
     if (trackedRef.current.has(trackKey)) return;
 
-    const searchParams = new URLSearchParams(window.location.search);
-    const refId =
-      searchParams.get("refId") ||
-      searchParams.get("agentId") ||
-      searchParams.get("agentCode") ||
-      undefined;
-
     trackedRef.current.add(trackKey);
     createWebsiteInsuranceLead({
-      refId,
+      refId: refId || undefined,
       uuid: resumeUuid || undefined,
       metadata: { vehicleType, resumed: Boolean(resumeUuid) },
     }).catch(() => {
       trackedRef.current.delete(trackKey);
     });
-  }, [vehicleType, widgetConfig?.xApiKey, resumeUuid]);
+  }, [vehicleType, widgetConfig?.xApiKey, resumeUuid, refId]);
 
   const onSelectVehicle = (next: InsuranceVehicleType) => {
     if (next === vehicleType || switching) return;
@@ -120,8 +121,11 @@ export function WebsiteMotorInsuranceApply() {
 
       {widgetConfig && !error && !switching && (
         <MotorInsuranceWidget
-          key={`website-motor-${vehicleType}`}
-          config={widgetConfig}
+          key={`website-motor-${vehicleType}-${refId || "direct"}`}
+          config={{
+            ...widgetConfig,
+            subAgentCode: widgetConfig.subAgentCode || refId,
+          }}
           vehicleType={vehicleType}
           uuid={resumeUuid || undefined}
         />

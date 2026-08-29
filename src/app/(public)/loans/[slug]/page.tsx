@@ -7,6 +7,15 @@ import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
 import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
 import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
+import { mapLoanSlugToProductType } from "@/lib/choiceConnect/types";
+
+const ChoiceLoanWidget = dynamic(
+  () =>
+    import("@/components/choice-connect/ChoiceConnectWebsiteApply").then(
+      (mod) => mod.ChoiceConnectWebsiteApply
+    ),
+  { ssr: false }
+);
 
 export default function LoanDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -265,6 +274,19 @@ export default function LoanDetailPage({ params }: { params: Promise<{ slug: str
                     <button type="submit" className="btn btn-primary w-100 py-3">Submit Application</button>
                   </form>
                 )}
+              </div>
+            </div>
+          </div>
+
+          <div className="row mt-2 wow fadeInUp" data-wow-delay="0.5s">
+            <div className="col-12">
+              <div className="bg-light p-4 rounded border">
+                <h4 className="mb-3 text-center">Apply via Choice Connect</h4>
+                <p className="text-muted text-center small mb-4">
+                  Complete your {loan.title.toLowerCase()} application securely. If you opened a
+                  referral link, the referring agent or team member is attributed automatically.
+                </p>
+                <ChoiceLoanWidget productType={mapLoanSlugToProductType(slug)} />
               </div>
             </div>
           </div>

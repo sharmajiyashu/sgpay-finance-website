@@ -9,7 +9,9 @@ export default function AdminChoiceConnectSsoPage() {
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Choice Connect Portal</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Secure single sign-on to the Choice Connect partner dashboard.
+          Secure single sign-on as the logged-in admin or team member. Their
+          credit-card, loan, and vehicle-insurance referrals appear on their Choice
+          Connect dashboard.
         </p>
       </div>
       <ChoiceConnectSsoLoginButton api={adminChoiceConnectApi} />

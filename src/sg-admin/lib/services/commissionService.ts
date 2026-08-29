@@ -80,6 +80,12 @@ export async function getCommissionLedger(url: string) {
   }>(url);
 }
 
+export async function syncChoiceLoanCommissions() {
+  return post<{ created: number; skipped: number; message?: string }>(
+    ADMIN_API_PATHS.commissionSyncChoiceLoans
+  );
+}
+
 export async function updateLedgerStatus(
   id: string,
   status: "pending" | "approved" | "paid"

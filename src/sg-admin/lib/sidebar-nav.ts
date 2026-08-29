@@ -8,6 +8,7 @@ import {
   IconShield,
   IconCoin,
   IconHierarchy,
+  IconBuildingBank,
 } from "@tabler/icons-react";
 import { hasAnyPermission, hasPermission } from "@/sg-admin/lib/permissions";
 import type { AuthUser } from "@/sg-admin/lib/api";
@@ -131,6 +132,29 @@ export const sidebarNav: SidebarNavEntry[] = [
       {
         title: "SSO Login",
         href: "/admin/choice-connect/sso",
+        permission: "admin:choice-connect:get",
+      },
+    ],
+  },
+  {
+    title: "Loans",
+    href: "/admin/choice-connect/loans",
+    icon: IconBuildingBank,
+    permission: "admin:choice-connect:get",
+    items: [
+      {
+        title: "Apply",
+        href: "/admin/choice-connect/loans",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "Summary",
+        href: "/admin/choice-connect/summary",
+        permission: "admin:choice-connect:get",
+      },
+      {
+        title: "Referral Links",
+        href: "/admin/choice-connect/referral-links",
         permission: "admin:choice-connect:get",
       },
     ],

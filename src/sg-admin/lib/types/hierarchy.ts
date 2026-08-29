@@ -37,6 +37,13 @@ export interface TeamMember {
   generatedPassword?: string;
   parentId?: { _id?: string; firstName?: string; lastName?: string; email?: string; designation?: string } | string;
   createdAt?: string;
+  choiceConnectProfile?: {
+    onboarded: boolean;
+    agentCode?: string;
+    oprId?: string;
+    subjectId?: string;
+    onboardedAt?: string;
+  };
 }
 
 export interface TeamTreeNode extends TeamMember {

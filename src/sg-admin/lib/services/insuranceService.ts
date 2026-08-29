@@ -33,7 +33,12 @@ export async function getAdminInsuranceSummary(
 
 export async function getAdminInsuranceReferralLinks(
   agentCode?: string
-): Promise<{ links: InsuranceReferralLinkItem[]; agentCode?: string }> {
+): Promise<{
+  links: InsuranceReferralLinkItem[];
+  agentCode?: string;
+  referrerName?: string;
+  referrerRole?: string;
+}> {
   const qs = agentCode ? `?agentCode=${encodeURIComponent(agentCode)}` : "";
   return get(`${ADMIN_API_PATHS.insuranceReferralLinks}${qs}`);
 }

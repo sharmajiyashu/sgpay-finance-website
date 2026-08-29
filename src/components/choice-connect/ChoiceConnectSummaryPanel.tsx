@@ -14,6 +14,7 @@ import {
   formatProductLabel,
   formatSourceLabel,
   resolveLeadStaff,
+  resolveReferredByName,
 } from "@/lib/choiceConnect/types";
 import { getChoiceConnectDiagnostics } from "@/sg-admin/lib/services/choiceConnectService";
 
@@ -45,6 +46,9 @@ const STATUS_FILTER_OPTIONS = [
   { value: "In Progress", label: "In Progress" },
   { value: "Issued", label: "Issued" },
   { value: "Policy Issued", label: "Policy Issued" },
+  { value: "Disbursed", label: "Disbursed" },
+  { value: "Done", label: "Done" },
+  { value: "On Hold", label: "On Hold" },
   { value: "Rejected", label: "Rejected" },
   { value: "Draft", label: "Draft" },
 ];
@@ -131,6 +135,8 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
     "agentName",
     "agent_code",
     "agentCode",
+    "referred_by_name",
+    "referredByName",
     "status",
     "sub_status",
     "subStatus",
@@ -162,7 +168,7 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
         </td>
         <td className="px-4 py-3">
           <div className="font-medium">
-            {enquiry.subAgentName || enquiry.agentName || "—"}
+            {resolveReferredByName(enquiry) || "—"}
           </div>
           <div className="text-xs text-muted-foreground">
             {[enquiry.subAgentCode, enquiry.agentCode].filter(Boolean).join(" · ") || "—"}
@@ -198,6 +204,7 @@ function RemoteEnquiryRow({ enquiry }: { enquiry: ChoiceRemoteEnquiry }) {
                 ["Email", enquiry.customerEmail],
                 ["Service", enquiry.serviceType],
                 ["Sub-service", enquiry.subService],
+                ["Referred by", resolveReferredByName(enquiry)],
                 ["Agent", enquiry.agentName],
                 ["Agent code", enquiry.agentCode],
                 ["Sub-agent", enquiry.subAgentName],
@@ -686,7 +693,7 @@ export function ChoiceConnectSummaryPanel({
                     <th className="px-4 py-3 font-medium">Date</th>
                     <th className="px-4 py-3 font-medium">Customer</th>
                     <th className="px-4 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Agent / Team</th>
+                    <th className="px-4 py-3 font-medium">Referred by</th>
                     <th className="px-4 py-3 font-medium">Location</th>
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Sub-status</th>
@@ -732,7 +739,7 @@ export function ChoiceConnectSummaryPanel({
                     <th className="px-4 py-3 font-medium">Date</th>
                     <th className="px-4 py-3 font-medium">Customer</th>
                     <th className="px-4 py-3 font-medium">Product</th>
-                    <th className="px-4 py-3 font-medium">Team / Agent</th>
+                    <th className="px-4 py-3 font-medium">Referred by</th>
                     <th className="px-4 py-3 font-medium">Source / Codes</th>
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Ref</th>

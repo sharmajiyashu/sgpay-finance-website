@@ -46,6 +46,10 @@ export interface ChoiceSsoPayload {
   request_number: string;
   hash: string;
   login_url: string;
+  referrerName?: string;
+  referrerRole?: string;
+  agentCode?: string;
+  usingOwnSubject?: boolean;
 }
 
 export interface ChoiceReferralLinkItem {
@@ -53,15 +57,20 @@ export interface ChoiceReferralLinkItem {
   description?: string;
   link?: string;
   productType?: string;
+  service?: string;
+  subService?: string;
 }
 
 export interface ChoiceReferralLinksResponse {
   links: ChoiceReferralLinkItem[];
   agentCode?: string;
+  referrerName?: string;
+  referrerRole?: string;
 }
 
 export interface ChoiceOnboardInput {
   userId?: string;
+  userType?: "agent" | "team";
   firstName: string;
   lastName?: string;
   email: string;
@@ -138,6 +147,7 @@ export interface ChoiceRemoteEnquiry {
   agentCode?: string;
   subAgentName?: string;
   subAgentCode?: string;
+  referredByName?: string;
   status?: string;
   subStatus?: string;
   state?: string;
@@ -219,6 +229,32 @@ export const CHOICE_LOAN_PRODUCTS = [
   { value: "other-loan" as const, label: "Other Loan" },
 ];
 
+export const COMMISSION_PRODUCT_TYPES = [
+  { value: "credit-card" as const, label: "Credit Card" },
+  ...CHOICE_LOAN_PRODUCTS,
+];
+
+export const LOAN_PRODUCT_TYPE_VALUES = CHOICE_LOAN_PRODUCTS.map((p) => p.value);
+
+export function isLoanProductType(productType?: string | null): boolean {
+  if (!productType) return false;
+  return (
+    productType.endsWith("-loan") ||
+    productType.includes("loan") ||
+    productType === "solar_installation_loan" ||
+    productType === "msme_loan"
+  );
+}
+
+export function resolveReferredByName(enquiry: ChoiceRemoteEnquiry): string {
+  return (
+    enquiry.referredByName ||
+    enquiry.subAgentName ||
+    enquiry.agentName ||
+    ""
+  );
+}
+
 export const CHOICE_VEHICLE_TYPES: { value: ChoiceVehicleType; label: string }[] = [
   { value: "bike", label: "Bike (2W)" },
   { value: "car", label: "Car (4W)" },
@@ -227,8 +263,27 @@ export const CHOICE_VEHICLE_TYPES: { value: ChoiceVehicleType; label: string }[]
 export function formatProductLabel(productType: string): string {
   if (productType === "credit-card") return "Credit Card";
   if (productType === "motor-insurance") return "Motor Insurance";
+  if (productType === "solar_installation_loan" || productType === "solar-installation-loan") {
+    return "Solar Installation Loan";
+  }
+  if (productType === "msme_loan" || productType === "msme-loan") return "MSME Loan";
   const loan = CHOICE_LOAN_PRODUCTS.find((p) => p.value === productType);
-  return loan?.label ?? productType.replace(/-/g, " ");
+  return loan?.label ?? productType.replace(/[_-]/g, " ");
+}
+
+export function mapLoanSlugToProductType(slug: string): ChoiceProductType {
+  if (slug.includes("personal")) return "personal-loan";
+  if (slug.includes("business") || slug.includes("msme")) return "business-loan";
+  if (slug.includes("home") || slug.includes("housing")) return "home-loan";
+  return "other-loan";
+}
+
+export function referralLinkGroup(item: ChoiceReferralLinkItem): "credit-card" | "loan" | "insurance" | "other" {
+  const key = `${item.productType ?? ""} ${item.service ?? ""} ${item.subService ?? ""} ${item.title ?? ""}`.toLowerCase();
+  if (key.includes("credit") || key.includes("card")) return "credit-card";
+  if (key.includes("loan")) return "loan";
+  if (key.includes("insurance")) return "insurance";
+  return "other";
 }
 
 export function formatSourceLabel(lead: ChoiceLead): string {

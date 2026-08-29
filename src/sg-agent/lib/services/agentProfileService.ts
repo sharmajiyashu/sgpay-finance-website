@@ -15,6 +15,13 @@ export interface AgentProfile {
   profileImage?: { url?: string } | string;
   createdAt?: string;
   lastLoginAt?: string;
+  choiceConnectProfile?: {
+    onboarded: boolean;
+    agentCode?: string;
+    oprId?: string;
+    subjectId?: string;
+    onboardedAt?: string;
+  };
 }
 
 export async function getAgentProfile(): Promise<AgentProfile> {

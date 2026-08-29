@@ -86,7 +86,9 @@ function RemoteRow({
         </div>
       </td>
       <td className="px-4 py-3">{enquiry.subService || enquiry.serviceType || "—"}</td>
-      <td className="px-4 py-3">{enquiry.agentName || enquiry.agentCode || "—"}</td>
+      <td className="px-4 py-3">
+        {enquiry.referredByName || enquiry.subAgentName || enquiry.agentName || enquiry.agentCode || "—"}
+      </td>
       <td className="px-4 py-3 capitalize">{enquiry.status ?? "—"}</td>
       <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{uuid || "—"}</td>
       <td className="px-4 py-3">
@@ -124,7 +126,7 @@ function LocalRow({
           {[lead.customerPhone, lead.customerEmail].filter(Boolean).join(" · ") || "—"}
         </div>
       </td>
-      <td className="px-4 py-3 capitalize">{lead.sourceChannel}</td>
+      <td className="px-4 py-3">{lead.sourceLabel || lead.sourceChannel}</td>
       <td className="px-4 py-3 capitalize">{lead.status ?? "—"}</td>
       <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{uuid || "—"}</td>
       <td className="px-4 py-3">
@@ -345,7 +347,7 @@ export function InsuranceSummaryPanel({
                 <th className="px-4 py-3">Created</th>
                 <th className="px-4 py-3">Customer</th>
                 <th className="px-4 py-3">Service</th>
-                <th className="px-4 py-3">Agent</th>
+                <th className="px-4 py-3">Referred by</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">UUID</th>
                 <th className="px-4 py-3">Action</th>

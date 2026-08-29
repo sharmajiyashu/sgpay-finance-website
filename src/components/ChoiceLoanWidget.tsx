@@ -14,7 +14,6 @@ export function ChoiceLoanWidget({
   return (
     <ChoiceConnectWebsiteApply
       productType={productType as ChoiceProductType}
-      allowLoanProductSelect
     />
   );
 }

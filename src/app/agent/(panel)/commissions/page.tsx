@@ -12,6 +12,11 @@ import {
   requestAgentWithdrawal,
 } from "@/sg-agent/lib/services/commissionService";
 import { COMMISSION_LEVEL_LABELS } from "@/sg-admin/lib/types/hierarchy";
+import {
+  COMMISSION_PRODUCT_TYPES,
+  formatProductLabel,
+  isLoanProductType,
+} from "@/lib/choiceConnect/types";
 import { Pagination } from "@/components/ui/Pagination";
 import {
   CommissionWalletPanel,
@@ -23,15 +28,17 @@ export default function AgentCommissionsPage() {
   const [tab, setTab] = useState<"wallet" | "earnings">("wallet");
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
+  const [productFilter, setProductFilter] = useState("");
 
   const params = new URLSearchParams({
     page: String(page),
     limit: "20",
   });
   if (statusFilter) params.set("status", statusFilter);
+  if (productFilter) params.set("productType", productFilter);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["agent-commissions", page, statusFilter],
+    queryKey: ["agent-commissions", page, statusFilter, productFilter],
     queryFn: () => getMyCommissions(`${AGENT_API_PATHS.commissions}?${params.toString()}`),
     enabled: tab === "earnings",
   });
@@ -69,19 +76,36 @@ export default function AgentCommissionsPage() {
         />
       ) : (
         <div className="space-y-4">
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
-          >
-            <option value="">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="paid">Paid</option>
-          </select>
+          <div className="flex flex-wrap gap-3">
+            <select
+              value={productFilter}
+              onChange={(e) => {
+                setProductFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
+            >
+              <option value="">All products</option>
+              {COMMISSION_PRODUCT_TYPES.map((product) => (
+                <option key={product.value} value={product.value}>
+                  {product.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
+            >
+              <option value="">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
 
           {error && (
             <p className="text-sm text-destructive">
@@ -95,6 +119,7 @@ export default function AgentCommissionsPage() {
                 <thead className="border-b border-border bg-muted/30">
                   <tr className="text-left text-muted-foreground">
                     <th className="px-4 py-3 font-medium">Sale from</th>
+                    <th className="px-4 py-3 font-medium">Product</th>
                     <th className="px-4 py-3 font-medium">Source</th>
                     <th className="px-4 py-3 font-medium">Level</th>
                     <th className="px-4 py-3 font-medium">Amount</th>
@@ -105,13 +130,13 @@ export default function AgentCommissionsPage() {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                         Loading...
                       </td>
                     </tr>
                   ) : ledger.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                         No commissions yet
                       </td>
                     </tr>
@@ -126,7 +151,14 @@ export default function AgentCommissionsPage() {
                             "—"}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
-                          {row.source === "roar" || row.enquiryId ? "Roar" : "Choice Connect"}
+                          {formatProductLabel(row.productType || row.leadId?.productType || "credit-card")}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {row.source === "roar" || row.enquiryId
+                            ? "Roar"
+                            : isLoanProductType(row.productType)
+                              ? "Choice Loan"
+                              : "Choice Credit Card"}
                         </td>
                         <td className="px-4 py-3">
                           {row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}

@@ -60,7 +60,12 @@ export function ChoiceConnectSsoLoginButton({
     try {
       const payload = await api.getSsoPayload();
       submitSsoForm(payload);
-      toast.success("Redirecting to Choice Connect…");
+      const asName = payload.referrerName?.trim();
+      toast.success(
+        asName
+          ? `Opening Choice Connect as ${asName}${payload.referrerRole ? ` · ${payload.referrerRole}` : ""}…`
+          : "Redirecting to Choice Connect…"
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : "SSO login failed";
       toast.error(message);
@@ -76,6 +81,10 @@ export function ChoiceConnectSsoLoginButton({
         <div>
           <h2 className="text-lg font-semibold text-foreground">Choice Connect SSO</h2>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Portal opens as the logged-in admin, team member, or agent — their referrals
+            (cards, loans, insurance) show on their dashboard.
+          </p>
         </div>
         <button
           type="button"

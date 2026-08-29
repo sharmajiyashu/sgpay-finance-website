@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { IconCopy, IconLink, IconRefresh } from "@tabler/icons-react";
 import { toast } from "sonner";
 import type { ChoiceReferralLinkItem } from "@/lib/choiceConnect/types";
-import { formatProductLabel } from "@/lib/choiceConnect/types";
+import { formatProductLabel, referralLinkGroup } from "@/lib/choiceConnect/types";
+import { buildShareableReferralLink } from "@/lib/choiceConnect/referralLink";
 
 export interface ChoiceConnectReferralApiClient {
   getReferralLinks: (agentCode?: string) => Promise<{
     links: ChoiceReferralLinkItem[];
     agentCode?: string;
+    referrerName?: string;
+    referrerRole?: string;
   }>;
 }
 
@@ -23,6 +26,14 @@ interface ChoiceConnectReferralLinksPanelProps {
   showAgentCodeFilter?: boolean;
 }
 
+const GROUP_ORDER = ["credit-card", "loan", "insurance", "other"] as const;
+const GROUP_LABELS: Record<(typeof GROUP_ORDER)[number], string> = {
+  "credit-card": "Credit Cards",
+  loan: "Loans",
+  insurance: "Insurance",
+  other: "Other products",
+};
+
 async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
   toast.success("Link copied to clipboard");
@@ -33,11 +44,7 @@ function ReferralCard({ item, agentId }: { item: ChoiceReferralLinkItem; agentId
     item.title ||
     (item.productType ? formatProductLabel(item.productType) : "Referral Link");
 
-  let shareableLink = item.link;
-  if (shareableLink && agentId) {
-    const hasQuery = shareableLink.includes("?");
-    shareableLink = `${shareableLink}${hasQuery ? "&" : "?"}refId=${encodeURIComponent(agentId)}`;
-  }
+  const shareableLink = item.link ? buildShareableReferralLink(item.link, agentId) : undefined;
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -59,7 +66,7 @@ function ReferralCard({ item, agentId }: { item: ChoiceReferralLinkItem; agentId
         {shareableLink && (
           <button
             type="button"
-            onClick={() => copyText(shareableLink!)}
+            onClick={() => copyText(shareableLink)}
             className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted"
           >
             <IconCopy className="h-3.5 w-3.5" />
@@ -87,15 +94,42 @@ export function ChoiceConnectReferralLinksPanel({
     staleTime: 5 * 60 * 1000,
   });
 
+  const grouped = useMemo(() => {
+    const links = data?.links ?? [];
+    const buckets: Record<(typeof GROUP_ORDER)[number], ChoiceReferralLinkItem[]> = {
+      "credit-card": [],
+      loan: [],
+      insurance: [],
+      other: [],
+    };
+    for (const item of links) {
+      buckets[referralLinkGroup(item)].push(item);
+    }
+    return GROUP_ORDER.filter((key) => buckets[key].length > 0).map((key) => ({
+      key,
+      label: GROUP_LABELS[key],
+      items: buckets[key],
+    }));
+  }, [data?.links]);
+
+  const sharingName = data?.referrerName;
+  const sharingRole = data?.referrerRole;
+  const sharingCode = data?.agentCode;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-          {data?.agentCode && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Agent code: <span className="font-medium text-foreground">{data.agentCode}</span>
+          {(sharingName || sharingCode) && (
+            <p className="mt-2 text-sm text-foreground">
+              Sharing as:{" "}
+              <span className="font-medium">{sharingName || "—"}</span>
+              {sharingRole ? ` · ${sharingRole}` : ""}
+              {sharingCode ? (
+                <span className="text-muted-foreground"> · {sharingCode}</span>
+              ) : null}
             </p>
           )}
         </div>
@@ -144,14 +178,21 @@ export function ChoiceConnectReferralLinksPanel({
         </div>
       )}
 
-      {!isLoading && data?.links && data.links.length > 0 && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {data.links.map((item, index) => (
-            <ReferralCard
-              key={`${item.link ?? item.title ?? index}`}
-              item={item}
-              agentId={data.agentCode}
-            />
+      {!isLoading && grouped.length > 0 && (
+        <div className="space-y-8">
+          {grouped.map((group) => (
+            <section key={group.key} className="space-y-3">
+              <h2 className="text-sm font-semibold text-foreground">{group.label}</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {group.items.map((item, index) => (
+                  <ReferralCard
+                    key={`${group.key}-${item.link ?? item.title ?? index}`}
+                    item={item}
+                    agentId={data?.agentCode}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}

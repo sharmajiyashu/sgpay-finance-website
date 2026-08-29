@@ -4,8 +4,11 @@ import type {
   InsuranceWidgetConfig,
 } from "@/modules/insurance/types";
 
-export async function getWebsiteInsuranceConfig(): Promise<InsuranceWidgetConfig> {
-  return publicGet<InsuranceWidgetConfig>(APP_API_PATHS.insuranceConfig, {
+export async function getWebsiteInsuranceConfig(
+  refId?: string
+): Promise<InsuranceWidgetConfig> {
+  const qs = refId?.trim() ? `?refId=${encodeURIComponent(refId.trim())}` : "";
+  return publicGet<InsuranceWidgetConfig>(`${APP_API_PATHS.insuranceConfig}${qs}`, {
     timeout: 20000,
   });
 }

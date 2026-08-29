@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { IconCopy, IconLink, IconRefresh } from "@tabler/icons-react";
 import { toast } from "sonner";
 import type { InsuranceReferralLinkItem } from "@/modules/insurance/types";
+import { referralLinkGroup } from "@/lib/choiceConnect/types";
+import { buildShareableReferralLink } from "@/lib/choiceConnect/referralLink";
 
 export interface InsuranceReferralApiClient {
   getReferralLinks: (agentCode?: string) => Promise<{
     links: InsuranceReferralLinkItem[];
     agentCode?: string;
+    referrerName?: string;
+    referrerRole?: string;
   }>;
 }
 
@@ -29,11 +33,7 @@ async function copyText(text: string) {
 
 function ReferralCard({ item, agentId }: { item: InsuranceReferralLinkItem; agentId?: string }) {
   const title = item.title || item.productType || "Referral Link";
-  let shareableLink = item.link;
-  if (shareableLink && agentId) {
-    const hasQuery = shareableLink.includes("?");
-    shareableLink = `${shareableLink}${hasQuery ? "&" : "?"}refId=${encodeURIComponent(agentId)}`;
-  }
+  const shareableLink = item.link ? buildShareableReferralLink(item.link, agentId) : undefined;
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -55,7 +55,7 @@ function ReferralCard({ item, agentId }: { item: InsuranceReferralLinkItem; agen
         {shareableLink && (
           <button
             type="button"
-            onClick={() => copyText(shareableLink!)}
+            onClick={() => copyText(shareableLink)}
             className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted"
           >
             <IconCopy className="h-3.5 w-3.5" />
@@ -83,7 +83,15 @@ export function InsuranceReferralLinksPanel({
     staleTime: 5 * 60 * 1000,
   });
 
-  const links = data?.links ?? [];
+  const links = useMemo(() => {
+    const all = data?.links ?? [];
+    const insuranceOnly = all.filter((item) => referralLinkGroup(item) === "insurance");
+    return insuranceOnly.length > 0 ? insuranceOnly : all;
+  }, [data?.links]);
+
+  const sharingName = data?.referrerName;
+  const sharingRole = data?.referrerRole;
+  const sharingCode = data?.agentCode;
 
   return (
     <div className="space-y-6">
@@ -91,9 +99,14 @@ export function InsuranceReferralLinksPanel({
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-          {data?.agentCode && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Agent code: <span className="font-medium text-foreground">{data.agentCode}</span>
+          {(sharingName || sharingCode) && (
+            <p className="mt-2 text-sm text-foreground">
+              Sharing as:{" "}
+              <span className="font-medium">{sharingName || "—"}</span>
+              {sharingRole ? ` · ${sharingRole}` : ""}
+              {sharingCode ? (
+                <span className="text-muted-foreground"> · {sharingCode}</span>
+              ) : null}
             </p>
           )}
         </div>
@@ -139,7 +152,7 @@ export function InsuranceReferralLinksPanel({
               <ReferralCard
                 key={`${item.link || item.title || i}`}
                 item={item}
-                agentId={data?.agentCode || agentCode || undefined}
+                agentId={sharingCode || agentCode || undefined}
               />
             ))
           )}

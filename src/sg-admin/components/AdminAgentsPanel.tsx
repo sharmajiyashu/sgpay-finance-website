@@ -18,6 +18,7 @@ import type { Agent } from "@/sg-admin/lib/types/agent";
 import { agentFullName } from "@/sg-admin/lib/types/agent";
 import { AGENT_TYPE_LABELS } from "@/sg-admin/lib/types/hierarchy";
 import { Pagination } from "@/components/ui/Pagination";
+import { ChoiceConnectStatusBadge } from "@/components/choice-connect/ChoiceConnectStatusBadge";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 import { getAuthUser } from "@/sg-admin/lib/api";
 
@@ -337,6 +338,7 @@ function AdminAgentsPanelInner() {
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Contact</th>
                 <th className="px-4 py-3 font-medium">Commission</th>
+                <th className="px-4 py-3 font-medium">Choice Connect</th>
                 <th className="px-4 py-3 font-medium">Password</th>
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
@@ -344,13 +346,13 @@ function AdminAgentsPanelInner() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                     Loading agents...
                   </td>
                 </tr>
               ) : agents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                     No agents found
                   </td>
                 </tr>
@@ -388,6 +390,12 @@ function AdminAgentsPanelInner() {
                       {typeof agent.commissionPercent === "number"
                         ? `${agent.commissionPercent}%`
                         : "Default"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <ChoiceConnectStatusBadge
+                        onboarded={agent.choiceConnectProfile?.onboarded}
+                        agentCode={agent.choiceConnectProfile?.agentCode}
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

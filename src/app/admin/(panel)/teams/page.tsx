@@ -20,6 +20,7 @@ import {
   type TeamTreeNode,
 } from "@/sg-admin/lib/types/hierarchy";
 import { Pagination } from "@/components/ui/Pagination";
+import { ChoiceConnectStatusBadge } from "@/components/choice-connect/ChoiceConnectStatusBadge";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 import { getAuthUser } from "@/sg-admin/lib/api";
 
@@ -46,7 +47,13 @@ function TreeNodes({ nodes, depth = 0 }: { nodes: TeamTreeNode[]; depth?: number
       {nodes.map((node) => (
         <li key={node._id || node.id}>
           <div className="rounded-xl border border-border/70 bg-background px-3 py-2 text-sm">
-            <div className="font-medium">{teamFullName(node)}</div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="font-medium">{teamFullName(node)}</div>
+              <ChoiceConnectStatusBadge
+                onboarded={node.choiceConnectProfile?.onboarded}
+                agentCode={node.choiceConnectProfile?.agentCode}
+              />
+            </div>
             <div className="text-xs text-muted-foreground">
               {node.designation
                 ? TEAM_DESIGNATION_LABELS[node.designation as keyof typeof TEAM_DESIGNATION_LABELS] ||
@@ -268,6 +275,7 @@ export default function AdminTeamsPage() {
                 <th className="px-4 py-3 font-medium">Member</th>
                 <th className="px-4 py-3 font-medium">Designation</th>
                 <th className="px-4 py-3 font-medium">Territory</th>
+                <th className="px-4 py-3 font-medium">Choice Connect</th>
                 <th className="px-4 py-3 font-medium">Password</th>
                 <th className="px-4 py-3 font-medium">Active</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
@@ -276,13 +284,13 @@ export default function AdminTeamsPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                     Loading teams...
                   </td>
                 </tr>
               ) : teams.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                     No team members found
                   </td>
                 </tr>
@@ -304,6 +312,12 @@ export default function AdminTeamsPage() {
                     <td className="px-4 py-3">
                       <div>{member.stateCode || "—"}</div>
                       <div className="text-xs text-muted-foreground">{member.territory || member.city || "—"}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <ChoiceConnectStatusBadge
+                        onboarded={member.choiceConnectProfile?.onboarded}
+                        agentCode={member.choiceConnectProfile?.agentCode}
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

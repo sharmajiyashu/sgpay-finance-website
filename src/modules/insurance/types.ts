@@ -6,6 +6,9 @@ export interface InsuranceWidgetConfig {
   clientCode: string;
   agentCode: string;
   subAgentCode: string;
+  agentName?: string;
+  staffRoleLabel?: string;
+  staffMobile?: string;
   sourceChannel: InsuranceSourceChannel;
   sourceLabel: string;
   widgetBaseUrl: string;
@@ -13,6 +16,13 @@ export interface InsuranceWidgetConfig {
   xApiKey: string;
   configured?: boolean;
   authConfigured?: boolean;
+  choiceConnectProfile?: {
+    onboarded: boolean;
+    agentCode?: string;
+    oprId?: string;
+    subjectId?: string;
+    onboardedAt?: string | Date;
+  };
 }
 
 export interface CreateInsuranceLeadInput {
@@ -48,6 +58,9 @@ export interface InsuranceRemoteEnquiry {
   subService?: string;
   agentName?: string;
   agentCode?: string;
+  subAgentName?: string;
+  subAgentCode?: string;
+  referredByName?: string;
   status?: string;
   subStatus?: string;
   createdAt?: string;
@@ -91,6 +104,15 @@ export interface InsuranceReferralLinkItem {
   description?: string;
   link?: string;
   productType?: string;
+  service?: string;
+  subService?: string;
+}
+
+export interface InsuranceReferralLinksResponse {
+  links: InsuranceReferralLinkItem[];
+  agentCode?: string;
+  referrerName?: string;
+  referrerRole?: string;
 }
 
 export const INSURANCE_VEHICLE_TYPES: { value: InsuranceVehicleType; label: string }[] = [

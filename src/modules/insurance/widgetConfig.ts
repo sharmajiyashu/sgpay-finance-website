@@ -33,6 +33,12 @@ export function buildMotorPartnerConfig(
     partner_config.SUB_AGENT_CODE = config.subAgentCode.trim();
   }
 
+  const staffName = config.agentName?.trim() || config.sourceLabel?.trim();
+  if (staffName) {
+    partner_config.AGENT_NAME = staffName;
+    partner_config.SUB_AGENT_NAME = staffName;
+  }
+
   return partner_config;
 }
 

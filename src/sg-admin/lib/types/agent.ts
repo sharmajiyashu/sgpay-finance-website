@@ -17,6 +17,13 @@ export interface Agent {
   profileImage?: { url?: string } | string;
   createdAt?: string;
   lastLoginAt?: string;
+  choiceConnectProfile?: {
+    onboarded: boolean;
+    agentCode?: string;
+    oprId?: string;
+    subjectId?: string;
+    onboardedAt?: string;
+  };
 }
 
 export function agentFullName(agent: Agent): string {
