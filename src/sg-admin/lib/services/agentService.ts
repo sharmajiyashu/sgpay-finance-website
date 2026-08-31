@@ -1,6 +1,13 @@
 import type { Agent } from "@/sg-admin/lib/types/agent";
+import type { CreateTreeNode, CreateTreeStats } from "@/sg-admin/lib/types/create-tree";
 import { get, patch, post } from "@/sg-admin/lib/api";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
+
+export interface AgentDetailResponse {
+  agent: Agent;
+  stats: CreateTreeStats;
+  tree: CreateTreeNode[];
+}
 
 export interface AgentListResponse {
   agents: Agent[];
@@ -37,4 +44,15 @@ export async function updateAgentStatus(
 
 export async function regenerateAgentPassword(id: string): Promise<Agent> {
   return post<Agent>(ADMIN_API_PATHS.agentRegeneratePassword(id));
+}
+
+export async function getAgentDetail(id: string): Promise<AgentDetailResponse> {
+  return get<AgentDetailResponse>(ADMIN_API_PATHS.agentById(id));
+}
+
+export async function reviewAgentKyc(
+  id: string,
+  body: { status: "approved" | "rejected"; note?: string }
+): Promise<AgentDetailResponse> {
+  return patch<AgentDetailResponse>(ADMIN_API_PATHS.agentKyc(id), body);
 }

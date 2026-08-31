@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IconEye, IconEyeOff, IconRefresh, IconSearch, IconUserPlus } from "@tabler/icons-react";
 import { toast } from "sonner";
-import { listUrl, unwrapList } from "@/sg-admin/lib/paginated-list";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
+import { listUrl, unwrapList } from "@/sg-admin/lib/paginated-list";
 import {
   createTeamMember,
-  getTeamTree,
   getTeams,
   regenerateTeamPassword,
   updateTeamMember,
@@ -17,8 +17,10 @@ import {
   TEAM_DESIGNATION_LABELS,
   teamFullName,
   type TeamMember,
-  type TeamTreeNode,
 } from "@/sg-admin/lib/types/hierarchy";
+import { designationLabel, teamDetailHref } from "@/sg-admin/lib/team-utils";
+import { createdByLabel } from "@/sg-admin/lib/created-by";
+import { DetailLink } from "@/sg-admin/components/DetailLink";
 import { Pagination } from "@/components/ui/Pagination";
 import {
   RecordCard,
@@ -47,45 +49,25 @@ function creatableDesignations(): Array<"state_head" | "asm" | "rm"> {
   return [];
 }
 
-function TreeNodes({ nodes, depth = 0 }: { nodes: TeamTreeNode[]; depth?: number }) {
-  if (!nodes?.length) return null;
-  return (
-    <ul className={depth === 0 ? "space-y-2" : `mt-2 space-y-2 border-l border-border ${depth < 4 ? "pl-3" : "pl-2"}`}>
-      {nodes.map((node) => (
-        <li key={node._id || node.id}>
-          <div className="rounded-xl border border-border/70 bg-background px-3 py-2 text-sm">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="font-medium">{teamFullName(node)}</div>
-              <ChoiceConnectStatusBadge
-                onboarded={node.choiceConnectProfile?.onboarded}
-                agentCode={node.choiceConnectProfile?.agentCode}
-              />
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {node.designation
-                ? TEAM_DESIGNATION_LABELS[node.designation as keyof typeof TEAM_DESIGNATION_LABELS] ||
-                  node.designation
-                : "—"}
-              {node.stateCode ? ` · ${node.stateCode}` : ""}
-              {node.email ? ` · ${node.email}` : ""}
-            </div>
-          </div>
-          {node.children && node.children.length > 0 && (
-            <TreeNodes nodes={node.children} depth={depth + 1} />
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-}
+const PAGE_SIZE_OPTIONS = [10, 20, 50];
+
+const ACTIVE_OPTIONS = [
+  { value: "", label: "All statuses" },
+  { value: "true", label: "Active" },
+  { value: "false", label: "Inactive" },
+];
 
 export default function AdminTeamsPage() {
   const queryClient = useQueryClient();
   const canCreate = hasPermission("admin:team:create");
   const allowedDesignations = creatableDesignations();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [designationFilter, setDesignationFilter] = useState("");
+  const [stateCodeFilter, setStateCodeFilter] = useState("");
+  const [activeFilter, setActiveFilter] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({
@@ -100,18 +82,23 @@ export default function AdminTeamsPage() {
     panCard: "",
   });
 
-  const url = listUrl(ADMIN_API_PATHS.teams, page, searchQuery, 20, {
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
+
+  const url = listUrl(ADMIN_API_PATHS.teams, page, debouncedSearch, pageSize, {
     designation: designationFilter || undefined,
+    stateCode: stateCodeFilter || undefined,
+    isActive: activeFilter || undefined,
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-teams", page, searchQuery, designationFilter],
+    queryKey: ["admin-teams", page, pageSize, debouncedSearch, designationFilter, stateCodeFilter, activeFilter],
     queryFn: () => getTeams(url),
-  });
-
-  const { data: treeData } = useQuery({
-    queryKey: ["admin-teams-tree"],
-    queryFn: getTeamTree,
   });
 
   const { items: teams, pagination } = unwrapList<TeamMember>(
@@ -167,29 +154,28 @@ export default function AdminTeamsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Teams</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Company hierarchy: State Head → ASM → R
+            All created team members — State Head, ASM, and RM
           </p>
         </div>
-        {canCreate && allowedDesignations.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md"
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/teams/tree"
+            className="inline-flex items-center rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-muted"
           >
-            <IconUserPlus className="h-4 w-4" />
-            Add Team Member
-          </button>
-        )}
-      </div>
-
-      {treeData?.tree && treeData.tree.length > 0 && (
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <h2 className="mb-3 text-lg font-semibold">Organization tree</h2>
-          <div className="overflow-x-auto">
-            <TreeNodes nodes={treeData.tree} />
-          </div>
+            Open tree
+          </Link>
+          {canCreate && allowedDesignations.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md"
+            >
+              <IconUserPlus className="h-4 w-4" />
+              Add Team Member
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
@@ -216,6 +202,44 @@ export default function AdminTeamsPage() {
           {DESIGNATION_OPTIONS.map((opt) => (
             <option key={opt.label} value={opt.value}>
               {opt.label}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          placeholder="State code"
+          value={stateCodeFilter}
+          onChange={(e) => {
+            setStateCodeFilter(e.target.value.toUpperCase());
+            setPage(1);
+          }}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm uppercase sm:w-28"
+        />
+        <select
+          value={activeFilter}
+          onChange={(e) => {
+            setActiveFilter(e.target.value);
+            setPage(1);
+          }}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
+        >
+          {ACTIVE_OPTIONS.map((opt) => (
+            <option key={opt.label} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={pageSize}
+          onChange={(e) => {
+            setPageSize(Number(e.target.value));
+            setPage(1);
+          }}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
+        >
+          {PAGE_SIZE_OPTIONS.map((size) => (
+            <option key={size} value={size}>
+              {size} / page
             </option>
           ))}
         </select>
@@ -286,29 +310,28 @@ export default function AdminTeamsPage() {
             <thead className="border-b border-border bg-muted/30">
               <tr className="text-left text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Member</th>
+                <th className="px-4 py-3 font-medium">Created by</th>
                 <th className="px-4 py-3 font-medium">Designation</th>
                 <th className="px-4 py-3 font-medium">Territory</th>
                 <th className="px-4 py-3 font-medium">Choice Connect</th>
                 <th className="px-4 py-3 font-medium">Password</th>
                 <th className="px-4 py-3 font-medium">Active</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th className="px-4 py-3 font-medium">Joined</th>
+                <th className="px-4 py-3 font-medium">Action</th>
               </tr>
             </thead>
             <tbody>
               {teams.map((member) => (
                 <tr key={member._id} className="border-b border-border/50 align-top">
                   <td className="px-4 py-3">
-                    <div className="font-medium">{teamFullName(member)}</div>
+                    <Link href={teamDetailHref(member._id)} className="font-medium hover:underline">
+                      {teamFullName(member)}
+                    </Link>
                     <div className="text-xs text-muted-foreground">{member.email}</div>
                     <div className="text-xs text-muted-foreground">{member.mobile}</div>
                   </td>
-                  <td className="px-4 py-3">
-                    {member.designation
-                      ? TEAM_DESIGNATION_LABELS[
-                          member.designation as keyof typeof TEAM_DESIGNATION_LABELS
-                        ] || member.designation
-                      : "—"}
-                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{createdByLabel(member)}</td>
+                  <td className="px-4 py-3">{designationLabel(member.designation)}</td>
                   <td className="px-4 py-3">
                     <div>{member.stateCode || "—"}</div>
                     <div className="text-xs text-muted-foreground">{member.territory || member.city || "—"}</div>
@@ -371,6 +394,9 @@ export default function AdminTeamsPage() {
                   <td className="px-4 py-3 text-xs text-muted-foreground">
                     {member.createdAt ? new Date(member.createdAt).toLocaleDateString() : "—"}
                   </td>
+                  <td className="px-4 py-3">
+                    <DetailLink href={teamDetailHref(member._id)} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -379,19 +405,18 @@ export default function AdminTeamsPage() {
         cards={teams.map((member) => (
           <RecordCard key={member._id}>
             <RecordCardHeader
-              title={teamFullName(member)}
+              title={
+                <Link href={teamDetailHref(member._id)} className="hover:underline">
+                  {teamFullName(member)}
+                </Link>
+              }
               subtitle={`${member.email} · ${member.mobile}`}
             />
             <RecordCardFields>
+              <RecordCardField label="Created by" value={createdByLabel(member)} />
               <RecordCardField
                 label="Designation"
-                value={
-                  member.designation
-                    ? TEAM_DESIGNATION_LABELS[
-                        member.designation as keyof typeof TEAM_DESIGNATION_LABELS
-                      ] || member.designation
-                    : "—"
-                }
+                value={designationLabel(member.designation)}
               />
               <RecordCardField
                 label="Territory"
@@ -455,6 +480,7 @@ export default function AdminTeamsPage() {
               <option value="true">Active</option>
               <option value="false">Inactive</option>
             </select>
+            <DetailLink href={teamDetailHref(member._id)} className="mt-3 w-full" />
           </RecordCard>
         ))}
       />

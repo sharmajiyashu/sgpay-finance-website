@@ -238,6 +238,38 @@ export const COMMISSION_PRODUCT_TYPES = [
   ...CHOICE_LOAN_PRODUCTS,
 ];
 
+/** Products that currently pay commission — rules UI uses only these. */
+export const COMMISSION_RULE_PRODUCTS = [
+  { value: "credit-card" as const, label: "Credit Card" },
+  { value: "roar" as const, label: "Roar Bank" },
+  { value: "motor-insurance" as const, label: "Motor Vehicle" },
+] as const;
+
+export type CommissionRuleProductType = (typeof COMMISSION_RULE_PRODUCTS)[number]["value"];
+export type CommissionPayoutType = "percent" | "flat";
+
+export function formatCommissionRate(row: {
+  payoutType?: CommissionPayoutType | string;
+  percent?: number;
+  flatAmount?: number;
+}): string {
+  if (row.payoutType === "flat") {
+    return `₹${Number(row.flatAmount || 0).toLocaleString("en-IN")}`;
+  }
+  return `${Number(row.percent || 0)}%`;
+}
+
+export function commissionSourceLabel(row: {
+  source?: string;
+  productType?: string;
+  enquiryId?: unknown;
+}): string {
+  if (row.source === "roar" || row.enquiryId || row.productType === "roar") return "Roar Bank";
+  if (row.productType === "motor-insurance") return "Motor Vehicle";
+  if (isLoanProductType(row.productType)) return "Choice Loan";
+  return "Credit Card";
+}
+
 export const LOAN_PRODUCT_TYPE_VALUES = CHOICE_LOAN_PRODUCTS.map((p) => p.value);
 
 export function isLoanProductType(productType?: string | null): boolean {
@@ -283,7 +315,8 @@ export const CHOICE_VEHICLE_TYPES: { value: ChoiceVehicleType; label: string }[]
 
 export function formatProductLabel(productType: string): string {
   if (productType === "credit-card") return "Credit Card";
-  if (productType === "motor-insurance") return "Motor Insurance";
+  if (productType === "roar" || productType === "roar-bank") return "Roar Bank";
+  if (productType === "motor-insurance") return "Motor Vehicle";
   if (productType === "solar_installation_loan" || productType === "solar-installation-loan") {
     return "Solar Installation Loan";
   }

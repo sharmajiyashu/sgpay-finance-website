@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { IconEye, IconEyeOff, IconRefresh, IconSearch, IconUserPlus } from "@tabler/icons-react";
@@ -28,6 +29,9 @@ import {
 import { ChoiceConnectStatusBadge } from "@/components/choice-connect/ChoiceConnectStatusBadge";
 import { hasPermission } from "@/sg-admin/lib/permissions";
 import { getAuthUser } from "@/sg-admin/lib/api";
+import { createdByLabel } from "@/sg-admin/lib/created-by";
+import { kycBadgeClass, kycLabel } from "@/sg-admin/lib/kyc";
+import { agentDetailHref, DetailLink } from "@/sg-admin/components/DetailLink";
 
 const TYPE_OPTIONS = [
   { value: "", label: "All types" },
@@ -54,6 +58,14 @@ const STATUS_OPTIONS: { value: AgentStatusFilter; label: string }[] = [
   { value: "", label: "All statuses" },
   { value: "pending", label: "Pending" },
   { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+];
+
+const KYC_OPTIONS = [
+  { value: "", label: "All KYC" },
+  { value: "approved", label: "Verified" },
+  { value: "submitted", label: "Submitted" },
+  { value: "pending", label: "Not verified" },
   { value: "rejected", label: "Rejected" },
 ];
 
@@ -87,6 +99,7 @@ function AdminAgentsPanelInner() {
     return "";
   });
   const [typeFilter, setTypeFilter] = useState(() => readParam(searchParams, "agentType"));
+  const [kycFilter, setKycFilter] = useState(() => readParam(searchParams, "kycStatus"));
   const [showCreate, setShowCreate] = useState(false);
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({
@@ -105,6 +118,7 @@ function AdminAgentsPanelInner() {
   });
 
   useEffect(() => {
+    if (pathname !== "/admin/agents") return;
     const params = new URLSearchParams(searchParams.toString());
     const setOrDelete = (key: string, value: string) => {
       if (value) params.set(key, value);
@@ -114,19 +128,21 @@ function AdminAgentsPanelInner() {
     setOrDelete("search", searchQuery.trim());
     setOrDelete("status", statusFilter);
     setOrDelete("agentType", typeFilter);
+    setOrDelete("kycStatus", kycFilter);
     const next = params.toString();
     const current = searchParams.toString();
     if (next === current) return;
-    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-  }, [page, searchQuery, statusFilter, typeFilter, pathname, router, searchParams]);
+    router.replace(next ? `/admin/agents?${next}` : "/admin/agents", { scroll: false });
+  }, [page, searchQuery, statusFilter, typeFilter, kycFilter, pathname, router, searchParams]);
 
   const url = listUrl(ADMIN_API_PATHS.agents, page, searchQuery, 20, {
     status: statusFilter || undefined,
     agentType: typeFilter || undefined,
+    kycStatus: kycFilter || undefined,
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-agents", page, searchQuery, statusFilter, typeFilter],
+    queryKey: ["admin-agents", page, searchQuery, statusFilter, typeFilter, kycFilter],
     queryFn: () => getAgents(url),
   });
 
@@ -201,16 +217,24 @@ function AdminAgentsPanelInner() {
             All statuses by default. Pending approvals are highlighted.
           </p>
         </div>
-        {canCreate && allowedTypes.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md"
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/agents/tree"
+            className="inline-flex items-center rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-muted"
           >
-            <IconUserPlus className="h-4 w-4" />
-            Add Agent
-          </button>
-        )}
+            Open tree
+          </Link>
+          {canCreate && allowedTypes.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md"
+            >
+              <IconUserPlus className="h-4 w-4" />
+              Add Agent
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -250,6 +274,20 @@ function AdminAgentsPanelInner() {
           className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
         >
           {TYPE_OPTIONS.map((opt) => (
+            <option key={opt.label} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={kycFilter}
+          onChange={(e) => {
+            setKycFilter(e.target.value);
+            setPage(1);
+          }}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
+        >
+          {KYC_OPTIONS.map((opt) => (
             <option key={opt.label} value={opt.value}>
               {opt.label}
             </option>
@@ -346,12 +384,15 @@ function AdminAgentsPanelInner() {
             <thead className="border-b border-border bg-muted/30">
               <tr className="text-left text-muted-foreground">
                 <th className="px-4 py-3 font-medium">Agent</th>
+                <th className="px-4 py-3 font-medium">Created by</th>
                 <th className="px-4 py-3 font-medium">Type</th>
+                <th className="px-4 py-3 font-medium">KYC</th>
                 <th className="px-4 py-3 font-medium">Contact</th>
                 <th className="px-4 py-3 font-medium">Commission</th>
                 <th className="px-4 py-3 font-medium">Choice Connect</th>
                 <th className="px-4 py-3 font-medium">Password</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -366,7 +407,9 @@ function AdminAgentsPanelInner() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium">{agentFullName(agent)}</span>
+                      <Link href={agentDetailHref(agent._id)} className="font-medium hover:underline">
+                        {agentFullName(agent)}
+                      </Link>
                       {(agent.status ?? "pending") === "pending" && (
                         <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-900">
                           Pending
@@ -375,10 +418,21 @@ function AdminAgentsPanelInner() {
                     </div>
                     <div className="text-xs text-muted-foreground">{agent.city || "—"}</div>
                   </td>
+                  <td className="px-4 py-3 text-muted-foreground">{createdByLabel(agent)}</td>
                   <td className="px-4 py-3">
                     {agent.agentType
                       ? AGENT_TYPE_LABELS[agent.agentType] || agent.agentType
                       : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={twMerge(
+                        "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                        kycBadgeClass(agent.kycStatus)
+                      )}
+                    >
+                      {kycLabel(agent.kycStatus)}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <div>{agent.email}</div>
@@ -450,6 +504,9 @@ function AdminAgentsPanelInner() {
                         <option value="rejected">Rejected</option>
                       </select>
                     </td>
+                    <td className="px-4 py-3">
+                      <DetailLink href={agentDetailHref(agent._id)} />
+                    </td>
                   </tr>
               ))}
             </tbody>
@@ -465,7 +522,11 @@ function AdminAgentsPanelInner() {
             }
           >
             <RecordCardHeader
-              title={agentFullName(agent)}
+              title={
+                <Link href={agentDetailHref(agent._id)} className="hover:underline">
+                  {agentFullName(agent)}
+                </Link>
+              }
               subtitle={`${agent.email} · ${agent.mobile}`}
               badge={
                 (agent.status ?? "pending") === "pending" ? (
@@ -479,6 +540,20 @@ function AdminAgentsPanelInner() {
               <RecordCardField
                 label="Type"
                 value={agent.agentType ? AGENT_TYPE_LABELS[agent.agentType] || agent.agentType : "—"}
+              />
+              <RecordCardField label="Created by" value={createdByLabel(agent)} />
+              <RecordCardField
+                label="KYC"
+                value={
+                  <span
+                    className={twMerge(
+                      "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                      kycBadgeClass(agent.kycStatus)
+                    )}
+                  >
+                    {kycLabel(agent.kycStatus)}
+                  </span>
+                }
               />
               <RecordCardField label="City" value={agent.city || "—"} />
               <RecordCardField
@@ -547,6 +622,7 @@ function AdminAgentsPanelInner() {
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
             </select>
+            <DetailLink href={agentDetailHref(agent._id)} className="mt-3 w-full" />
           </RecordCard>
         ))}
       />

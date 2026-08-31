@@ -27,8 +27,9 @@ function NavLink({
   badgeCount?: number;
 }) {
   const Icon = item.icon;
-  const isActive =
-    pathname === item.href || pathname.startsWith(`${item.href}/`);
+  const isActive = item.exact
+    ? pathname === item.href
+    : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
   return (
     <Link
@@ -76,6 +77,12 @@ export function DashboardSidebar() {
     }
     if (pathname.startsWith("/admin/commissions")) {
       setOpenSections((prev) => ({ ...prev, Commissions: true }));
+    }
+    if (pathname.startsWith("/admin/teams")) {
+      setOpenSections((prev) => ({ ...prev, Teams: true }));
+    }
+    if (pathname.startsWith("/admin/agents")) {
+      setOpenSections((prev) => ({ ...prev, Agents: true }));
     }
   }, [pathname]);
 

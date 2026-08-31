@@ -13,9 +13,9 @@ import {
 } from "@/sg-agent/lib/services/commissionService";
 import { COMMISSION_LEVEL_LABELS } from "@/sg-admin/lib/types/hierarchy";
 import {
-  COMMISSION_PRODUCT_TYPES,
+  COMMISSION_RULE_PRODUCTS,
+  commissionSourceLabel,
   formatProductLabel,
-  isLoanProductType,
 } from "@/lib/choiceConnect/types";
 import { Pagination } from "@/components/ui/Pagination";
 import {
@@ -93,7 +93,7 @@ export default function AgentCommissionsPage() {
               className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
             >
               <option value="">All products</option>
-              {COMMISSION_PRODUCT_TYPES.map((product) => (
+              {COMMISSION_RULE_PRODUCTS.map((product) => (
                 <option key={product.value} value={product.value}>
                   {product.label}
                 </option>
@@ -152,11 +152,7 @@ export default function AgentCommissionsPage() {
                         {formatProductLabel(row.productType || row.leadId?.productType || "credit-card")}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {row.source === "roar" || row.enquiryId
-                          ? "Roar"
-                          : isLoanProductType(row.productType)
-                            ? "Choice Loan"
-                            : "Choice Credit Card"}
+                        {commissionSourceLabel(row)}
                       </td>
                       <td className="px-4 py-3">
                         {row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}
@@ -206,11 +202,7 @@ export default function AgentCommissionsPage() {
                   <RecordCardField
                     label="Source"
                     value={
-                      row.source === "roar" || row.enquiryId
-                        ? "Roar"
-                        : isLoanProductType(row.productType)
-                          ? "Choice Loan"
-                          : "Choice Credit Card"
+                      commissionSourceLabel(row)
                     }
                   />
                   <RecordCardField

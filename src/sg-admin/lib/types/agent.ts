@@ -12,6 +12,15 @@ export interface Agent {
   generatedPassword?: string;
   agentType?: "super_distributor" | "distributor" | "retailer";
   commissionPercent?: number | null;
+  kycStatus?: "pending" | "submitted" | "approved" | "rejected";
+  kycReviewNote?: string;
+  kycReviewedAt?: string;
+  aadhaarCardNumber?: string;
+  panCardFile?: { url?: string } | string;
+  aadhaarFrontFile?: { url?: string } | string;
+  aadhaarBackFile?: { url?: string } | string;
+  bankPassbookFile?: { url?: string } | string;
+  createdBy?: { _id?: string; firstName?: string; lastName?: string; email?: string; designation?: string; agentType?: string } | string;
   parentId?: { _id?: string; firstName?: string; lastName?: string; email?: string; agentType?: string } | string;
   managedById?: { _id?: string; firstName?: string; lastName?: string; email?: string; designation?: string } | string;
   profileImage?: { url?: string } | string;

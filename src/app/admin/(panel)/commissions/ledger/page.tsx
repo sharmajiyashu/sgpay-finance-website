@@ -8,16 +8,16 @@ import { listUrl, unwrapList } from "@/sg-admin/lib/paginated-list";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
 import {
   getCommissionLedger,
-  syncChoiceLoanCommissions,
   updateLedgerStatus,
   type CommissionLedgerRow,
   type CommissionLedgerSummary,
 } from "@/sg-admin/lib/services/commissionService";
 import { COMMISSION_LEVEL_LABELS } from "@/sg-admin/lib/types/hierarchy";
 import {
-  COMMISSION_PRODUCT_TYPES,
+  COMMISSION_RULE_PRODUCTS,
+  commissionSourceLabel,
+  formatCommissionRate,
   formatProductLabel,
-  isLoanProductType,
 } from "@/lib/choiceConnect/types";
 import { Pagination } from "@/components/ui/Pagination";
 import {
@@ -74,11 +74,11 @@ function saleLabel(row: CommissionLedgerRow) {
 }
 
 function sourceLabel(row: CommissionLedgerRow) {
-  if (row.source === "roar" || row.enquiryId) return "Roar Credit Card";
-  if (isLoanProductType(row.productType) || isLoanProductType(row.leadId?.productType)) {
-    return "Choice Loan";
-  }
-  return "Choice Credit Card";
+  return commissionSourceLabel({
+    source: row.source,
+    productType: row.productType || row.leadId?.productType,
+    enquiryId: row.enquiryId,
+  });
 }
 
 function statusClass(status: string) {
@@ -127,18 +127,6 @@ export default function CommissionLedgerPage() {
     }));
   }, [ledger]);
 
-  const syncMutation = useMutation({
-    mutationFn: syncChoiceLoanCommissions,
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["commission-ledger"] });
-      toast.success(
-        result.message ||
-          `Synced Choice loans (${result.created ?? 0} created, ${result.skipped ?? 0} skipped)`
-      );
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
-
   const statusMutation = useMutation({
     mutationFn: ({
       id,
@@ -156,24 +144,12 @@ export default function CommissionLedgerPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Commission Ledger</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Cascade entries for Choice credit cards, Choice loans, and Roar. Each upline
-            role earns its own % of the same base.
-          </p>
-        </div>
-        {canUpdate && (
-          <button
-            type="button"
-            disabled={syncMutation.isPending}
-            onClick={() => syncMutation.mutate()}
-            className="rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-muted disabled:opacity-60"
-          >
-            {syncMutation.isPending ? "Syncing…" : "Sync Choice loans"}
-          </button>
-        )}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Commission Ledger</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Cascade entries for Credit Card, Roar Bank, and Motor Vehicle. Each role earns
+          its own % or flat ₹ from the same sale.
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -193,7 +169,7 @@ export default function CommissionLedgerPage() {
           className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm sm:w-auto"
         >
           <option value="">All products</option>
-          {COMMISSION_PRODUCT_TYPES.map((product) => (
+          {COMMISSION_RULE_PRODUCTS.map((product) => (
             <option key={product.value} value={product.value}>
               {product.label}
             </option>
@@ -224,7 +200,7 @@ export default function CommissionLedgerPage() {
         isLoading={isLoading}
         isEmpty={!isLoading && groups.length === 0}
         loadingMessage="Loading..."
-        emptyMessage="No commission entries yet. Entries appear when a credit-card sale is issued/approved, a Choice loan is disbursed/done, or a Roar enquiry is marked resolved."
+        emptyMessage="No commission entries yet. Entries appear when a Credit Card sale is issued/approved, a Motor Vehicle policy is issued, or a Roar enquiry is marked resolved."
         table={
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
@@ -233,7 +209,7 @@ export default function CommissionLedgerPage() {
                 <th className="px-4 py-3 font-medium">Beneficiary</th>
                 <th className="px-4 py-3 font-medium">Level</th>
                 <th className="px-4 py-3 font-medium">Base</th>
-                <th className="px-4 py-3 font-medium">%</th>
+                <th className="px-4 py-3 font-medium">Rate</th>
                 <th className="px-4 py-3 font-medium">Amount</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Date</th>
@@ -276,7 +252,7 @@ export default function CommissionLedgerPage() {
                           {row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}
                         </td>
                         <td className="px-4 py-3">{money(row.amountBase)}</td>
-                        <td className="px-4 py-3">{row.percent}%</td>
+                        <td className="px-4 py-3">{formatCommissionRate(row)}</td>
                         <td className="px-4 py-3 font-medium">{money(row.commissionAmount)}</td>
                         <td className="px-4 py-3">
                           {canUpdate ? (
@@ -345,7 +321,7 @@ export default function CommissionLedgerPage() {
                         value={row.level ? COMMISSION_LEVEL_LABELS[row.level] || row.level : "—"}
                       />
                       <RecordCardField label="Base" value={money(row.amountBase)} />
-                      <RecordCardField label="%" value={`${row.percent}%`} />
+                      <RecordCardField label="Rate" value={formatCommissionRate(row)} />
                       <RecordCardField label="Amount" value={money(row.commissionAmount)} />
                       <RecordCardField
                         label="Date"

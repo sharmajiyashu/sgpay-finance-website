@@ -7,12 +7,14 @@ import { uploadKycDocuments } from "@/sg-agent/lib/services/agentProfileService"
 
 interface KycDocumentUploadSectionProps {
   kycStatus?: string;
+  kycReviewNote?: string;
   panCard?: string;
   aadhaarCardNumber?: string;
 }
 
 export function KycDocumentUploadSection({
   kycStatus = "pending",
+  kycReviewNote,
   panCard = "",
   aadhaarCardNumber = "",
 }: KycDocumentUploadSectionProps) {
@@ -63,6 +65,11 @@ export function KycDocumentUploadSection({
           KYC Status: {kycStatus}
         </span>
       </div>
+      {kycStatus === "rejected" && kycReviewNote ? (
+        <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+          Review note: {kycReviewNote}
+        </p>
+      ) : null}
 
       <form
         onSubmit={(e) => {

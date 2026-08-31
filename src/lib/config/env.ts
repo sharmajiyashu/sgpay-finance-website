@@ -50,7 +50,7 @@ export const SITE_CONFIG = {
 /** Roar Bank share URL — host always follows NEXT_PUBLIC_SITE_URL. */
 export function buildRoarReferralUrl(code: string): string {
   const base = trimTrailingSlash(SITE_CONFIG.url).replace(/\/login$/i, "");
-  return `${base}/finance/credit-card?roarRef=${encodeURIComponent(code)}`;
+  return `${base}/finance/credit-card?roarRef=${encodeURIComponent(code)}#roar-bank`;
 }
 
 /**
@@ -107,7 +107,9 @@ export const ADMIN_API_PATHS = {
   enquiryById: (id: string) => `/enquiries/${id}`,
   userById: (id: string) => `/users/${id}`,
   agents: "/agents",
+  agentById: (id: string) => `/agents/${id}`,
   agentStatus: (id: string) => `/agents/${id}/status`,
+  agentKyc: (id: string) => `/agents/${id}/kyc`,
   agentRegeneratePassword: (id: string) => `/agents/${id}/regenerate-password`,
   teams: "/teams",
   teamsTree: "/teams/tree",

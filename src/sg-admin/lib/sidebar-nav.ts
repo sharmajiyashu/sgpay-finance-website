@@ -25,6 +25,7 @@ export interface SidebarNavItem {
   icon?: React.ElementType;
   permission?: string | string[];
   badgeKey?: SidebarBadgeKey;
+  exact?: boolean;
 }
 
 export interface SidebarNavSection {
@@ -54,6 +55,10 @@ export const sidebarNav: SidebarNavEntry[] = [
     href: "/admin/teams",
     icon: IconHierarchy,
     permission: "admin:team:get",
+    items: [
+      { title: "Members", href: "/admin/teams", permission: "admin:team:get", exact: true },
+      { title: "Tree", href: "/admin/teams/tree", permission: "admin:team:get" },
+    ],
   },
   {
     title: "Agents",
@@ -61,6 +66,16 @@ export const sidebarNav: SidebarNavEntry[] = [
     icon: IconUsersGroup,
     permission: "admin:agent:get",
     badgeKey: "pendingAgents",
+    items: [
+      {
+        title: "Members",
+        href: "/admin/agents",
+        permission: "admin:agent:get",
+        exact: true,
+        badgeKey: "pendingAgents",
+      },
+      { title: "Tree", href: "/admin/agents/tree", permission: "admin:agent:get" },
+    ],
   },
   {
     title: "Roles",

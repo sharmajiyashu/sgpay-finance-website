@@ -264,6 +264,8 @@ interface EnquiriesPanelProps {
   api?: EnquiriesPanelApi;
   readOnly?: boolean;
   queryKeyPrefix?: string;
+  hideHeader?: boolean;
+  defaultStatus?: EnquiryStatus | "";
 }
 
 export function EnquiriesPanel(props: EnquiriesPanelProps) {
@@ -295,6 +297,8 @@ function EnquiriesPanelInner({
   api = defaultAdminApi,
   readOnly = false,
   queryKeyPrefix = "admin-enquiries",
+  hideHeader = false,
+  defaultStatus = "pending",
 }: EnquiriesPanelProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -310,12 +314,16 @@ function EnquiriesPanelInner({
     const next = Number(readParam(searchParams, "page"));
     return next > 0 ? next : 1;
   });
+  const [pageSize, setPageSize] = useState(() => {
+    const next = Number(readParam(searchParams, "limit"));
+    return next === 10 || next === 20 || next === 50 ? next : 20;
+  });
   const [searchQuery, setSearchQuery] = useState(() => readParam(searchParams, "search"));
-  const [statusFilter, setStatusFilter] = useState(() => {
+  const [statusFilter, setStatusFilter] = useState<EnquiryStatus | "">(() => {
     const raw = readParam(searchParams, "status");
     if (raw === "all") return "";
     if (raw === "pending" || raw === "in_progress" || raw === "resolved") return raw;
-    return "pending";
+    return defaultStatus;
   });
   const [typeFilter, setTypeFilter] = useState(
     categoryId ?? readParam(searchParams, "type")
@@ -350,6 +358,7 @@ function EnquiriesPanelInner({
     };
 
     setOrDelete("page", page > 1 ? String(page) : "");
+    setOrDelete("limit", pageSize !== 20 ? String(pageSize) : "");
     setOrDelete("search", searchQuery.trim());
     setOrDelete("status", statusFilter || "all");
     if (!lockedType) setOrDelete("type", typeFilter);
@@ -363,6 +372,7 @@ function EnquiriesPanelInner({
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   }, [
     page,
+    pageSize,
     searchQuery,
     statusFilter,
     typeFilter,
@@ -376,7 +386,7 @@ function EnquiriesPanelInner({
     searchParams,
   ]);
 
-  const url = listUrl(api.listPath, page, searchQuery, 20, {
+  const url = listUrl(api.listPath, page, searchQuery, pageSize, {
     status: statusFilter || undefined,
     type: typeFilter || undefined,
     service: serviceFilter || undefined,
@@ -388,6 +398,7 @@ function EnquiriesPanelInner({
     queryKey: [
       queryKeyPrefix,
       page,
+      pageSize,
       searchQuery,
       statusFilter,
       typeFilter,
@@ -402,6 +413,13 @@ function EnquiriesPanelInner({
     data as Record<string, unknown> | undefined,
     "enquiries"
   );
+
+  useEffect(() => {
+    if (!pagination) return;
+    if (page > pagination.totalPages && pagination.totalPages >= 1) {
+      setPage(pagination.totalPages);
+    }
+  }, [page, pagination]);
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: EnquiryStatus }) => {
@@ -465,10 +483,12 @@ function EnquiriesPanelInner({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-      </div>
+      {hideHeader ? null : (
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+        </div>
+      )}
 
       <div className="space-y-3 rounded-xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -484,7 +504,7 @@ function EnquiriesPanelInner({
           )}
         </div>
         <div
-          className={`grid gap-3 sm:grid-cols-2 ${lockedService ? "lg:grid-cols-4" : "lg:grid-cols-3 xl:grid-cols-6"}`}
+          className={`grid gap-3 sm:grid-cols-2 ${lockedService ? "lg:grid-cols-3" : "lg:grid-cols-3 xl:grid-cols-6"}`}
         >
           <div className={`relative ${lockedService ? "sm:col-span-2" : "xl:col-span-2"}`}>
             <label className="mb-1 block text-xs text-muted-foreground">Search</label>
@@ -507,7 +527,7 @@ function EnquiriesPanelInner({
             <select
               value={statusFilter}
               onChange={(e) => {
-                setStatusFilter(e.target.value);
+                setStatusFilter(e.target.value as EnquiryStatus | "");
                 setPage(1);
               }}
               className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
@@ -575,6 +595,21 @@ function EnquiriesPanelInner({
               }}
               className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
             />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted-foreground">Per page</label>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
           </div>
           <div>
             <label className="mb-1 block text-xs text-muted-foreground">To</label>

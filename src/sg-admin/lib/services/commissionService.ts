@@ -1,12 +1,24 @@
 import { get, patch, post, put } from "@/sg-admin/lib/api";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
 
+export type CommissionPayoutType = "percent" | "flat";
+
 export interface CommissionRule {
-  _id: string;
+  _id?: string;
   productType: string;
   level: string;
+  payoutType?: CommissionPayoutType;
   percent: number;
+  flatAmount?: number;
   isActive: boolean;
+}
+
+export interface CommissionRuleInput {
+  level: string;
+  payoutType: CommissionPayoutType;
+  percent: number;
+  flatAmount: number;
+  isActive?: boolean;
 }
 
 export interface CommissionLedgerSummary {
@@ -22,7 +34,9 @@ export interface CommissionLedgerRow {
   productType: string;
   source?: "choice-connect" | "roar";
   amountBase: number;
+  payoutType?: CommissionPayoutType;
   percent: number;
+  flatAmount?: number;
   commissionAmount: number;
   level?: string;
   status: "pending" | "approved" | "paid";
@@ -63,12 +77,18 @@ export async function getCommissionRules(productType = "credit-card") {
 }
 
 export async function saveCommissionRules(
-  rules: Array<{ level: string; percent: number; isActive?: boolean }>,
+  rules: CommissionRuleInput[],
   productType = "credit-card"
 ) {
   return put<{ rules: CommissionRule[] }>(ADMIN_API_PATHS.commissionRules, {
     productType,
-    rules,
+    rules: rules.map((rule) => ({
+      level: rule.level,
+      isActive: rule.isActive !== false,
+      payoutType: rule.payoutType,
+      percent: rule.payoutType === "percent" ? Number(rule.percent) || 0 : 0,
+      flatAmount: rule.payoutType === "flat" ? Number(rule.flatAmount) || 0 : 0,
+    })),
   });
 }
 

@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CREDIT_CARD_PARTNERS, type CreditCardPartner } from "@/lib/config/creditCards";
+import {
+  CREDIT_CARD_PARTNERS,
+  ROAR_CREDIT_CARD,
+  type CreditCardPartner,
+} from "@/lib/config/creditCards";
 import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
 import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 
@@ -113,12 +117,26 @@ function PartnerApplyModal({
       >
         <div className="d-flex align-items-start justify-content-between gap-3 border-bottom px-4 py-3">
           <div>
+            {card.id === ROAR_CREDIT_CARD.id ? (
+              <span className="d-inline-block rounded-pill bg-primary text-white small fw-semibold px-2 py-1 mb-2">
+                Roar Bank
+              </span>
+            ) : null}
             <h4 id={titleId} className="h5 mb-1 text-dark">
-              Apply for {card.name}
+              {card.id === ROAR_CREDIT_CARD.id
+                ? "Apply for Roar Bank Credit Card"
+                : `Apply for ${card.name}`}
             </h4>
             <p className="small text-muted mb-0">
-              Enter your details. We will save your enquiry and open the bank application form.
+              {card.id === ROAR_CREDIT_CARD.id
+                ? "This is the Roar Bank application. Enter your details, then continue to the official apply form."
+                : "Enter your details. We will save your enquiry and open the bank application form."}
             </p>
+            {roarRef ? (
+              <p className="small text-primary fw-medium mb-0 mt-2">
+                You opened a staff referral link for Roar Bank.
+              </p>
+            ) : null}
           </div>
           <button
             type="button"
@@ -236,16 +254,41 @@ function PartnerApplyModal({
   );
 }
 
-function PartnerCard({ card, roarRef }: { card: CreditCardPartner; roarRef?: string }) {
+function PartnerCard({
+  card,
+  roarRef,
+  autoOpen,
+}: {
+  card: CreditCardPartner;
+  roarRef?: string;
+  autoOpen?: boolean;
+}) {
   const [modalOpen, setModalOpen] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const openedOnce = useRef(false);
+  const isRoar = card.id === ROAR_CREDIT_CARD.id;
+
+  useEffect(() => {
+    if (!autoOpen || openedOnce.current) return;
+    openedOnce.current = true;
+    setModalOpen(true);
+    const timer = window.setTimeout(() => {
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [autoOpen]);
 
   return (
     <>
-      <div className="border rounded bg-white p-4 p-md-5 h-100">
+      <div
+        ref={sectionRef}
+        id={isRoar ? "roar-bank" : undefined}
+        className={`border rounded bg-white p-4 p-md-5 h-100 ${autoOpen ? "border-primary shadow-sm" : ""}`}
+      >
         <div className="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
           <div>
             <p className="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3 mb-2">
-              Partner Offer
+              {isRoar ? "Roar Bank" : "Partner Offer"}
             </p>
             <h3 className="h4 mb-1 text-dark">{card.name}</h3>
             <p className="text-muted small mb-0">{card.bank}</p>
@@ -389,7 +432,11 @@ export function CreditCardPartners() {
         <div className="row g-4">
           {CREDIT_CARD_PARTNERS.map((card) => (
             <div key={card.id} className="col-12">
-              <PartnerCard card={card} roarRef={roarRef} />
+              <PartnerCard
+                card={card}
+                roarRef={roarRef}
+                autoOpen={Boolean(roarRef) && card.id === ROAR_CREDIT_CARD.id}
+              />
             </div>
           ))}
         </div>

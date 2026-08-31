@@ -244,7 +244,9 @@ export default function FinanceDetailPage({ params }: { params: Promise<{ slug: 
           {slug === "credit-card" && (
             <>
               <Suspense fallback={<div className="mb-5 text-muted small">Loading partner cards…</div>}>
-                <CreditCardPartners />
+                <div id="roar-bank-section">
+                  <CreditCardPartners />
+                </div>
               </Suspense>
               <div className="row mt-2 wow fadeInUp" data-wow-delay="0.5s">
                 <div className="col-12">

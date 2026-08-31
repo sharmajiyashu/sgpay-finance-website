@@ -10,6 +10,7 @@ export interface AgentProfile {
   city?: string;
   panCard?: string;
   kycStatus?: string;
+  kycReviewNote?: string;
   aadhaarCardNumber?: string;
   status?: string;
   profileImage?: { url?: string } | string;

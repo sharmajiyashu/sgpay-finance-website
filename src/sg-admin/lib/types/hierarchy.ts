@@ -28,14 +28,18 @@ export interface TeamMember {
   lastName?: string;
   email?: string;
   mobile?: string;
+  userRole?: string;
   designation?: TeamDesignation;
+  agentType?: AgentType;
   stateCode?: string;
   territory?: string;
   city?: string;
   address?: string;
   isActive?: boolean;
   generatedPassword?: string;
+  createdBy?: { _id?: string; firstName?: string; lastName?: string; email?: string; designation?: string; agentType?: string } | string;
   parentId?: { _id?: string; firstName?: string; lastName?: string; email?: string; designation?: string } | string;
+  managedById?: { _id?: string; firstName?: string; lastName?: string; email?: string; designation?: string } | string;
   createdAt?: string;
   choiceConnectProfile?: {
     onboarded: boolean;

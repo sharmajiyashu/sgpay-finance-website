@@ -32,6 +32,8 @@ export interface RoarReferralTreeNode {
   referralCount: number;
   subtreeReferralCount: number;
   commissionPercent?: number;
+  payoutType?: "percent" | "flat";
+  flatAmount?: number;
   commissionSource?: "override" | "rule" | "none";
   children: RoarReferralTreeNode[];
 }

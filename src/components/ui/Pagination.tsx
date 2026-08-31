@@ -24,7 +24,7 @@ export function Pagination({
 }: PaginationProps) {
   const { t } = useTranslations();
 
-  if (totalPages <= 1) return null;
+  const showPager = totalPages > 1;
 
   const getPageNumbers = () => {
     const pages = [];
@@ -74,6 +74,7 @@ export function Pagination({
         )}
       </div>
 
+      {showPager ? (
       <div className="flex max-w-full items-center gap-2 overflow-x-auto">
         <button
           type="button"
@@ -126,6 +127,7 @@ export function Pagination({
           <IconChevronRight className="h-5 w-5" />
         </button>
       </div>
+      ) : null}
     </div>
   );
 }

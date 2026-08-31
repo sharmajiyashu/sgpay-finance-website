@@ -176,6 +176,7 @@ export function AgentDashboardContent({ title, showEdit = false }: AgentDashboar
       {profile && (
         <KycDocumentUploadSection
           kycStatus={profile.kycStatus}
+          kycReviewNote={profile.kycReviewNote}
           panCard={profile.panCard}
           aadhaarCardNumber={profile.aadhaarCardNumber}
         />

@@ -23,8 +23,18 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
-        source: "/admin/agents/:status",
-        destination: "/admin/agents?status=:status",
+        source: "/admin/agents/pending",
+        destination: "/admin/agents?status=pending",
+        permanent: false,
+      },
+      {
+        source: "/admin/agents/approved",
+        destination: "/admin/agents?status=approved",
+        permanent: false,
+      },
+      {
+        source: "/admin/agents/rejected",
+        destination: "/admin/agents?status=rejected",
         permanent: false,
       },
       {
