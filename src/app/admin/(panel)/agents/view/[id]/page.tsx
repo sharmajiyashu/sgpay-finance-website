@@ -24,7 +24,14 @@ import { AGENT_TYPE_LABELS } from "@/sg-admin/lib/types/hierarchy";
 import { createdByLabel, personLabel } from "@/sg-admin/lib/created-by";
 import { kycBadgeClass, kycLabel } from "@/sg-admin/lib/kyc";
 import { hasPermission } from "@/sg-admin/lib/permissions";
+import { getCommissionRates } from "@/sg-admin/lib/services/commissionService";
+import { CommissionRatesCard } from "@/components/commissions/CommissionRatesCard";
 import { twMerge } from "tailwind-merge";
+
+function initialsFromName(name: string) {
+  const parts = name.split(" ").filter(Boolean);
+  return ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "A";
+}
 
 function mediaUrl(file?: { url?: string } | string | null): string | null {
   if (!file) return null;
@@ -88,6 +95,8 @@ export default function AdminAgentDetailPage() {
       backLabel="Agents"
       title={agent ? agentFullName(agent) : "Agent"}
       subtitle={agent ? `${agent.email || "—"} · ${agent.mobile || "—"}` : undefined}
+      initials={agent ? initialsFromName(agentFullName(agent)) : "A"}
+      role={agent?.agentType ? AGENT_TYPE_LABELS[agent.agentType] : "Agent"}
       badges={
         agent ? (
           <>
@@ -144,6 +153,13 @@ export default function AdminAgentDetailPage() {
               />
             </DetailInfoGrid>
           </DetailSection>
+
+          <CommissionRatesCard
+            getRates={() => getCommissionRates(id)}
+            queryKey={["commission-rates", "agent", id]}
+            title="Commission they earn"
+            description="Payout for this agent’s role on Credit Card, Roar Bank, and Motor Vehicle."
+          />
 
           {canUpdate ? (
             <ReviewActions

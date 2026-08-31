@@ -15,6 +15,8 @@ import {
   navigateWithVehicleType,
   readVehicleTypeFromSearch,
 } from "@/modules/insurance/lib/vehicleSwitch";
+import { CommissionRatesCard } from "@/components/commissions/CommissionRatesCard";
+import type { CommissionRatesResponse } from "@/sg-admin/lib/services/commissionService";
 
 export interface InsuranceApplyApiClient {
   getConfig: () => Promise<InsuranceWidgetConfig>;
@@ -27,6 +29,7 @@ interface InsuranceApplyPanelProps {
   description?: string;
   queryScope?: string;
   applyBasePath: string;
+  getRates?: () => Promise<CommissionRatesResponse>;
 }
 
 export function InsuranceApplyPanel({
@@ -35,6 +38,7 @@ export function InsuranceApplyPanel({
   description = "Bike / car insurance via Choice Connect. Separate from Credit Card.",
   queryScope = "insurance",
   applyBasePath,
+  getRates,
 }: InsuranceApplyPanelProps) {
   const searchParams = useSearchParams();
   const resumeUuid =
@@ -128,6 +132,16 @@ export function InsuranceApplyPanel({
           )}
         </div>
       </div>
+
+      {getRates ? (
+        <CommissionRatesCard
+          getRates={getRates}
+          queryKey={["commission-rates", queryScope]}
+          highlight="motor-insurance"
+          title="Your motor insurance commission"
+          description="This is what you earn when a customer’s bike or car policy is issued."
+        />
+      ) : null}
 
       <div className="max-w-xs">
         <label className="mb-1 block text-sm font-medium">Vehicle Type</label>

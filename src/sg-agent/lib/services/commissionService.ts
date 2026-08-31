@@ -1,6 +1,7 @@
 import { get, post } from "@/sg-agent/lib/api";
 import { AGENT_API_PATHS } from "@/lib/config/env";
 import type {
+  CommissionRatesResponse,
   CommissionTransaction,
   CommissionWallet,
   CommissionWithdrawal,
@@ -28,6 +29,10 @@ export interface AgentCommissionRow {
   leadId?: { _id?: string; customerName?: string; status?: string; createdAt?: string; productType?: string };
   enquiryId?: { _id?: string; name?: string; status?: string; createdAt?: string };
   createdAt?: string;
+}
+
+export async function getAgentCommissionRates() {
+  return get<CommissionRatesResponse>(AGENT_API_PATHS.commissionRates);
 }
 
 export async function getMyCommissions(url?: string) {

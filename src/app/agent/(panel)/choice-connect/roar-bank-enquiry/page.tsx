@@ -3,6 +3,7 @@
 import { RoarBankEnquiryWorkspace } from "@/components/roar/RoarBankEnquiryWorkspace";
 import { ROAR_CREDIT_CARD } from "@/lib/config/creditCards";
 import { AGENT_API_PATHS } from "@/lib/config/env";
+import { getAgentCommissionRates } from "@/sg-agent/lib/services/commissionService";
 import { createAgentRoarEnquiry, getEnquiries } from "@/sg-agent/lib/services/enquiryService";
 import { getRoarReferralLink } from "@/sg-agent/lib/services/roarReferralService";
 
@@ -25,6 +26,7 @@ export default function AgentRoarBankEnquiryPage() {
           getEnquiries,
         },
       }}
+      getRates={getAgentCommissionRates}
     />
   );
 }

@@ -15,6 +15,8 @@ export function DetailPageShell({
   title,
   subtitle,
   badges,
+  initials,
+  role,
   tabs,
   activeTab,
   onTabChange,
@@ -27,6 +29,8 @@ export function DetailPageShell({
   title: string;
   subtitle?: string;
   badges?: ReactNode;
+  initials?: string;
+  role?: string;
   tabs: DetailTab[];
   activeTab: string;
   onTabChange: (id: string) => void;
@@ -36,16 +40,31 @@ export function DetailPageShell({
 }) {
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
-        <Link href={backHref} className="text-sm text-muted-foreground hover:text-foreground">
-          ← {backLabel}
-        </Link>
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-            {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/12 via-transparent to-emerald-500/8" />
+        <div className="relative">
+          <Link href={backHref} className="text-sm text-muted-foreground hover:text-foreground">
+            ← {backLabel}
+          </Link>
+          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
+              {initials ? (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-primary-foreground shadow-md">
+                  {initials}
+                </div>
+              ) : null}
+              <div className="min-w-0">
+                {role ? (
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary">
+                    {role}
+                  </p>
+                ) : null}
+                <h1 className="truncate text-2xl font-bold text-foreground">{title}</h1>
+                {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
+              </div>
+            </div>
+            {badges ? <div className="flex flex-wrap items-center gap-2">{badges}</div> : null}
           </div>
-          {badges ? <div className="flex flex-wrap items-center gap-2">{badges}</div> : null}
         </div>
       </div>
 

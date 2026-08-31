@@ -10,6 +10,8 @@ import { EnquiriesPanel, type EnquiriesPanelApi } from "@/sg-admin/components/En
 import { RoarEnquiryCreateForm } from "@/components/roar/RoarEnquiryCreateForm";
 import type { RoarReferralLink } from "@/components/roar/RoarReferralLinkPanel";
 import { buildRoarReferralUrl } from "@/lib/config/env";
+import { CommissionRatesCard } from "@/components/commissions/CommissionRatesCard";
+import type { CommissionRatesResponse } from "@/sg-admin/lib/services/commissionService";
 
 const TABS = [
   { id: "list", label: "List" },
@@ -41,6 +43,7 @@ export function RoarBankEnquiryWorkspace(props: {
     categoryId?: string;
     serviceSlug: string;
   };
+  getRates?: () => Promise<CommissionRatesResponse>;
 }) {
   return (
     <Suspense fallback={<p className="text-sm text-muted-foreground">Loading...</p>}>
@@ -57,6 +60,7 @@ function RoarBankEnquiryWorkspaceInner({
   createEnquiry,
   invalidateKeys,
   listPanel,
+  getRates,
 }: {
   title: string;
   subtitle: string;
@@ -75,6 +79,7 @@ function RoarBankEnquiryWorkspaceInner({
     categoryId?: string;
     serviceSlug: string;
   };
+  getRates?: () => Promise<CommissionRatesResponse>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -132,15 +137,37 @@ function RoarBankEnquiryWorkspaceInner({
           </div>
 
           {tab === "create" ? (
-            <RoarEnquiryCreateForm
-              createEnquiry={createEnquiry}
-              invalidateKeys={invalidateKeys}
-              onCreated={() => setTab("list")}
-            />
+            <div className="space-y-5">
+              {getRates ? (
+                <CommissionRatesCard
+                  getRates={getRates}
+                  queryKey={["commission-rates", queryScope]}
+                  highlight="roar"
+                  title="Your Roar Bank commission"
+                  description="You earn this when a customer completes a Roar Bank enquiry from your create or referral flow."
+                />
+              ) : null}
+              <RoarEnquiryCreateForm
+                createEnquiry={createEnquiry}
+                invalidateKeys={invalidateKeys}
+                onCreated={() => setTab("list")}
+              />
+            </div>
           ) : null}
 
           {tab === "referral" ? (
-            <ReferralPanel getLink={getLink} queryScope={queryScope} />
+            <div className="space-y-5">
+              {getRates ? (
+                <CommissionRatesCard
+                  getRates={getRates}
+                  queryKey={["commission-rates", queryScope]}
+                  highlight="roar"
+                  title="Earn when you share this link"
+                  description="Customers who open your referral link are attributed to you. Your Roar Bank payout is highlighted below."
+                />
+              ) : null}
+              <ReferralPanel getLink={getLink} queryScope={queryScope} />
+            </div>
           ) : null}
         </div>
       </div>

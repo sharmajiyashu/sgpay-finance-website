@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { InsuranceApplyPanel } from "@/modules/insurance";
 import { agentInsuranceApi } from "@/sg-agent/lib/services/insuranceService";
+import { getAgentCommissionRates } from "@/sg-agent/lib/services/commissionService";
 
 export default function AgentInsuranceMotorPage() {
   return (
@@ -13,6 +14,7 @@ export default function AgentInsuranceMotorPage() {
         applyBasePath="/agent/insurance/motor"
         title="Motor Insurance"
         description="Bike / car insurance via Choice Connect. Separate from the Credit Card module."
+        getRates={getAgentCommissionRates}
       />
     </Suspense>
   );

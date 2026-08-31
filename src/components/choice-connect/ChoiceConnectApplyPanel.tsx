@@ -10,6 +10,8 @@ import type {
   CreateChoiceLeadInput,
 } from "@/lib/choiceConnect/types";
 import { CHOICE_LOAN_PRODUCTS } from "@/lib/choiceConnect/types";
+import { CommissionRatesCard } from "@/components/commissions/CommissionRatesCard";
+import type { CommissionRatesResponse } from "@/sg-admin/lib/services/commissionService";
 
 export interface ChoiceConnectApiClient {
   getConfig: () => Promise<ChoiceWidgetConfig & { configured?: boolean }>;
@@ -23,6 +25,7 @@ interface ChoiceConnectApplyPanelProps {
   description?: string;
   allowLoanProductSelect?: boolean;
   queryScope?: string;
+  getRates?: () => Promise<CommissionRatesResponse>;
 }
 
 export function ChoiceConnectApplyPanel({
@@ -32,6 +35,7 @@ export function ChoiceConnectApplyPanel({
   description,
   allowLoanProductSelect = false,
   queryScope = "staff",
+  getRates,
 }: ChoiceConnectApplyPanelProps) {
   const [productType, setProductType] = useState<ChoiceProductType>(initialProductType);
 
@@ -104,6 +108,16 @@ export function ChoiceConnectApplyPanel({
           )}
         </div>
       </div>
+
+      {getRates && productType === "credit-card" ? (
+        <CommissionRatesCard
+          getRates={getRates}
+          queryKey={["commission-rates", queryScope]}
+          highlight="credit-card"
+          title="Your credit card commission"
+          description="This is what you earn when a customer’s credit card is issued or approved."
+        />
+      ) : null}
 
       <div className="space-y-3">
         {allowLoanProductSelect && (

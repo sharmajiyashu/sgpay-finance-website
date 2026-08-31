@@ -2,6 +2,7 @@
 
 import { RoarBankEnquiryWorkspace } from "@/components/roar/RoarBankEnquiryWorkspace";
 import { ROAR_CREDIT_CARD } from "@/lib/config/creditCards";
+import { getCommissionRates } from "@/sg-admin/lib/services/commissionService";
 import { createAdminRoarEnquiry } from "@/sg-admin/lib/services/enquiryService";
 import { getRoarReferralLink } from "@/sg-admin/lib/services/roarReferralService";
 
@@ -19,6 +20,7 @@ export default function RoarBankEnquiryPage() {
         categoryId: "finance",
         serviceSlug: ROAR_CREDIT_CARD.id,
       }}
+      getRates={() => getCommissionRates()}
     />
   );
 }

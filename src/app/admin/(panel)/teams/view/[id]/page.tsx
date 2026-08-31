@@ -19,6 +19,13 @@ import { TEAM_DESIGNATION_LABELS, teamFullName } from "@/sg-admin/lib/types/hier
 import { createdByLabel, personLabel } from "@/sg-admin/lib/created-by";
 import { designationLabel } from "@/sg-admin/lib/team-utils";
 import { hasPermission } from "@/sg-admin/lib/permissions";
+import { getCommissionRates } from "@/sg-admin/lib/services/commissionService";
+import { CommissionRatesCard } from "@/components/commissions/CommissionRatesCard";
+
+function initialsFromName(name: string) {
+  const parts = name.split(" ").filter(Boolean);
+  return ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "T";
+}
 
 export default function AdminTeamDetailPage() {
   const params = useParams();
@@ -53,6 +60,13 @@ export default function AdminTeamDetailPage() {
       backLabel="Teams"
       title={member ? teamFullName(member) : "Team member"}
       subtitle={member ? `${member.email || "—"} · ${member.mobile || "—"}` : undefined}
+      initials={member ? initialsFromName(teamFullName(member)) : "T"}
+      role={
+        member?.designation
+          ? TEAM_DESIGNATION_LABELS[member.designation as keyof typeof TEAM_DESIGNATION_LABELS] ||
+            designationLabel(member.designation)
+          : "Team"
+      }
       badges={
         member ? (
           <StatusBadge
@@ -106,6 +120,13 @@ export default function AdminTeamDetailPage() {
               />
             </DetailInfoGrid>
           </DetailSection>
+
+          <CommissionRatesCard
+            getRates={() => getCommissionRates(id)}
+            queryKey={["commission-rates", "team", id]}
+            title="Commission they earn"
+            description="Payout for this team role on Credit Card, Roar Bank, and Motor Vehicle."
+          />
 
           {canUpdate ? (
             <ReviewActions

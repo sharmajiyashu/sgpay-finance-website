@@ -70,6 +70,28 @@ export interface CommissionLedgerRow {
   createdAt?: string;
 }
 
+export interface CommissionProductRate {
+  productType: "credit-card" | "roar" | "motor-insurance" | string;
+  label: string;
+  payoutType: CommissionPayoutType;
+  percent: number;
+  flatAmount: number;
+  isActive: boolean;
+  source: "override" | "rule" | "none";
+}
+
+export interface CommissionRatesResponse {
+  userId: string;
+  roleKey?: string | null;
+  roleLabel: string;
+  products: CommissionProductRate[];
+}
+
+export async function getCommissionRates(userId?: string) {
+  const query = userId ? `?userId=${encodeURIComponent(userId)}` : "";
+  return get<CommissionRatesResponse>(`${ADMIN_API_PATHS.commissionRates}${query}`);
+}
+
 export async function getCommissionRules(productType = "credit-card") {
   return get<{ rules: CommissionRule[]; productType: string }>(
     `${ADMIN_API_PATHS.commissionRules}?productType=${encodeURIComponent(productType)}`
