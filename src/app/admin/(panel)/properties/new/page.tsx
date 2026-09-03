@@ -24,7 +24,7 @@ export default function NewPropertyPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Add property</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            New listings appear on the public Projects page when published
+            Step-by-step listing. Upload gallery images and videos — do not paste URLs.
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">

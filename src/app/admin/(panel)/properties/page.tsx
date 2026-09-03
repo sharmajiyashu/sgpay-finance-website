@@ -30,6 +30,7 @@ export default function AdminPropertiesPage() {
   const canUpdate = hasPermission("admin:property:update");
   const canDelete = hasPermission("admin:property:delete");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -41,7 +42,7 @@ export default function AdminPropertiesPage() {
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
 
-  const url = listUrl(ADMIN_API_PATHS.properties, page, debouncedSearch, 20);
+  const url = listUrl(ADMIN_API_PATHS.properties, page, debouncedSearch, pageSize);
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-properties", url],
     queryFn: () => getProperties(url),
@@ -82,15 +83,31 @@ export default function AdminPropertiesPage() {
           )}
         </div>
 
-        <div className="relative max-w-sm">
-          <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Search properties..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background py-2.5 pl-9 pr-4 text-sm"
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative max-w-sm flex-1">
+            <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              placeholder="Search properties..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-border bg-background py-2.5 pl-9 pr-4 text-sm"
+            />
+          </div>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+            className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+          >
+            {[10, 20, 50].map((size) => (
+              <option key={size} value={size}>
+                {size} / page
+              </option>
+            ))}
+          </select>
         </div>
 
         {error && (
@@ -188,10 +205,12 @@ export default function AdminPropertiesPage() {
           })}
         />
 
-        {pagination && pagination.totalPages > 1 && (
+        {pagination && (
           <Pagination
             page={pagination.page}
             totalPages={pagination.totalPages}
+            total={pagination.total}
+            limit={pagination.limit}
             onPageChange={setPage}
           />
         )}

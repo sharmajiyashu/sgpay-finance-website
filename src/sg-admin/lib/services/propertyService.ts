@@ -1,4 +1,4 @@
-import { get, patch, post, deleteRequest } from "@/sg-admin/lib/api";
+import { get, patch, post, postForm, deleteRequest } from "@/sg-admin/lib/api";
 import { ADMIN_API_PATHS } from "@/lib/config/env";
 import type { PaginationMeta } from "@/sg-admin/lib/paginated-list";
 import type { AdminProperty, PropertyWritePayload } from "@/sg-admin/lib/types/property";
@@ -56,4 +56,23 @@ export async function updateProperty(id: string, body: Partial<AdminProperty>): 
 
 export async function deleteProperty(id: string): Promise<void> {
   await deleteRequest(ADMIN_API_PATHS.propertyById(id));
+}
+
+export interface PropertyMediaUploadResult {
+  images: string[];
+  videos: string[];
+  floorPlans: string[];
+  builderLogo: string;
+  masterPlan: string;
+}
+
+export async function uploadPropertyMedia(formData: FormData): Promise<PropertyMediaUploadResult> {
+  const data = await postForm<PropertyMediaUploadResult>(ADMIN_API_PATHS.propertyMedia, formData);
+  return {
+    images: data.images || [],
+    videos: data.videos || [],
+    floorPlans: data.floorPlans || [],
+    builderLogo: data.builderLogo || "",
+    masterPlan: data.masterPlan || "",
+  };
 }

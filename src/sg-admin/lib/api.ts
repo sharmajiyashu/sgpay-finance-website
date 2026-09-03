@@ -82,6 +82,13 @@ export const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config) => {
     const path = config.url ?? "";
+    if (typeof FormData !== "undefined" && config.data instanceof FormData && config.headers) {
+      if (typeof config.headers.delete === "function") {
+        config.headers.delete("Content-Type");
+      } else {
+        delete (config.headers as Record<string, unknown>)["Content-Type"];
+      }
+    }
     if (!isPublicPath(path)) {
       const token = getToken();
       if (token && config.headers) {
@@ -171,6 +178,23 @@ export async function deleteRequest<T = unknown>(
   config?: AxiosRequestConfig
 ): Promise<T> {
   const { data } = await api.delete<ResponseWrapper<T>>(url, config);
+  if (data.success && data.data !== undefined) return data.data as T;
+  throw new Error(data.error ?? "Request failed");
+}
+
+export async function postForm<T = unknown>(
+  url: string,
+  formData: FormData,
+  config?: AxiosRequestConfig
+): Promise<T> {
+  const { data } = await api.post<ResponseWrapper<T>>(url, formData, {
+    timeout: 180000,
+    ...config,
+    headers: {
+      ...(config?.headers ?? {}),
+      "Content-Type": undefined,
+    },
+  });
   if (data.success && data.data !== undefined) return data.data as T;
   throw new Error(data.error ?? "Request failed");
 }

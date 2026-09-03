@@ -147,6 +147,7 @@ export const ADMIN_API_PATHS = {
   roarReferralTree: "/roar-referral-tree",
   siteSettings: "/site-settings",
   properties: "/properties",
+  propertyMedia: "/properties/media",
   propertyById: (id: string) => `/properties/${id}`,
 } as const;
 
