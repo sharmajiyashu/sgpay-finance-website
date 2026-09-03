@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProjectCard } from "@/components/ui/ProjectCard";
-import { mockProjects } from "@/data/projects";
+import { fetchPublishedProperties } from "@/lib/publicPropertyService";
+import { useQuery } from "@tanstack/react-query";
 
 function ProjectsContent() {
   const searchParams = useSearchParams();
@@ -32,17 +33,22 @@ function ProjectsContent() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Extract unique cities from mockProjects
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ["public-properties"],
+    queryFn: fetchPublishedProperties,
+  });
+
+  // Extract unique cities from listings
   const uniqueCities = useMemo(() => {
-    const cities = new Set(mockProjects.map(p => p.city));
+    const cities = new Set(projects.map((p) => p.city).filter(Boolean));
     return Array.from(cities).sort();
-  }, []);
+  }, [projects]);
 
   const filteredCities = uniqueCities.filter(city => 
     city.toLowerCase().includes(citySearch.toLowerCase())
   );
 
-  const filteredProjects = mockProjects.filter((p) => {
+  const filteredProjects = projects.filter((p) => {
     // Custom filter logic based on the string
     let matchesType = false;
     if (filter === "All") matchesType = true;
@@ -140,7 +146,11 @@ function ProjectsContent() {
           </div>
 
           <div className="row g-4 portfolio-container wow fadeInUp" data-wow-delay="0.3s">
-            {filteredProjects.length > 0 ? filteredProjects.map((project, index) => (
+          {isLoading ? (
+            <div className="col-12 text-center py-5">
+              <h4>Loading projects...</h4>
+            </div>
+          ) : filteredProjects.length > 0 ? filteredProjects.map((project, index) => (
               <div key={project.id} className="col-lg-4 col-md-6 portfolio-item">
                 <ProjectCard project={project} index={index} />
               </div>

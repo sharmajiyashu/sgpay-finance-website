@@ -90,6 +90,8 @@ export const APP_API_PATHS = {
   insuranceConfig: "/insurance/config",
   insuranceLeads: "/insurance/leads",
   siteSettings: "/site-settings",
+  properties: "/properties",
+  propertyBySlug: (slug: string) => `/properties/${encodeURIComponent(slug)}`,
 } as const;
 
 /** Relative paths under the admin API */
@@ -144,6 +146,8 @@ export const ADMIN_API_PATHS = {
   roarReferralStats: "/roar-referral-stats",
   roarReferralTree: "/roar-referral-tree",
   siteSettings: "/site-settings",
+  properties: "/properties",
+  propertyById: (id: string) => `/properties/${id}`,
 } as const;
 
 /** Relative paths under the agent API */

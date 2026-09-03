@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import { mockProjects } from "@/data/projects";
+import { fetchPublishedPropertyBySlug } from "@/lib/publicPropertyService";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { submitPublicEnquiry } from "@/lib/publicEnquiryService";
 import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
@@ -10,7 +11,11 @@ import { buildEnquiryPayload } from "@/lib/enquiryCatalog";
 export default function ProjectDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const project = mockProjects.find((p) => p.slug === slug);
+  const { data: project, isLoading } = useQuery({
+    queryKey: ["public-property", slug],
+    queryFn: () => fetchPublishedPropertyBySlug(slug),
+    enabled: Boolean(slug),
+  });
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "", mobile: "", message: "" });
   const [loading, setLoading] = useState(false);
@@ -41,6 +46,14 @@ export default function ProjectDetailPage() {
       setLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container py-5 text-center">
+        <h2>Loading project...</h2>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -135,7 +148,7 @@ export default function ProjectDetailPage() {
                 <div className="col-sm-6 col-md-4">
                   <div className="bg-white rounded p-3 border shadow-sm h-100 transition-shadow hover:shadow-md">
                     <p className="text-muted mb-1 small"><i className="fa fa-bed me-2 text-primary"></i>Configurations</p>
-                    <h6 className="mb-0">{project.configurations.join(", ")}</h6>
+                    <h6 className="mb-0">{(project.configurations || []).join(", ") || "—"}</h6>
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-4">
@@ -175,7 +188,7 @@ export default function ProjectDetailPage() {
 
               <h3 className="mb-4">Premium Amenities</h3>
               <div className="row g-3 mb-5">
-                {project.amenities.map((amenity, idx) => (
+                {(project.amenities || []).map((amenity, idx) => (
                   <div key={idx} className="col-sm-6">
                     <div className="d-flex align-items-center p-3 bg-white border rounded shadow-sm hover:shadow-md transition-shadow">
                       <div className="btn-square bg-primary rounded-circle me-3 flex-shrink-0">

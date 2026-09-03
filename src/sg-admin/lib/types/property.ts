@@ -1,0 +1,41 @@
+export interface AdminProperty {
+  _id: string;
+  id?: string;
+  slug: string;
+  name: string;
+  builder: string;
+  builderLogo: string;
+  city: string;
+  state: string;
+  location: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  projectType: string;
+  propertyType: string;
+  status: string;
+  reraNumber: string;
+  possessionDate: string;
+  launchDate: string;
+  configurations: string[];
+  areaRange: string;
+  priceRange: string;
+  startingPrice: number;
+  emi: string;
+  images: string[];
+  videos: string[];
+  masterPlan: string;
+  floorPlans: string[];
+  amenities: string[];
+  featured: boolean;
+  luxury: boolean;
+  landmark: string;
+  documentInfo: string;
+  builderDescription: string;
+  isPublished: boolean;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type PropertyWritePayload = Partial<AdminProperty> & { name: string };

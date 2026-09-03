@@ -22,7 +22,7 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
       {/* Image Container */}
       <div className="relative h-64 overflow-hidden">
         <img
-          src={project.images[0]}
+          src={project.images?.[0] || "/img/projects/carousel-1.jpg"}
           alt={project.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />

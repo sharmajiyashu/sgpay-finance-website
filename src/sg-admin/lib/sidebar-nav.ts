@@ -9,6 +9,7 @@ import {
   IconCoin,
   IconHierarchy,
   IconBuildingBank,
+  IconBuildingSkyscraper,
 } from "@tabler/icons-react";
 import { hasAnyPermission, hasPermission } from "@/sg-admin/lib/permissions";
 import type { AuthUser } from "@/sg-admin/lib/api";
@@ -195,6 +196,16 @@ export const sidebarNav: SidebarNavEntry[] = [
         href: "/admin/insurance/referral-links",
         permission: "admin:choice-connect:get",
       },
+    ],
+  },
+  {
+    title: "Properties",
+    href: "/admin/properties",
+    icon: IconBuildingSkyscraper,
+    permission: "admin:property:get",
+    items: [
+      { title: "Listings", href: "/admin/properties", permission: "admin:property:get", exact: true },
+      { title: "Add Property", href: "/admin/properties/new", permission: "admin:property:create" },
     ],
   },
   {
