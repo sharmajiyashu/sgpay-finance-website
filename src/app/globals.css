@@ -369,6 +369,11 @@
   display: none !important;
 }
 
+.public-template .navbar-collapse.collapse,
+.public-template .navbar-collapse.collapsing {
+  visibility: visible !important;
+}
+
 /* SG-Admin sidebar */
 .sg-admin-sidebar {
   background: linear-gradient(

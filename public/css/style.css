@@ -402,8 +402,13 @@ h6,
     color: var(--primary);
 }
 
-/* Custom overrides to resolve Tailwind CSS vs Bootstrap navbar collapse conflicts */
-.public-template .collapse:not(.show) {
+/* Tailwind's .collapse uses visibility:collapse, which hides navbar links as a blank white bar */
+.public-template .navbar-collapse.collapse,
+.public-template .navbar-collapse.collapsing {
+    visibility: visible !important;
+}
+
+.public-template .navbar-collapse.collapse:not(.show) {
     display: none;
 }
 
@@ -411,12 +416,16 @@ h6,
     .public-template .navbar-collapse.collapse {
         display: flex !important;
         visibility: visible !important;
+        height: auto !important;
+        overflow: visible !important;
+        max-height: none !important;
     }
 }
 
 @media (max-width: 991.98px) {
     .public-template .navbar-collapse.collapse.show {
         display: block !important;
+        visibility: visible !important;
     }
 }
 
@@ -551,31 +560,66 @@ h6,
 @media (max-width: 991.98px) {
     .public-template .fixed-top {
         background: #fff;
+        z-index: 1050;
     }
 
     .public-template .navbar {
         padding-top: 0.35rem;
         padding-bottom: 0.35rem;
+        flex-wrap: wrap;
+        align-items: center;
     }
 
     .public-template .navbar-brand {
         margin-left: 0.5rem;
+        max-width: none;
+        width: auto;
+        flex: 0 0 auto;
     }
 
-    .site-logo {
-        height: 52px;
-        max-width: 140px;
+    .public-template .navbar-brand .site-logo,
+    .public-template .navbar .site-logo {
+        height: 34px;
+        width: auto;
+        max-width: 118px;
+        max-height: 34px;
     }
 
     .public-template .navbar-toggler {
         padding: 0.35rem 0.5rem;
-        border: 1px solid rgba(0, 0, 0, 0.12);
+        border: 1px solid rgba(1, 26, 65, 0.18);
+        background: #fff;
+        box-shadow: none;
+    }
+
+    .public-template .navbar-toggler:focus {
+        box-shadow: 0 0 0 0.15rem rgba(18, 114, 182, 0.2);
+        outline: none;
+    }
+
+    .public-template .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(1, 26, 65, 0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    .public-template .mobile-nav-open .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath stroke='rgba(1, 26, 65, 0.85)' stroke-linecap='round' stroke-width='1.4' d='M2 2l12 12M14 2L2 14'/%3e%3c/svg%3e");
     }
 
     .public-template .navbar-collapse {
+        flex-basis: 100%;
+        width: 100%;
         max-height: calc(100vh - 72px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        background: #fff;
+        border-top: 1px solid rgba(1, 26, 65, 0.08);
+    }
+
+    .public-template .navbar .navbar-nav {
+        margin-top: 0;
+        border-top: 0;
+        background: #fff;
+        padding-bottom: 1rem;
     }
 
     .public-template .navbar .navbar-nav .nav-link {
@@ -583,22 +627,36 @@ h6,
         font-size: 15px;
         line-height: 1.4;
         text-align: left;
+        color: var(--dark);
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 
     .public-template .navbar .dropdown-menu {
+        display: none !important;
         position: static !important;
+        float: none !important;
         transform: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         min-width: 100%;
         box-shadow: none !important;
         border: 0 !important;
         padding: 0 0 8px 12px !important;
-        background: transparent;
+        background: #f6f8fb !important;
+        border-radius: 8px !important;
+        margin: 0 0 8px !important;
+    }
+
+    .public-template .navbar .dropdown.show .dropdown-menu {
+        display: block !important;
     }
 
     .public-template .navbar .dropdown-item {
         padding: 8px 8px;
         font-size: 14px;
         transform: none !important;
+        color: var(--dark);
     }
 
     .public-template .navbar .dropdown-item:hover {
@@ -752,6 +810,22 @@ h6,
         height: auto;
     }
 
+    .public-template .navbar-brand .site-logo,
+    .public-template .navbar .site-logo {
+        height: 34px !important;
+        width: auto !important;
+        max-width: 118px !important;
+        max-height: 34px !important;
+        object-fit: contain;
+    }
+
+    .public-template .footer .site-logo {
+        height: 44px !important;
+        width: auto !important;
+        max-width: 130px !important;
+        max-height: 44px !important;
+    }
+
     #header-carousel .carousel-item img {
         height: 100%;
         object-fit: cover;
@@ -803,13 +877,16 @@ h6,
 
     .public-template .navbar-brand {
         min-width: 0;
-        max-width: calc(100% - 56px);
+        max-width: none;
         margin-left: 0.25rem;
     }
 
-    .site-logo {
-        height: 40px;
-        max-width: 100%;
+    .public-template .navbar-brand .site-logo,
+    .public-template .navbar .site-logo {
+        height: 30px !important;
+        width: auto !important;
+        max-width: 100px !important;
+        max-height: 30px !important;
     }
 
     .public-template .carousel-caption .display-1,

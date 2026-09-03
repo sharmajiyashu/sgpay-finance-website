@@ -12,12 +12,26 @@ import {
 function PublicLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const isAuthStandalone =
     pathname === "/login" ||
     pathname === "/register-agent" ||
     pathname === "/forgot-password" ||
     pathname === "/reset-password";
   const siteSettings = useSiteSettings();
+
+  const closeMobileNav = () => {
+    setMobileNavOpen(false);
+    setOpenDropdown(null);
+  };
+
+  const toggleDropdown = (id: string, event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (typeof window !== "undefined" && window.innerWidth < 992) {
+      event.preventDefault();
+      setOpenDropdown((current) => (current === id ? null : id));
+    }
+  };
 
   useEffect(() => {
     document.title = `${siteSettings.siteName} - Loans, Insurance & Financial Solutions`;
@@ -35,11 +49,20 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
   }, [siteSettings.siteName]);
 
   useEffect(() => {
-    const collapse = document.getElementById("navbarCollapse");
-    const bootstrap = (window as unknown as { bootstrap?: { Collapse: { getInstance: (el: Element) => { hide: () => void } | null } } }).bootstrap;
-    if (!collapse || !bootstrap || !collapse.classList.contains("show")) return;
-    bootstrap.Collapse.getInstance(collapse)?.hide();
+    closeMobileNav();
   }, [pathname]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 992) closeMobileNav();
+    };
+    window.addEventListener("resize", handleResize);
+    document.body.style.overflow = mobileNavOpen ? "hidden" : "";
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      document.body.style.overflow = "";
+    };
+  }, [mobileNavOpen]);
 
   return (
     <div className="public-template">
@@ -56,7 +79,7 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
       {!isAuthStandalone && (
         <>
           <div
-            className={`container-fluid fixed-top px-0 wow fadeIn ${scrolled ? "bg-white shadow" : ""}`}
+            className={`container-fluid fixed-top px-0 wow fadeIn ${scrolled || mobileNavOpen ? "bg-white shadow" : ""} ${mobileNavOpen ? "mobile-nav-open" : ""}`}
             style={{
               transition: "0.5s",
               top: "0px",
@@ -67,15 +90,25 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
               <Link href="/" className="navbar-brand ms-3 ms-lg-0 d-flex align-items-center">
                 <img src="/img/logo.png" alt={siteSettings.siteName} className="site-logo" />
               </Link>
-              <button type="button" className="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+              <button
+                type="button"
+                className="navbar-toggler me-4"
+                aria-controls="navbarCollapse"
+                aria-expanded={mobileNavOpen}
+                aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+                onClick={() => {
+                  setMobileNavOpen((open) => !open);
+                  setOpenDropdown(null);
+                }}
+              >
                 <span className="navbar-toggler-icon"></span>
               </button>
-              <div className="collapse navbar-collapse" id="navbarCollapse">
+              <div className={`collapse navbar-collapse ${mobileNavOpen ? "show" : ""}`} id="navbarCollapse">
                 <div className="navbar-nav ms-auto p-4 p-lg-0">
                   <Link href="/" className={`nav-item nav-link ${pathname === "/" ? "active" : ""}`}>Home</Link>
 
-                  <div className="nav-item dropdown">
-                    <Link href="/projects" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Projects</Link>
+                  <div className={`nav-item dropdown ${openDropdown === "projects" ? "show" : ""}`}>
+                    <Link href="/projects" className="nav-link dropdown-toggle" onClick={(event) => toggleDropdown("projects", event)}>Projects</Link>
                     <div className="dropdown-menu border-0 shadow-sm m-0">
                       <Link href="/projects" className="dropdown-item fw-bold text-primary border-bottom">View All Projects</Link>
                       <Link href="/projects?filter=Residential" className="dropdown-item">Residential</Link>
@@ -87,8 +120,8 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
 
-                  <div className="nav-item dropdown">
-                    <Link href="/loans" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Loans</Link>
+                  <div className={`nav-item dropdown ${openDropdown === "loans" ? "show" : ""}`}>
+                    <Link href="/loans" className="nav-link dropdown-toggle" onClick={(event) => toggleDropdown("loans", event)}>Loans</Link>
                     <div className="dropdown-menu border-0 shadow-sm m-0">
                       <Link href="/loans" className="dropdown-item fw-bold text-primary border-bottom">View All Loans</Link>
                       <Link href="/loans/personal-loan" className="dropdown-item">Personal Loan</Link>
@@ -104,8 +137,8 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
 
-                  <div className="nav-item dropdown">
-                    <Link href="/finance" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Finance</Link>
+                  <div className={`nav-item dropdown ${openDropdown === "finance" ? "show" : ""}`}>
+                    <Link href="/finance" className="nav-link dropdown-toggle" onClick={(event) => toggleDropdown("finance", event)}>Finance</Link>
                     <div className="dropdown-menu border-0 shadow-sm m-0">
                       <Link href="/finance" className="dropdown-item fw-bold text-primary border-bottom">View All Finance</Link>
                       <Link href="/finance/credit-card" className="dropdown-item">Credit Card</Link>
@@ -120,8 +153,8 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
 
-                  <div className="nav-item dropdown">
-                    <Link href="/insurance" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Insurance</Link>
+                  <div className={`nav-item dropdown ${openDropdown === "insurance" ? "show" : ""}`}>
+                    <Link href="/insurance" className="nav-link dropdown-toggle" onClick={(event) => toggleDropdown("insurance", event)}>Insurance</Link>
                     <div className="dropdown-menu border-0 shadow-sm m-0">
                       <Link href="/insurance" className="dropdown-item fw-bold text-primary border-bottom">View All Insurance</Link>
                       <Link href="/insurance/health-insurance" className="dropdown-item">Health Insurance</Link>
@@ -131,8 +164,8 @@ function PublicLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
 
-                  <div className="nav-item dropdown">
-                    <Link href="/accounts" className="nav-link dropdown-toggle" data-bs-toggle="dropdown">Accounts</Link>
+                  <div className={`nav-item dropdown ${openDropdown === "accounts" ? "show" : ""}`}>
+                    <Link href="/accounts" className="nav-link dropdown-toggle" onClick={(event) => toggleDropdown("accounts", event)}>Accounts</Link>
                     <div className="dropdown-menu border-0 shadow-sm m-0">
                       <Link href="/accounts" className="dropdown-item fw-bold text-primary border-bottom">View All Accounts</Link>
                       <Link href="/accounts/savings-account" className="dropdown-item">Savings Account</Link>
